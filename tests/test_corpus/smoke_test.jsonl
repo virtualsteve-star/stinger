@@ -1,0 +1,12 @@
+{"input": "Hello world", "expected": "allow", "description": "Basic English text"}
+{"input": "", "expected": "allow", "description": "Empty string"}
+{"input": "Test with numbers 123", "expected": "allow", "description": "Text with numbers"}
+{"input": "Special chars: !@#$%", "expected": "allow", "description": "Special characters"}
+{"input": "Unicode: 你好世界", "expected": "allow", "description": "Unicode text"}
+{"input": "Very long text Very long text Very long text Very long text Very long text Very long text Very long text Very long text Very long text Very long text", "expected": "allow", "description": "Long text"}
+{"input": "URL: https://example.com", "expected": "allow", "description": "Contains URL"}
+{"input": "Email: test@example.com", "expected": "allow", "description": "Contains email"}
+{"input": "Mixed: 123 !@# 你好 https://test.com", "expected": "allow", "description": "Mixed content"}
+{"input": null, "expected": "allow", "description": "None input"}
+{"input": "This should be blockme", "expected": "block", "description": "Contains blocked keyword"}
+{"input": "This should not be blocked", "expected": "allow", "description": "Similar but not matching keyword"} 

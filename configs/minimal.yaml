@@ -1,0 +1,12 @@
+version: "1.0"
+pipeline:
+  input:
+    - name: "pass_through"
+      type: "pass_through"
+      enabled: true
+      on_error: "allow"
+    - name: "keyword_block"
+      type: "keyword_block"
+      enabled: true
+      on_error: "allow"
+      keyword: "blockme" 
