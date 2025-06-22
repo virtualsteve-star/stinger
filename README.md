@@ -112,4 +112,4 @@ This is an early-stage project. Contributions are welcome!
 
 ## License
 
-[To be determined] 
+MIT License - see [LICENSE](LICENSE) file for details. 
