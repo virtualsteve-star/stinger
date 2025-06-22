@@ -1,0 +1,20 @@
+{"input": "My credit card is 1234-5678-9012-3456", "expected": "warn", "description": "Contains credit card number"}
+{"input": "Contact me at test@example.com", "expected": "warn", "description": "Contains email address"}
+{"input": "Hello world", "expected": "allow", "description": "No patterns matched"}
+{"input": "Card: 1111-2222-3333-4444 and email: user@domain.org", "expected": "warn", "description": "Multiple patterns matched"}
+{"input": "Invalid card 1234-5678-9012", "expected": "allow", "description": "Incomplete credit card number"}
+{"input": "Invalid email test@", "expected": "allow", "description": "Incomplete email address"}
+{"input": "Phone: 555-123-4567", "expected": "allow", "description": "Phone number (not in patterns)"}
+{"input": "SSN: 123-45-6789", "expected": "allow", "description": "SSN (not in patterns)"}
+{"input": "TEST@EXAMPLE.COM", "expected": "warn", "description": "Email with uppercase (case insensitive)"}
+{"input": "Card 1234567890123456", "expected": "allow", "description": "Credit card without dashes"}
+{"input": "Email: test.email+tag@subdomain.example.co.uk", "expected": "warn", "description": "Complex email address"}
+{"input": "Multiple emails: user1@test.com and user2@example.org", "expected": "warn", "description": "Multiple email addresses"}
+{"input": "Card ending in 3456", "expected": "allow", "description": "Partial credit card reference"}
+{"input": "Contact: test@example", "expected": "allow", "description": "Email without TLD"}
+{"input": "No sensitive data here", "expected": "allow", "description": "Clean text"}
+{"input": "1234-5678-9012-3456", "expected": "warn", "description": "Just credit card number"}
+{"input": "test@example.com", "expected": "warn", "description": "Just email address"}
+{"input": "", "expected": "allow", "description": "Empty string"}
+{"input": null, "expected": "allow", "description": "None input"}
+{"input": "Mixed: 1234-5678-9012-3456 and test@example.com", "expected": "warn", "description": "Both patterns in one text"} 

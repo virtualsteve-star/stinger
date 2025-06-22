@@ -8,6 +8,9 @@ from src.core.config import ConfigLoader
 from src.core.pipeline import FilterPipeline
 from src.filters.pass_through import PassThroughFilter
 from src.filters.keyword_block import KeywordBlockFilter
+from src.filters.regex_filter import RegexFilter
+from src.filters.length_filter import LengthFilter
+from src.filters.url_filter import URLFilter
 
 def load_jsonl(path):
     with open(path, 'r') as f:
@@ -16,6 +19,9 @@ def load_jsonl(path):
 FILTER_REGISTRY = {
     'pass_through': PassThroughFilter,
     'keyword_block': KeywordBlockFilter,
+    'regex_filter': RegexFilter,
+    'length_filter': LengthFilter,
+    'url_filter': URLFilter,
 }
 
 async def run_smoke_test():

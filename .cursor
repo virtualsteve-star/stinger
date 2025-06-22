@@ -1,0 +1,84 @@
+# Stinger LLM Guardrails Framework - Development Rules
+
+## Code Quality & Architecture
+
+### 1. Permission & Communication
+- **NEVER** make changes to the repository without explicit instruction or asking first
+- Always explain what you're planning to do before making changes
+- If unsure about an approach, ask for clarification
+
+### 2. Maintainable Code Principles
+- Focus on **architecture re-use** - design components to be extensible
+- Write code that's easy to understand, modify, and extend
+- Prefer composition over inheritance where appropriate
+- Keep functions and classes focused on single responsibilities
+
+### 3. Code Organization
+- If files exceed 200-300 lines, refactor into smaller, focused modules
+- Break large classes into smaller, cohesive components
+- Extract common patterns into reusable utilities
+- Maintain clear separation of concerns
+
+### 4. Code Quality Standards
+- Write code that **people will actually read and understand**
+- Use descriptive variable and function names
+- Add meaningful comments for complex logic
+- Follow Python best practices and PEP 8 style guidelines
+- The codebase should be a pleasure to work with
+
+## Testing Philosophy
+
+### 5. Test Quality Over Quantity
+- **Tests must actually TEST functionality** - no useless unit tests
+- **NEVER fudge test results** to meet deadlines or make anyone happy
+- If tests are failing, fix the code, not the tests
+- Write tests that catch real bugs and prevent regressions
+- Focus on integration tests that verify the system works end-to-end
+- Test edge cases and error conditions
+
+### 6. Test-Driven Development
+- Write tests first when adding new features
+- Ensure tests fail before implementing the feature
+- Make the code pass the hard tests, not the easy ones
+- Maintain high test coverage for critical paths
+
+## Development Workflow
+
+### 7. Incremental Development
+- Build features incrementally with working code at each step
+- Commit frequently with meaningful commit messages
+- Test thoroughly before pushing changes
+- Keep the main branch stable and working
+
+### 8. Documentation
+- Keep README and documentation up to date
+- Document complex algorithms and design decisions
+- Include examples and usage patterns
+- Make the project accessible to new contributors
+
+## Project-Specific Guidelines
+
+### 9. Filter Development
+- All filters must inherit from BaseFilter
+- Implement proper error handling and graceful degradation
+- Add comprehensive test cases for each filter
+- Document filter configuration options
+
+### 10. Configuration Management
+- Validate configuration files thoroughly
+- Provide clear error messages for invalid configs
+- Support backward compatibility when possible
+- Document all configuration options
+
+## Code Review Checklist
+
+Before submitting any changes:
+- [ ] Code follows project architecture patterns
+- [ ] Tests are meaningful and pass
+- [ ] Documentation is updated
+- [ ] Error handling is implemented
+- [ ] Code is readable and maintainable
+- [ ] No unnecessary complexity added
+
+## Remember
+**Quality over speed. Architecture over quick fixes. Tests that actually test.** 

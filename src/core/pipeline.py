@@ -20,17 +20,20 @@ class FilterPipeline:
             content = ""
         
         filter_results = []
+        highest_action = 'allow'
+        highest_reason = 'All filters passed'
         
         for filter_obj in self.filters:
             try:
                 result = await filter_obj.run_safe(content)
                 filter_results.append(result)
+                print(f"[Pipeline] {filter_obj.__class__.__name__}: {result.action} ({result.reason})")
                 
                 # If filter blocks, stop processing
                 if result.action == 'block':
                     return PipelineResult(
                         action='block',
-                        reason=result.reason,
+                        reason=f"{filter_obj.__class__.__name__}: {result.reason}",
                         filter_results=filter_results,
                         content=content
                     )
@@ -39,6 +42,10 @@ class FilterPipeline:
                 if result.modified_content is not None:
                     content = result.modified_content
                     
+                if result.action == 'warn' and highest_action != 'warn':
+                    highest_action = 'warn'
+                    highest_reason = f"{filter_obj.__class__.__name__}: {result.reason}"
+                
             except Exception as e:
                 # If filter fails and is configured to block on error
                 if filter_obj.on_error == 'block':
@@ -51,8 +58,8 @@ class FilterPipeline:
         
         # If we get here, all filters passed
         return PipelineResult(
-            action='allow',
-            reason='All filters passed',
+            action=highest_action,
+            reason=highest_reason,
             filter_results=filter_results,
             content=content
         ) 

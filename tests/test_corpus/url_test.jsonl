@@ -1,0 +1,26 @@
+{"input": "Check out https://example.com", "expected": "allow", "description": "Allowed domain"}
+{"input": "Visit http://malicious.com", "expected": "block", "description": "Blocked domain"}
+{"input": "Multiple: https://example.com and http://spam.net", "expected": "block", "description": "Mixed allowed and blocked domains"}
+{"input": "No URLs here", "expected": "allow", "description": "No URLs in content"}
+{"input": "https://evil.org/path?param=value", "expected": "block", "description": "Blocked domain with path and params"}
+{"input": "HTTP://EXAMPLE.COM", "expected": "allow", "description": "Uppercase allowed domain"}
+{"input": "http://malicious.com:8080", "expected": "block", "description": "Blocked domain with port"}
+{"input": "https://subdomain.example.com", "expected": "allow", "description": "Subdomain of allowed domain"}
+{"input": "Invalid URL: http://", "expected": "allow", "description": "Invalid URL format"}
+{"input": "Text with https://example.com/path and more text", "expected": "allow", "description": "URL embedded in text"}
+{"input": "Multiple URLs: https://example.com, http://test.org, https://malicious.com", "expected": "block", "description": "Multiple URLs with one blocked"}
+{"input": "ftp://example.com", "expected": "allow", "description": "FTP URL (not HTTP/HTTPS)"}
+{"input": "https://example.com and https://spam.net", "expected": "block", "description": "Two URLs, one blocked"}
+{"input": "http://malicious.com/path#fragment", "expected": "block", "description": "Blocked domain with fragment"}
+{"input": "https://example.com:443", "expected": "allow", "description": "Allowed domain with standard port"}
+{"input": "URL in brackets: [https://example.com]", "expected": "allow", "description": "URL in brackets"}
+{"input": "URL in quotes: \"https://malicious.com\"", "expected": "block", "description": "URL in quotes"}
+{"input": "Mixed case: HTTP://MALICIOUS.COM", "expected": "block", "description": "Uppercase blocked domain"}
+{"input": "https://example.com and https://evil.org", "expected": "block", "description": "Mixed allowed and blocked"}
+{"input": "Just text, no URLs", "expected": "allow", "description": "Clean text without URLs"}
+{"input": "https://example.com/path/to/file.html?param=value#section", "expected": "allow", "description": "Complex allowed URL"}
+{"input": "http://malicious.com:80/path", "expected": "block", "description": "Blocked domain with port and path"}
+{"input": "https://test.example.com", "expected": "allow", "description": "Subdomain of allowed domain"}
+{"input": "https://malicious.com and https://spam.net", "expected": "block", "description": "Multiple blocked domains"}
+{"input": "Invalid: https://", "expected": "allow", "description": "Incomplete URL"}
+{"input": "https://example.com and http://evil.org", "expected": "block", "description": "Mixed protocols and domains"} 
