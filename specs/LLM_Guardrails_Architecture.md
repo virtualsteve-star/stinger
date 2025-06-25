@@ -39,15 +39,58 @@
 |--------|----------------|
 | **Config Loader** | Parse YAML/JSON configs, validate schema, expose runtime settings. |
 | **FilterPipeline** | Orchestrate filter execution, enforce order, aggregate results. |
+| **HotReloadPipeline** | Monitor config changes and rebuild filters automatically. |
 | **BaseFilter** | Abstract class implementing `run(content) → FilterResult`. |
 | **Rule‑Based Filters** | Regex, blacklist, language, length, URL/file‑type blocking. |
+| **Keyword List Filter** | Load keywords from files or inline configs with case sensitivity options. |
+| **Compound Scoring Filter** | Multi-rule weighted scoring with configurable thresholds. |
 | **Classifier Filters** | Wrap external or local AI services (PII, toxicity, jailbreak). |
 | **Result Handler** | Apply actions (`block`, `warn`, `modify`, etc.) and assemble response. |
 | **Logging / Metrics** | Emit structured logs and Prometheus counters/timers. |
+| **Unified CLI** | Single entry point for running scenarios, tests, and debugging. |
 
-## 3 Error Handling & Degradation Strategy
+## 3 Filter Types & Scoring System
 
-### 3.1 Filter-Level Error Handling
+### 3.1 Filter Categories
+
+| Category | Examples | Scoring Method |
+|----------|----------|----------------|
+| **Simple Filters** | regex_filter, keyword_block, length_filter | Binary (pass/fail) |
+| **List-Based Filters** | keyword_list_filter | Binary with external file support |
+| **Compound Filters** | compound_filter, prompt_injection_filter | Weighted scoring (0-100) |
+| **AI-Based Filters** | ai_scorer (future) | Confidence scoring (0-100) |
+
+### 3.2 Compound Scoring Architecture
+
+```
+Compound Filter
+├── Rule Engine
+│   ├── Regex Rules (weighted patterns)
+│   ├── Keyword Rules (weighted lists)
+│   ├── Combination Rules (AND/OR logic)
+│   └── Contextual Rules (context-dependent scoring)
+├── Scoring Engine
+│   ├── Weight Calculation
+│   ├── Threshold Management
+│   └── Fuzzy Decision Logic
+└── Result Aggregation
+    ├── Matched Rules Tracking
+    ├── Score Explanation
+    └── Action Determination
+```
+
+### 3.3 Scoring Thresholds
+
+```yaml
+thresholds:
+  allow: 0-20     # Low risk - allow with logging
+  warn: 21-60     # Medium risk - warn user
+  block: 61-100   # High risk - block content
+```
+
+## 4 Error Handling & Degradation Strategy
+
+### 4.1 Filter-Level Error Handling
 
 | Error Type | Default Behavior | Configuration |
 |------------|------------------|---------------|
@@ -55,8 +98,9 @@
 | **Filter Timeout** | Fail-closed (block request) | `timeout_ms: 5000` |
 | **Invalid Input** | Log warning, continue | `invalid_input: warn|block|skip` |
 | **Resource Exhaustion** | Fail-closed (block request) | `resource_limit: block|allow` |
+| **Schema Validation** | Fail-closed (block request) | `schema_validation: strict|warn|off` |
 
-### 3.2 External API Failure Handling
+### 4.2 External API Failure Handling
 
 | Service | Circuit Breaker | Fallback Strategy | Retry Logic |
 |---------|----------------|-------------------|-------------|
@@ -65,7 +109,7 @@
 | **Google Safe Browsing** | 10 failures → 5min open | Allow request, log alert | 1 attempt, no retry |
 | **Local Models** | N/A (local) | Use rule-based fallback | N/A |
 
-### 3.3 Pipeline Degradation Modes
+### 4.3 Pipeline Degradation Modes
 
 | Mode | Trigger | Behavior | Recovery |
 |------|---------|----------|----------|
@@ -73,16 +117,16 @@
 | **Fail-Safe Mode** | Critical filter failure | Block all requests, log emergency | Manual intervention required |
 | **Bypass Mode** | Emergency override | Allow all requests, log everything | Manual intervention required |
 
-### 3.4 Error Recovery & Monitoring
+### 4.4 Error Recovery & Monitoring
 
 - **Health Checks**: Each filter reports health status every 30s
 - **Alert Thresholds**: Alert when >10% of requests hit circuit breakers
 - **Auto-Recovery**: Circuit breakers automatically close after timeout
 - **Manual Override**: Emergency bypass switches for critical situations
 
-## 4 Configuration Management & Validation
+## 5 Configuration Management & Validation
 
-### 4.1 Configuration Schema
+### 5.1 Configuration Schema
 
 ```yaml
 # Schema version and validation
@@ -109,6 +153,30 @@ pipelines:
       enabled: true
       on_error: "block"
       timeout_ms: 1000
+    - name: "keyword_list"
+      type: "keyword_list"
+      enabled: true
+      keywords: ["blocked_word1", "blocked_word2"]
+      keyword_files: ["configs/keyword_lists/toxic_language.txt"]
+      case_sensitive: false
+      on_error: "block"
+    - name: "pii_detection"
+      type: "compound_filter"
+      enabled: true
+      thresholds:
+        allow: 0-20
+        warn: 21-60
+        block: 61-100
+      rules:
+        - name: ssn_pattern
+          type: regex
+          pattern: "\\b\\d{3}-\\d{2}-\\d{4}\\b"
+          weight: 8
+        - name: phone_pattern
+          type: regex
+          pattern: "\\b\\d{3}-\\d{3}-\\d{4}\\b"
+          weight: 5
+      on_error: "block"
     - name: "toxicity_filter"
       type: "classifier"
       provider: "openai"
@@ -120,7 +188,7 @@ pipelines:
         recovery_timeout: 30
 ```
 
-### 4.2 Configuration Validation
+### 5.2 Configuration Validation
 
 | Validation Level | Checks | Action |
 |------------------|--------|--------|
@@ -129,14 +197,14 @@ pipelines:
 | **Semantic** | Filter dependencies, resource limits | Warn on suspicious configs |
 | **Runtime** | Filter availability, API connectivity | Log warnings, continue |
 
-### 4.3 Configuration Deployment
+### 5.3 Configuration Deployment
 
 - **Version Control**: All configs stored in Git with change history
 - **Rollback Capability**: Automatic rollback on validation failures
 - **Hot Reload**: Config changes applied without service restart
 - **Environment Isolation**: Separate configs for dev/staging/prod
 
-### 4.4 Configuration Testing
+### 5.4 Configuration Testing
 
 ```yaml
 # Test configuration changes before deployment
@@ -154,44 +222,91 @@ config_tests:
     description: "Ensure no new false positives/negatives"
 ```
 
-## 5 Testing Sub‑system
+## 6 Testing Sub‑system
 
 | Component | Detail |
 |-----------|--------|
-| **Test Runner** | CLI/SDK to execute suites, collect results, produce JSON + Markdown reports. |
+| **Unified Test Runner** | CLI (`stinger.py`) to execute scenarios, collect results, produce reports. |
 | **Test Corpus** | Labeled JSONL files stored under `/tests/**`. |
 | **Suite Config** | YAML: list of corpora, filters, expected pass criteria. |
+| **Scenario Runners** | Individual test runners for specific use cases (customer service, medical bot). |
+| **Hot Reload Testing** | Interactive testing for config changes without restart. |
 | **Autonomous Repair Hooks** | Scripts (`patch_config.py`) to let coding agents adjust YAML and rerun. |
 | **CI Integration** | GitHub Actions job: run suites on PR, fail build on regression. |
 
-## 6 Runtime Deployment Views
+## 7 Developer Experience Features
 
-### 6.1 Local Development
-* Developer installs package, runs `guardrails apply` on sample inputs.  
-* Agents can run `python test_runner.py tests/full_suite.yaml`.
+### 7.1 Unified CLI Interface
 
-### 6.2 Staging / Production
+```bash
+# Run all scenarios
+python3 stinger.py --all
+
+# Run specific scenario with debug
+python3 stinger.py --scenario customer_service --debug
+
+# Run with hot reload
+python3 stinger.py --scenario medical_bot --hot-reload
+
+# Custom config and test data
+python3 stinger.py --scenario customer_service --config custom.yaml --test-data custom.jsonl
+```
+
+### 7.2 Debug & Observability
+
+- **Filter-by-filter processing** with `--debug` flag
+- **Detailed error messages** with filter names and types
+- **Hot reload notifications** when config changes detected
+- **Schema validation errors** with clear field-level feedback
+
+### 7.3 Configuration Management
+
+- **External keyword files** for easier maintenance
+- **Schema validation** with comprehensive error reporting
+- **Hot reload** for rapid iteration
+- **Environment variable overrides** for flexible deployment
+
+## 8 Runtime Deployment Views
+
+### 8.1 Local Development
+* Developer installs package, runs `python3 stinger.py --scenario customer_service --debug`.  
+* Agents can run `python3 stinger.py --all` for comprehensive testing.
+
+### 8.2 Staging / Production
 * Deployed as a sidecar micro‑service or library inside the API server.  
 * Uses async calls to external moderation endpoints with timeouts.  
 * Logs shipped to central SIEM (Elastic, Splunk, etc.).  
 * Metrics scraped by Prometheus and visualised in Grafana.
 
-## 7 Data Stores
+## 9 Data Stores
 
 * **Config repo** – Version‑controlled YAML/JSON.  
+* **Keyword files** – Text files for keyword lists, versioned alongside code.
 * **Test datasets** – JSONL, versioned alongside code.  
 * **Audit logs** – Structured, time‑series; retention policy 90 days.  
 * **Metrics store** – Prometheus TSDB.
 
-## 8 Extensibility Points
+## 10 Extensibility Points
 
 1. **Filter Plugins** – Drop‑in Python modules under `filters/`.  
-2. **Classifier Adapters** – Abstract provider interface (`provider=openai|google|custom`).  
-3. **Action Hooks** – Custom logic on `block` or `warn` (e.g., revive request, notify Slack).  
+2. **Compound Filter Rules** – Extensible rule types (regex, keyword, combination, AI).
+3. **Classifier Adapters** – Abstract provider interface (`provider=openai|google|custom`).  
+4. **Action Hooks** – Custom logic on `block` or `warn` (e.g., revive request, notify Slack).  
 
-## 9 Security Considerations
+## 11 Security Considerations
 
 * All secrets in environment variables or secret manager.  
 * Default behaviour is **fail‑closed** for critical filters.  
 * No raw prompts logged; redact PII in logs.
+* Schema validation prevents malicious config injection.
+
+## Compound Filter Additive Certainty System
+
+- Each rule in a compound filter has a certainty value (0-100).
+- When content matches a rule, its certainty is added to the total certainty (capped at 100).
+- Thresholds (allow/warn/block) are based on the total certainty.
+- This replaces the previous weighted/normalized scoring system.
+
+### Migration Note
+If you previously used 'weight' for rules, replace it with 'certainty' (1-100). The system is now additive, not normalized.
 

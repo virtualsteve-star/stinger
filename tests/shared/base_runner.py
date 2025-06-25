@@ -15,6 +15,7 @@ from src.core.config import ConfigLoader
 from src.core.pipeline import FilterPipeline
 from src.filters.pass_through import PassThroughFilter
 from src.filters.keyword_block import KeywordBlockFilter
+from src.filters.keyword_list import KeywordListFilter
 from src.filters.regex_filter import RegexFilter
 from src.filters.length_filter import LengthFilter
 from src.filters.url_filter import URLFilter
@@ -31,6 +32,7 @@ def load_jsonl(path):
 FILTER_REGISTRY = {
     'pass_through': PassThroughFilter,
     'keyword_block': KeywordBlockFilter,
+    'keyword_list': KeywordListFilter,
     'regex_filter': RegexFilter,
     'length_filter': LengthFilter,
     'url_filter': URLFilter,
@@ -39,9 +41,10 @@ FILTER_REGISTRY = {
 class BaseConversationSimulator:
     """Base class for conversation simulation with moderation."""
     
-    def __init__(self, config_path: str):
+    def __init__(self, config_path: str, debug: bool = False):
         self.config_loader = ConfigLoader()
         self.config = self.config_loader.load(config_path)
+        self.debug = debug
         self.pipeline = self._create_pipeline()
         
     def _create_pipeline(self) -> FilterPipeline:
@@ -60,9 +63,9 @@ class BaseConversationSimulator:
             else:
                 print(f"⚠️ Unknown filter type: {filter_type}")
         
-        return FilterPipeline(filters)
+        return FilterPipeline(filters, debug=self.debug)
     
-    async def simulate_conversation(self, test_cases: List[dict], show_conversation: bool = True) -> Dict:
+    async def simulate_conversation(self, test_cases: List[dict], show_conversation: bool = True, debug: bool = False) -> Dict:
         """Simulate a conversation and return results."""
         conversations = defaultdict(list)
         results = {

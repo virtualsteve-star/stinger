@@ -1,0 +1,72 @@
+version: "1.0"
+pipeline:
+  input:
+    - name: "length_check"
+      type: "length_filter"
+      enabled: true
+      min_length: 0
+      max_length: 10000
+      on_error: "block"
+    
+    - name: "pii_detection"
+      type: "compound_filter"
+      enabled: true
+      on_error: "block"
+      thresholds:
+        allow: [0, 20]
+        warn: [21, 60]
+        block: [61, 100]
+      rules:
+        - name: "ssn_pattern"
+          type: "regex"
+          pattern: "\\d{3}-\\d{2}-\\d{4}"
+          certainty: 40
+          description: "Social Security Number"
+          case_sensitive: false
+        
+        - name: "phone_pattern"
+          type: "regex"
+          pattern: "\\d{3}-\\d{3}-\\d{4}"
+          certainty: 25
+          description: "Phone Number"
+          case_sensitive: false
+        
+        - name: "email_pattern"
+          type: "regex"
+          pattern: "[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}"
+          certainty: 20
+          description: "Email Address"
+          case_sensitive: false
+        
+        - name: "credit_card_pattern"
+          type: "regex"
+          pattern: "\\b(?:\\d[ -]*?){13,16}\\b"
+          certainty: 50
+          description: "Credit Card Number"
+          case_sensitive: false
+        
+        - name: "passport_pattern"
+          type: "regex"
+          pattern: "[A-Z]{2}\\d{7}"
+          certainty: 60
+          description: "Passport Number"
+          case_sensitive: false
+        
+        - name: "driver_license_pattern"
+          type: "regex"
+          pattern: "[A-Z0-9]{1,9}"
+          certainty: 35
+          description: "Driver's License Number"
+          case_sensitive: false
+        
+        - name: "multiple_pii"
+          type: "combination"
+          logic: "contains('ssn') and contains('phone')"
+          weight: 15
+          description: "Multiple PII patterns detected"
+        
+        - name: "ssn_with_context"
+          type: "combination"
+          logic: "contains('ssn') and contains('social security')"
+          weight: 12
+          description: "SSN with context indicating it's intentional" 

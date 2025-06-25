@@ -36,6 +36,44 @@ python3 test_runner.py
 python3 test_runner.py --transcript
 ```
 
+## Unified CLI Usage
+
+The new unified CLI (`stinger.py`) allows you to run all or specific test scenarios with a single command, with options for debug, quiet, transcript, and custom config/test data files.
+
+### Examples
+
+```bash
+# Run all scenarios
+python3 stinger.py --all
+
+# Run a specific scenario
+python3 stinger.py --scenario customer_service
+python3 stinger.py --scenario medical_bot
+
+# Run with debug output (shows filter-by-filter processing)
+python3 stinger.py --scenario customer_service --debug
+
+# Run with summary only (no conversation details)
+python3 stinger.py --scenario customer_service --quiet
+
+# Show conversation transcript with inline moderation tags
+python3 stinger.py --scenario customer_service --transcript
+
+# List available scenarios and their descriptions
+python3 stinger.py --list
+
+# Run with a custom config or test data file
+python3 stinger.py --scenario customer_service --config configs/customer_service.yaml --test-data tests/scenarios/customer_service/test_data.jsonl
+```
+
+### Environment Variable Overrides
+
+When running a scenario, you can override the default config or test data by setting the following environment variables:
+- `STINGER_CONFIG`: Path to a custom YAML config file
+- `STINGER_TEST_DATA`: Path to a custom test data file (JSONL)
+
+These are set automatically by the CLI when you use the `--config` or `--test-data` flags.
+
 ## Project Structure
 
 ```
@@ -132,6 +170,34 @@ pipeline:
       action: "warn"
       on_error: "allow"
 ```
+
+## Compound Filters: Additive Certainty Scoring
+
+Stinger's compound filters now use an additive certainty system:
+- Each rule contributes a certainty value (0-100).
+- The total certainty is the sum of matched rules (capped at 100).
+- Thresholds (allow/warn/block) are based on the total certainty.
+- This system is deterministic, intuitive, and flexible.
+
+### Example YAML
+
+```yaml
+rules:
+  - name: ssn_pattern
+    type: regex
+    pattern: "\\d{3}-\\d{2}-\\d{4}"
+    certainty: 40
+    description: "Social Security Number"
+    case_sensitive: false
+  # ... more rules ...
+thresholds:
+  allow: [0, 20]
+  warn: [21, 60]
+  block: [61, 100]
+```
+
+### Migration Note
+If you previously used 'weight' for rules, replace it with 'certainty' (1-100). The system is now additive, not normalized.
 
 ## Current Features
 
@@ -241,4 +307,18 @@ This is an early-stage project. Contributions are welcome!
 
 ## License
 
-MIT License - see [LICENSE](LICENSE) file for details. 
+MIT License - see [LICENSE](LICENSE) file for details.
+
+## Hot Reload (Experimental)
+
+You can enable hot reload mode to automatically reload the config file while a scenario is running. This is useful for rapid iteration and long-running processes.
+
+- Enable with the `--hot-reload` flag:
+  ```bash
+  python3 stinger.py --scenario customer_service --hot-reload --debug
+  ```
+- The pipeline will detect changes to the config file and reload the filter pipeline on the fly.
+- Works with any scenario and custom config file.
+- You can also set the environment variable `STINGER_HOT_RELOAD=1` to enable hot reload in any runner.
+
+**Note:** This feature is experimental and best used for development and testing. 
