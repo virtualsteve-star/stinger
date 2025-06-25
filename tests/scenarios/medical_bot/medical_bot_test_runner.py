@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-Customer Service Bot Integration Test Runner
+Medical Bot Integration Test Runner
 
-This script runs the customer service bot integration tests to validate
-that the moderation framework can effectively handle toxic customer language
+This script runs the medical bot integration tests to validate
+that the moderation framework can effectively handle PII and medical terms
 while allowing normal interactions.
 """
 
@@ -26,17 +26,17 @@ try:
 except ImportError:
     from shared.base_runner import BaseConversationSimulator, load_jsonl
 
-async def run_customer_service_test(show_conversation: bool = True, show_transcript: bool = False, debug: bool = False):
-    """Run the customer service bot integration test."""
-    print("🤖 CUSTOMER SERVICE BOT INTEGRATION TEST")
+async def run_medical_bot_test(show_conversation: bool = True, show_transcript: bool = False, debug: bool = False):
+    """Run the medical bot integration test."""
+    print("🩺 MEDICAL BOT INTEGRATION TEST")
     print("=" * 60)
-    print("Testing moderation of toxic customer language in support conversations")
+    print("Testing moderation of medical advice and sensitive information in conversations")
     print("=" * 60)
     
     # Use env vars if set, otherwise default
     config_path = os.environ.get(
         'STINGER_CONFIG',
-        os.path.join(os.path.dirname(__file__), '..', '..', '..', 'configs', 'customer_service.yaml')
+        os.path.join(os.path.dirname(__file__), '..', '..', '..', 'src', 'scenarios', 'medical_bot', 'config.yaml')
     )
     test_data_path = os.environ.get(
         'STINGER_TEST_DATA',
@@ -62,7 +62,7 @@ async def run_customer_service_test(show_conversation: bool = True, show_transcr
 async def main():
     """Main entry point with command line options."""
     parser = argparse.ArgumentParser(
-        description='Customer Service Bot Integration Test Runner',
+        description='Medical Bot Integration Test Runner',
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
@@ -88,17 +88,17 @@ Examples:
         sys.exit(1)
     
     # Run the test
-    success = await run_customer_service_test(
+    success = await run_medical_bot_test(
         show_conversation=not args.quiet,
         show_transcript=args.transcript,
         debug=args.debug
     )
     
     if success:
-        print("\n✅ Customer service test completed successfully!")
+        print("\n✅ Medical bot test completed successfully!")
         sys.exit(0)
     else:
-        print("\n❌ Customer service test failed!")
+        print("\n❌ Medical bot test failed!")
         sys.exit(1)
 
 if __name__ == "__main__":

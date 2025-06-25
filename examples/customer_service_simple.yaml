@@ -7,19 +7,17 @@ pipeline:
       min_length: 0
       max_length: 10000
       on_error: "block"
-
-    - name: "pii_keywords"
+    
+    - name: "toxic_keywords"
       type: "keyword_list"
       enabled: true
-      keywords_file: "configs/keyword_lists/pii.txt"
+      keywords_file: "src/data/keyword_lists/toxic_language.txt"
       case_sensitive: false
-      on_error: "warn"
-
-    - name: "medical_terms"
+      on_error: "block"
+    
+    - name: "profanity_filter"
       type: "keyword_list"
       enabled: true
-      keywords_file: "configs/keyword_lists/medical_terms.txt"
+      keywords_file: "src/data/keyword_lists/profanity.txt"
       case_sensitive: false
-      on_error: "warn"
-
- 
+      on_error: "block" 

@@ -9,6 +9,6 @@ pipeline:
     - name: "toxic_keywords"
       type: "keyword_list"
       enabled: true
-      keywords_file: "configs/keyword_lists/toxic_language.txt"
+      keywords_file: "src/data/keyword_lists/toxic_language.txt"
       case_sensitive: false
       on_error: "block" 

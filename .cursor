@@ -1,3 +1,7 @@
+# BRANCH POLICY REMINDER
+# Always work against the 'dev' branch for all development, except when explicitly instructed to use 'main'.
+# This ensures safe, reviewable PRs and keeps main stable.
+
 # Stinger LLM Guardrails Framework - Development Rules
 
 ## Code Quality & Architecture

@@ -228,7 +228,7 @@ python3 test_phase2.py                    # Comprehensive Phase 2 tests
 ## 📚 Related Documentation
 
 - **Framework**: `../src/` - Core framework implementation
-- **Configs**: `../configs/` - Configuration examples
+- **Configs**: `tests/configs/` - Test-specific configurations
 - **Specs**: `../specs/` - Project specifications
 - **Plans**: `../plans/` - Implementation plans
 

@@ -75,7 +75,7 @@ Examples:
   python3 stinger.py --scenario customer_service # Run specific scenario
   python3 stinger.py --scenario medical_bot --debug
   python3 stinger.py --list                      # List scenarios
-  python3 stinger.py --scenario customer_service --config configs/customer_service.yaml --test-data tests/scenarios/customer_service/test_data.jsonl
+  python3 stinger.py --scenario customer_service --config src/scenarios/customer_service/config.yaml --test-data tests/scenarios/customer_service/test_data.jsonl
         """
     )
     parser.add_argument('--scenario', choices=available_scenarios, help='Run specific scenario only')

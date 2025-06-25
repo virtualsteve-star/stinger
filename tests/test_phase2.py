@@ -100,17 +100,17 @@ async def main():
     test_suites = [
         {
             'name': 'Smoke Test (Original)',
-            'config': 'configs/minimal.yaml',
+            'config': 'tests/configs/minimal.yaml',
             'corpus': 'tests/test_corpus/smoke_test.jsonl'
         },
         {
             'name': 'Regex Filter Test',
-            'config': 'configs/comprehensive.yaml',
+            'config': 'tests/configs/comprehensive.yaml',
             'corpus': 'tests/test_corpus/regex_test.jsonl'
         },
         {
             'name': 'URL Filter Test',
-            'config': 'configs/comprehensive.yaml',
+            'config': 'tests/configs/comprehensive.yaml',
             'corpus': 'tests/test_corpus/url_test.jsonl'
         }
     ]
