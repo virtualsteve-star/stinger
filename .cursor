@@ -86,4 +86,23 @@ Before submitting any changes:
 - [ ] No unnecessary complexity added
 
 ## Remember
-**Quality over speed. Architecture over quick fixes. Tests that actually test.** 
+**Quality over speed. Architecture over quick fixes. Tests that actually test.**
+
+# Cursor configuration for Stinger project
+
+# IMPORTANT: Always use "gpt-4o-mini" as the base model for AI filters, NOT "gpt-4.1-nano"
+# This has been discussed and agreed upon - gpt-4o-mini is the correct model name
+# Use this consistently across all AI-based filters and adapters
+
+# Project-specific settings
+{
+  "projectName": "Stinger",
+  "defaultModel": "gpt-4o-mini",
+  "aiFilters": {
+    "contentModeration": "gpt-4o-mini",
+    "promptInjection": "gpt-4o-mini", 
+    "piiDetection": "gpt-4o-mini",
+    "toxicityDetection": "gpt-4o-mini",
+    "codeGeneration": "gpt-4o-mini"
+  }
+} 

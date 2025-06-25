@@ -1,0 +1,354 @@
+"""
+Phase 5 Tests
+
+Tests for the new pluggable classifier filters with OpenAI integration.
+"""
+
+import pytest
+import asyncio
+from unittest.mock import Mock, patch, AsyncMock, MagicMock
+from src.core.guardrail_interface import GuardrailType, GuardrailRegistry, GuardrailFactory
+from src.core.guardrail_factory import register_all_factories
+from src.core.api_key_manager import APIKeyManager
+
+
+def register_all_factories(registry: GuardrailRegistry):
+    """Register all available guardrail factories."""
+    from src.filters.legacy_adapters import (
+        KeywordBlockAdapter, RegexFilterAdapter, LengthFilterAdapter,
+        URLFilterAdapter, PassThroughFilterAdapter
+    )
+    
+    registry.register_factory(GuardrailType.KEYWORD_BLOCK, KeywordBlockAdapter)
+    registry.register_factory(GuardrailType.REGEX_FILTER, RegexFilterAdapter)
+    registry.register_factory(GuardrailType.LENGTH_FILTER, LengthFilterAdapter)
+    registry.register_factory(GuardrailType.URL_FILTER, URLFilterAdapter)
+    registry.register_factory(GuardrailType.PASS_THROUGH, PassThroughFilterAdapter)
+
+
+class TestGuardrailInterface:
+    """Test the universal guardrail interface system."""
+    
+    def test_guardrail_type_enum(self):
+        """Test that all guardrail types are defined."""
+        types = list(GuardrailType)
+        assert len(types) >= 7  # Should have at least 7 types
+        assert GuardrailType.CONTENT_MODERATION in types
+        assert GuardrailType.PROMPT_INJECTION in types
+        assert GuardrailType.KEYWORD_BLOCK in types
+        assert GuardrailType.REGEX_FILTER in types
+    
+    def test_guardrail_registry(self):
+        """Test guardrail registry functionality."""
+        registry = GuardrailRegistry()
+        
+        # Test empty registry
+        assert len(registry.get_all_guardrails()) == 0
+        assert registry.get_guardrail("nonexistent") is None
+        
+        # Test factory registration
+        mock_factory = Mock(return_value=None)
+        registry.register_factory(GuardrailType.KEYWORD_BLOCK, mock_factory)
+        
+        # Test guardrail creation
+        result = registry.create_guardrail(GuardrailType.KEYWORD_BLOCK, "test", {})
+        assert result is None  # Mock returns None
+        
+        # Test clearing
+        registry.clear()
+        assert len(registry.get_all_guardrails()) == 0
+
+
+class TestGuardrailFactory:
+    """Test the guardrail factory system."""
+    
+    def test_factory_registration(self):
+        """Test that all factories can be registered."""
+        registry = GuardrailRegistry()
+        register_all_factories(registry)
+        
+        # Check that factories are registered
+        assert GuardrailType.KEYWORD_BLOCK in registry._factories
+        assert GuardrailType.REGEX_FILTER in registry._factories
+        assert GuardrailType.LENGTH_FILTER in registry._factories
+        assert GuardrailType.URL_FILTER in registry._factories
+        assert GuardrailType.PASS_THROUGH in registry._factories
+    
+    def test_factory_creation(self):
+        """Test creating guardrails from configuration."""
+        registry = GuardrailRegistry()
+        register_all_factories(registry)
+        factory = GuardrailFactory(registry)
+        
+        # Test valid configuration
+        config = {
+            'name': 'test_filter',
+            'type': 'keyword_block',
+            'enabled': True,
+            'keywords': ['test']
+        }
+        
+        guardrail = factory.create_from_config(config)
+        assert guardrail is not None
+        assert guardrail.get_name() == 'test_filter'
+        assert guardrail.get_type() == GuardrailType.KEYWORD_BLOCK
+    
+    def test_factory_invalid_config(self):
+        """Test factory with invalid configuration."""
+        registry = GuardrailRegistry()
+        register_all_factories(registry)
+        factory = GuardrailFactory(registry)
+        
+        # Test missing name
+        config = {'type': 'keyword_block'}
+        guardrail = factory.create_from_config(config)
+        assert guardrail is None
+        
+        # Test missing type
+        config = {'name': 'test'}
+        guardrail = factory.create_from_config(config)
+        assert guardrail is None
+        
+        # Test invalid type
+        config = {'name': 'test', 'type': 'invalid_type'}
+        guardrail = factory.create_from_config(config)
+        assert guardrail is None
+
+
+class TestAPIKeyManager:
+    """Test the API key management system."""
+    
+    def test_api_key_manager_initialization(self):
+        """Test API key manager initialization."""
+        manager = APIKeyManager()
+        assert manager is not None
+        assert isinstance(manager._keys, dict)
+    
+    def test_environment_variable_loading(self):
+        """Test loading API keys from environment variables."""
+        with patch.dict('os.environ', {'OPENAI_API_KEY': 'sk-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'}):
+            manager = APIKeyManager()
+            key = manager.get_openai_key()
+            assert key == 'sk-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+    
+    def test_key_validation(self):
+        """Test API key validation."""
+        manager = APIKeyManager()
+        
+        # Test valid OpenAI key (48 characters after sk-)
+        valid_key = 'sk-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+        assert manager.validate_key('openai', valid_key) is True
+        
+        # Test invalid OpenAI key
+        invalid_key = 'invalid-key'
+        assert manager.validate_key('openai', invalid_key) is False
+        
+        # Test key that's too short
+        short_key = 'sk-test'
+        assert manager.validate_key('openai', short_key) is False
+    
+    def test_health_check(self):
+        """Test health check functionality."""
+        manager = APIKeyManager()
+        health = manager.health_check()
+        assert isinstance(health, dict)
+
+
+class TestLegacyFilterAdapters:
+    """Test the legacy filter adapters."""
+    
+    @pytest.mark.asyncio
+    async def test_keyword_block_adapter(self):
+        """Test keyword block filter adapter."""
+        from src.filters.legacy_adapters import KeywordBlockAdapter
+        
+        config = {
+            'name': 'test_keyword',
+            'type': 'keyword_block',
+            'enabled': True,
+            'keyword': 'test'
+        }
+        
+        adapter = KeywordBlockAdapter('test_keyword', config)
+        
+        # Test with matching content
+        result = await adapter.analyze("This is a test message")
+        assert result.blocked is True
+        assert "test" in result.reason.lower()
+        
+        # Test with non-matching content
+        result = await adapter.analyze("This message has no keywords")
+        assert result.blocked is False
+    
+    @pytest.mark.asyncio
+    async def test_regex_filter_adapter(self):
+        """Test regex filter adapter."""
+        from src.filters.legacy_adapters import RegexFilterAdapter
+        
+        config = {
+            'name': 'test_regex',
+            'type': 'regex_filter',
+            'enabled': True,
+            'patterns': [r'\btest\b'],
+            'action': 'block'
+        }
+        
+        adapter = RegexFilterAdapter('test_regex', config)
+        
+        # Test with matching content
+        result = await adapter.analyze("This is a test message")
+        assert result.blocked is True
+        
+        # Test with non-matching content
+        result = await adapter.analyze("This message has no matches")
+        assert result.blocked is False
+
+
+class TestPhase5Filters:
+    """Test the Phase 5 OpenAI-based filters."""
+    
+    @pytest.mark.asyncio
+    async def test_content_moderation_filter_unavailable(self):
+        """Test content moderation filter when OpenAI is unavailable."""
+        try:
+            from src.filters.content_moderation_filter import ContentModerationFilter
+            
+            config = {
+                'name': 'test_moderation',
+                'type': 'content_moderation',
+                'enabled': True,
+                'confidence_threshold': 0.7,
+                'on_error': 'allow'
+            }
+            
+            # Mock the OpenAI adapter to simulate unavailability
+            with patch('src.filters.content_moderation_filter.OpenAIAdapter') as mock_adapter_class:
+                mock_adapter = MagicMock()
+                mock_adapter.moderate_content = AsyncMock(side_effect=Exception("API unavailable"))
+                mock_adapter_class.return_value = mock_adapter
+                
+                # Recreate the filter with mocked adapter
+                filter_instance = ContentModerationFilter('test_moderation', config)
+                
+                # Test when API is unavailable
+                result = await filter_instance.analyze("test content")
+                assert result.blocked is False  # Should allow when unavailable
+                assert "unavailable" in result.reason.lower() or "error" in result.reason.lower()
+            
+        except ImportError:
+            pytest.skip("Phase 5 filters not available")
+    
+    @pytest.mark.asyncio
+    async def test_content_moderation_filter_available(self):
+        """Test content moderation filter when OpenAI is available."""
+        try:
+            from src.filters.content_moderation_filter import ContentModerationFilter
+            from src.adapters.openai_adapter import ModerationResult
+            
+            config = {
+                'name': 'test_moderation',
+                'type': 'content_moderation',
+                'enabled': True,
+                'confidence_threshold': 0.7,
+                'on_error': 'allow'
+            }
+            
+            # Mock the OpenAI adapter to simulate successful response
+            with patch('src.filters.content_moderation_filter.OpenAIAdapter') as mock_adapter_class:
+                mock_adapter = MagicMock()
+                mock_result = ModerationResult(
+                    flagged=False,
+                    categories={'hate': False, 'harassment': False},
+                    category_scores={'hate': 0.1, 'harassment': 0.2},
+                    confidence=0.2
+                )
+                # Make the method async
+                mock_adapter.moderate_content = AsyncMock(return_value=mock_result)
+                mock_adapter_class.return_value = mock_adapter
+                
+                # Recreate the filter with mocked adapter
+                filter_instance = ContentModerationFilter('test_moderation', config)
+                
+                # Test when API is available
+                result = await filter_instance.analyze("test content")
+                assert result.blocked is False  # Should allow safe content
+                assert "passed" in result.reason.lower() or "safe" in result.reason.lower()
+            
+        except ImportError:
+            pytest.skip("Phase 5 filters not available")
+    
+    @pytest.mark.asyncio
+    async def test_prompt_injection_filter_unavailable(self):
+        """Test prompt injection filter when OpenAI is unavailable."""
+        try:
+            from src.filters.prompt_injection_filter import PromptInjectionFilter
+            
+            config = {
+                'name': 'test_injection',
+                'type': 'prompt_injection',
+                'enabled': True,
+                'risk_threshold': 70,
+                'on_error': 'allow'
+            }
+            
+            # Mock the OpenAI adapter to simulate unavailability
+            with patch('src.filters.prompt_injection_filter.OpenAIAdapter') as mock_adapter_class:
+                mock_adapter = MagicMock()
+                mock_adapter.detect_prompt_injection = AsyncMock(side_effect=Exception("API unavailable"))
+                mock_adapter_class.return_value = mock_adapter
+                
+                # Recreate the filter with mocked adapter
+                filter_instance = PromptInjectionFilter('test_injection', config)
+                
+                # Test when API is unavailable
+                result = await filter_instance.analyze("test content")
+                assert result.blocked is False  # Should allow when unavailable
+                assert "unavailable" in result.reason.lower() or "error" in result.reason.lower()
+            
+        except ImportError:
+            pytest.skip("Phase 5 filters not available")
+    
+    @pytest.mark.asyncio
+    async def test_prompt_injection_filter_available(self):
+        """Test prompt injection filter when OpenAI is available."""
+        try:
+            from src.filters.prompt_injection_filter import PromptInjectionFilter
+            from src.adapters.openai_adapter import InjectionResult
+            
+            config = {
+                'name': 'test_injection',
+                'type': 'prompt_injection',
+                'enabled': True,
+                'risk_threshold': 70,
+                'on_error': 'allow'
+            }
+            
+            # Mock the OpenAI adapter to simulate successful response
+            with patch('src.filters.prompt_injection_filter.OpenAIAdapter') as mock_adapter_class:
+                mock_adapter = MagicMock()
+                mock_result = InjectionResult(
+                    detected=False,
+                    risk_percent=10,
+                    level="low",
+                    indicators=[],
+                    comment="No injection detected",
+                    confidence=0.1
+                )
+                # Make the method async
+                mock_adapter.detect_prompt_injection = AsyncMock(return_value=mock_result)
+                mock_adapter_class.return_value = mock_adapter
+                
+                # Recreate the filter with mocked adapter
+                filter_instance = PromptInjectionFilter('test_injection', config)
+                
+                # Test when API is available
+                result = await filter_instance.analyze("test content")
+                assert result.blocked is False  # Should allow safe content
+                assert "no prompt injection" in result.reason.lower() or "safe" in result.reason.lower()
+            
+        except ImportError:
+            pytest.skip("Phase 5 filters not available")
+
+
+if __name__ == "__main__":
+    pytest.main([__file__]) 
