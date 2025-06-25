@@ -35,7 +35,7 @@ def get_scenario_description(scenario_name):
             return "No description available"
     return "No description available"
 
-async def run_scenario(scenario_name, quiet=False, transcript=False, debug=False, config=None, test_data=None, hot_reload=False):
+async def run_scenario(scenario_name, quiet=False, transcript=False, debug=False, config=None, test_data=None):
     """Run a specific test scenario, optionally with custom config/test data."""
     scenario_dir = Path(__file__).parent / 'tests' / 'scenarios' / scenario_name
     test_runner = scenario_dir / 'test_runner.py'
@@ -49,16 +49,12 @@ async def run_scenario(scenario_name, quiet=False, transcript=False, debug=False
         cmd.append('--transcript')
     if debug:
         cmd.append('--debug')
-    if hot_reload:
-        cmd.append('--hot-reload')
     # Pass custom config/test data as env vars if provided
     env = os.environ.copy()
     if config:
         env['STINGER_CONFIG'] = config
     if test_data:
         env['STINGER_TEST_DATA'] = test_data
-    if hot_reload:
-        env['STINGER_HOT_RELOAD'] = '1'
     try:
         result = subprocess.run(cmd, env=env, capture_output=False, text=True)
         return result.returncode == 0
@@ -90,7 +86,6 @@ Examples:
     parser.add_argument('--list', action='store_true', help='List available scenarios and exit')
     parser.add_argument('--config', type=str, help='Custom config YAML file (overrides scenario default)')
     parser.add_argument('--test-data', type=str, help='Custom test data file (overrides scenario default)')
-    parser.add_argument('--hot-reload', action='store_true', help='Enable hot reload mode for config changes (experimental)')
     args = parser.parse_args()
     if args.list:
         print("Available test scenarios:")
@@ -120,8 +115,7 @@ Examples:
                 transcript=args.transcript,
                 debug=args.debug,
                 config=args.config,
-                test_data=args.test_data,
-                hot_reload=args.hot_reload
+                test_data=args.test_data
             )
             results[scenario] = success
             if success:

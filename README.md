@@ -307,18 +307,4 @@ This is an early-stage project. Contributions are welcome!
 
 ## License
 
-MIT License - see [LICENSE](LICENSE) file for details.
-
-## Hot Reload (Experimental)
-
-You can enable hot reload mode to automatically reload the config file while a scenario is running. This is useful for rapid iteration and long-running processes.
-
-- Enable with the `--hot-reload` flag:
-  ```bash
-  python3 stinger.py --scenario customer_service --hot-reload --debug
-  ```
-- The pipeline will detect changes to the config file and reload the filter pipeline on the fly.
-- Works with any scenario and custom config file.
-- You can also set the environment variable `STINGER_HOT_RELOAD=1` to enable hot reload in any runner.
-
-**Note:** This feature is experimental and best used for development and testing. 
+MIT License - see [LICENSE](LICENSE) file for details. 

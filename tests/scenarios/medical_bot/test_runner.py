@@ -12,20 +12,19 @@ import argparse
 import sys
 import os
 
-# Add the shared directory to the path
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'shared'))
+# Ensure src and tests are in sys.path for absolute imports
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
+SRC_PATH = os.path.join(PROJECT_ROOT, 'src')
+TESTS_PATH = os.path.join(PROJECT_ROOT, 'tests')
+if SRC_PATH not in sys.path:
+    sys.path.insert(0, SRC_PATH)
+if TESTS_PATH not in sys.path:
+    sys.path.insert(0, TESTS_PATH)
 
-# Add src to path for hot reload
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', '..', 'src'))
-from core.pipeline import HotReloadPipeline
-
-from base_runner import BaseConversationSimulator, load_jsonl
-
-def use_hot_reload():
-    return (
-        '--hot-reload' in sys.argv or
-        os.environ.get('STINGER_HOT_RELOAD') == '1'
-    )
+try:
+    from tests.shared.base_runner import BaseConversationSimulator, load_jsonl
+except ImportError:
+    from shared.base_runner import BaseConversationSimulator, load_jsonl
 
 async def run_medical_bot_test(show_conversation: bool = True, show_transcript: bool = False, debug: bool = False):
     """Run the medical bot integration test."""
@@ -45,13 +44,7 @@ async def run_medical_bot_test(show_conversation: bool = True, show_transcript: 
     )
     test_cases = load_jsonl(test_data_path)
     
-    # Use hot reload pipeline if enabled
-    if use_hot_reload():
-        print("[HotReload] Using HotReloadPipeline for config changes.")
-        pipeline = HotReloadPipeline(config_path, debug=debug)
-        simulator = BaseConversationSimulator(config_path, debug=debug, pipeline_override=pipeline)
-    else:
-        simulator = BaseConversationSimulator(config_path, debug=debug)
+    simulator = BaseConversationSimulator(config_path, debug=debug)
     
     if not test_cases:
         print("❌ No test cases found!")

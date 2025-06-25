@@ -70,6 +70,11 @@
 - Support backward compatibility when possible
 - Document all configuration options
 
+### 11. Issue Management
+- Use GitHub CLI (`gh issue create`, `gh issue list`, etc.) to manage issues directly from terminal
+- Avoid copy/paste by using `--body-file` flag for issue content
+- Example: `gh issue create --title "Title" --body-file issue.md`
+
 ## Code Review Checklist
 
 Before submitting any changes:
