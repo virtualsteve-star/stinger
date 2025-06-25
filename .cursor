@@ -94,19 +94,30 @@ Before submitting any changes:
 
 # Cursor configuration for Stinger project
 
-# IMPORTANT: Always use "gpt-4o-mini" as the base model for AI filters, NOT "gpt-4.1-nano"
-# This has been discussed and agreed upon - gpt-4o-mini is the correct model name
+# IMPORTANT: Always use "gpt-4.1-nano" as the base model for AI filters, NOT "gpt-4o-mini"
+# This has been discussed and agreed upon - gpt-4.1-nano is the correct model name
 # Use this consistently across all AI-based filters and adapters
 
 # Project-specific settings
 {
   "projectName": "Stinger",
-  "defaultModel": "gpt-4o-mini",
+  "defaultModel": "gpt-4.1-nano",
   "aiFilters": {
-    "contentModeration": "gpt-4o-mini",
-    "promptInjection": "gpt-4o-mini", 
-    "piiDetection": "gpt-4o-mini",
-    "toxicityDetection": "gpt-4o-mini",
-    "codeGeneration": "gpt-4o-mini"
+    "contentModeration": "gpt-4.1-nano",
+    "promptInjection": "gpt-4.1-nano", 
+    "piiDetection": "gpt-4.1-nano",
+    "toxicityDetection": "gpt-4.1-nano",
+    "codeGeneration": "gpt-4.1-nano"
   }
-} 
+}
+
+# ---
+# NOTES ON GITHUB ISSUE HANDLING (for future reference)
+#
+# - Preferred: Use GitHub CLI (gh issue list, gh issue close) for listing and closing issues.
+#   - If CLI output is broken, try using the GitHub API with curl for listing issues:
+#     curl -s "https://api.github.com/repos/virtualsteve-star/stinger/issues?state=open" | jq '.[] | {number, title, state}'
+#   - To close issues via API, use a PATCH request with a personal access token.
+# - If all else fails, review and close issues manually via the GitHub web interface.
+# - Always add a relevant comment when closing issues, referencing code, tests, or documentation as appropriate.
+# - Document any changes to issue handling in this section for future maintainers. 

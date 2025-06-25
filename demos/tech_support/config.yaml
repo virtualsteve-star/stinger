@@ -1,0 +1,28 @@
+version: "1.0"
+pipeline:
+  input:
+    - name: "toxicity_check"
+      type: "simple_toxicity_detection"
+      enabled: true
+      on_error: "block"
+    - name: "pii_check"
+      type: "simple_pii_detection"
+      enabled: true
+      on_error: "block"
+    - name: "code_generation_check"
+      type: "simple_code_generation"
+      enabled: true
+      on_error: "block"
+  output:
+    - name: "toxicity_check"
+      type: "simple_toxicity_detection"
+      enabled: true
+      on_error: "block"
+    - name: "pii_check"
+      type: "simple_pii_detection"
+      enabled: true
+      on_error: "block"
+    - name: "code_generation_check"
+      type: "simple_code_generation"
+      enabled: true
+      on_error: "block" 

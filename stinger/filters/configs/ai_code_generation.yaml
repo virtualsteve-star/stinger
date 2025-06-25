@@ -1,0 +1,18 @@
+# Phase 5a: AI-Based Code Generation Filter Configuration
+# This configuration uses OpenAI for high-accuracy code generation detection with fallback to regex
+
+filters:
+  - name: "ai_code_generation"
+    type: "ai_code_generation"
+    enabled: true
+    api_key: "${OPENAI_API_KEY}"
+    confidence_threshold: 0.6
+    on_error: "warn"
+
+# Configuration Options:
+# - api_key: OpenAI API key (can use environment variable ${OPENAI_API_KEY})
+# - confidence_threshold: Minimum confidence to block content (0.0 to 1.0)
+# - on_error: Action when AI fails (block, allow, warn) - defaults to warn with regex fallback
+# 
+# Note: This filter automatically falls back to simple regex detection if AI is unavailable
+# Model is automatically configured from src/core/configs/models.yaml (uses gpt-4.1-nano) 
