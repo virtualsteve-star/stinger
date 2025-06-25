@@ -20,6 +20,9 @@ class GuardrailType(Enum):
     LENGTH_FILTER = "length_filter"
     URL_FILTER = "url_filter"
     PASS_THROUGH = "pass_through"
+    PII_DETECTION = "pii_detection"
+    TOXICITY_DETECTION = "toxicity_detection"
+    CODE_GENERATION = "code_generation"
 
 
 @dataclass

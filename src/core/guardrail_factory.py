@@ -19,14 +19,16 @@ from ..filters.legacy_adapters import (
 )
 
 # Import new Phase 5 filters
-try:
-    from ..filters.content_moderation_filter import ContentModerationFilter
-    from ..filters.prompt_injection_filter import PromptInjectionFilter
-    PHASE5_AVAILABLE = True
-except ImportError:
-    PHASE5_AVAILABLE = False
-    ContentModerationFilter = None
-    PromptInjectionFilter = None
+from ..filters.content_moderation_filter import ContentModerationFilter
+from ..filters.prompt_injection_filter import PromptInjectionFilter
+
+# Import Phase 5a filters
+from ..filters.simple_pii_detection_filter import SimplePIIDetectionFilter
+from ..filters.ai_pii_detection_filter import AIPIIDetectionFilter
+from ..filters.simple_toxicity_detection_filter import SimpleToxicityDetectionFilter
+from ..filters.ai_toxicity_detection_filter import AIToxicityDetectionFilter
+from ..filters.simple_code_generation_filter import SimpleCodeGenerationFilter
+from ..filters.ai_code_generation_filter import AICodeGenerationFilter
 
 logger = logging.getLogger(__name__)
 
@@ -78,10 +80,6 @@ def create_pass_through_filter(name: str, config: Dict[str, Any]) -> Optional[Gu
 
 def create_content_moderation_filter(name: str, config: Dict[str, Any]) -> Optional[GuardrailInterface]:
     """Create a content moderation filter."""
-    if not PHASE5_AVAILABLE or ContentModerationFilter is None:
-        logger.warning("Content moderation filter not available (Phase 5 not installed)")
-        return None
-    
     try:
         return ContentModerationFilter(name, config)
     except Exception as e:
@@ -91,10 +89,6 @@ def create_content_moderation_filter(name: str, config: Dict[str, Any]) -> Optio
 
 def create_prompt_injection_filter(name: str, config: Dict[str, Any]) -> Optional[GuardrailInterface]:
     """Create a prompt injection detection filter."""
-    if not PHASE5_AVAILABLE or PromptInjectionFilter is None:
-        logger.warning("Prompt injection filter not available (Phase 5 not installed)")
-        return None
-    
     try:
         return PromptInjectionFilter(name, config)
     except Exception as e:
@@ -102,22 +96,74 @@ def create_prompt_injection_filter(name: str, config: Dict[str, Any]) -> Optiona
         return None
 
 
+def create_simple_pii_detection_filter(name: str, config: Dict[str, Any]) -> Optional[GuardrailInterface]:
+    """Create a simple PII detection filter."""
+    try:
+        return SimplePIIDetectionFilter(name, config)
+    except Exception as e:
+        logger.error(f"Failed to create simple PII detection filter '{name}': {e}")
+        return None
+
+
+def create_ai_pii_detection_filter(name: str, config: Dict[str, Any]) -> Optional[GuardrailInterface]:
+    """Create an AI-based PII detection filter."""
+    try:
+        return AIPIIDetectionFilter(name, config)
+    except Exception as e:
+        logger.error(f"Failed to create AI PII detection filter '{name}': {e}")
+        return None
+
+
+def create_simple_toxicity_detection_filter(name: str, config: Dict[str, Any]) -> Optional[GuardrailInterface]:
+    """Create a simple toxicity detection filter."""
+    try:
+        return SimpleToxicityDetectionFilter(name, config)
+    except Exception as e:
+        logger.error(f"Failed to create simple toxicity detection filter '{name}': {e}")
+        return None
+
+
+def create_ai_toxicity_detection_filter(name: str, config: Dict[str, Any]) -> Optional[GuardrailInterface]:
+    """Create an AI-based toxicity detection filter."""
+    try:
+        return AIToxicityDetectionFilter(name, config)
+    except Exception as e:
+        logger.error(f"Failed to create AI toxicity detection filter '{name}': {e}")
+        return None
+
+
+def create_simple_code_generation_filter(name: str, config: Dict[str, Any]) -> Optional[GuardrailInterface]:
+    """Create a simple code generation detection filter."""
+    try:
+        return SimpleCodeGenerationFilter(name, config)
+    except Exception as e:
+        logger.error(f"Failed to create simple code generation filter '{name}': {e}")
+        return None
+
+
+def create_ai_code_generation_filter(name: str, config: Dict[str, Any]) -> Optional[GuardrailInterface]:
+    """Create an AI-based code generation detection filter."""
+    try:
+        return AICodeGenerationFilter(name, config)
+    except Exception as e:
+        logger.error(f"Failed to create AI code generation filter '{name}': {e}")
+        return None
+
+
 def register_all_factories(registry: GuardrailRegistry) -> None:
     """Register all guardrail factories with the registry."""
-    # Register existing filters
+    # Register all filters unconditionally
     registry.register_factory(GuardrailType.KEYWORD_BLOCK, create_keyword_block_filter)
     registry.register_factory(GuardrailType.REGEX_FILTER, create_regex_filter)
     registry.register_factory(GuardrailType.LENGTH_FILTER, create_length_filter)
     registry.register_factory(GuardrailType.URL_FILTER, create_url_filter)
     registry.register_factory(GuardrailType.PASS_THROUGH, create_pass_through_filter)
-    
-    # Register Phase 5 filters if available
-    if PHASE5_AVAILABLE:
-        registry.register_factory(GuardrailType.CONTENT_MODERATION, create_content_moderation_filter)
-        registry.register_factory(GuardrailType.PROMPT_INJECTION, create_prompt_injection_filter)
-        logger.info("Registered Phase 5 guardrail factories")
-    else:
-        logger.info("Phase 5 guardrails not available - skipping registration")
+    registry.register_factory(GuardrailType.CONTENT_MODERATION, create_content_moderation_filter)
+    registry.register_factory(GuardrailType.PROMPT_INJECTION, create_prompt_injection_filter)
+    registry.register_factory(GuardrailType.PII_DETECTION, create_simple_pii_detection_filter)  # Default to simple
+    registry.register_factory(GuardrailType.TOXICITY_DETECTION, create_simple_toxicity_detection_filter)  # Default to simple
+    registry.register_factory(GuardrailType.CODE_GENERATION, create_simple_code_generation_filter)  # Default to simple
+    logger.info("Registered all guardrail factories")
 
 
 def create_guardrail_from_config(config: Dict[str, Any], registry: GuardrailRegistry) -> Optional[GuardrailInterface]:

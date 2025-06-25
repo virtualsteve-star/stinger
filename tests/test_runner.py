@@ -30,7 +30,7 @@ async def run_smoke_test():
     
     # Load configuration
     config_loader = ConfigLoader()
-    config = config_loader.load('configs/minimal.yaml')
+    config = config_loader.load('tests/configs/minimal.yaml')
     print("✅ Configuration loaded")
     
     # Create filters from config

@@ -63,7 +63,7 @@ python3 stinger.py --scenario customer_service --transcript
 python3 stinger.py --list
 
 # Run with a custom config or test data file
-python3 stinger.py --scenario customer_service --config configs/customer_service.yaml --test-data tests/scenarios/customer_service/test_data.jsonl
+python3 stinger.py --scenario customer_service --config src/scenarios/customer_service/config.yaml --test-data tests/scenarios/customer_service/test_data.jsonl
 ```
 
 ### Environment Variable Overrides
@@ -108,11 +108,18 @@ stinger/
 │   │   └── run_all_tests.py # Master test runner
 │   ├── test_simple.py     # Basic unit tests
 │   └── test_runner.py     # Legacy test runner
-├── configs/               # Configuration files
-│   ├── minimal.yaml       # Minimal test configuration
-│   ├── comprehensive.yaml # Full feature configuration
-│   ├── customer_service.yaml # Customer service moderation
-│   └── medical_bot.yaml   # Medical PII detection
+│   └── configs/           # Test-specific configurations
+├── src/                   # Source code
+│   ├── core/              # Core framework
+│   │   └── configs/       # Production model configurations
+│   ├── filters/           # Filter implementations
+│   │   └── configs/       # Filter example configurations
+│   ├── scenarios/         # Use case scenarios
+│   │   ├── customer_service/
+│   │   └── medical_bot/
+│   └── data/              # Production data files
+│       └── keyword_lists/ # Keyword lists for filters
+├── examples/              # Example configurations
 ├── specs/                 # Project specifications
 └── plans/                 # Implementation plans
 ```

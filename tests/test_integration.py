@@ -217,7 +217,7 @@ async def run_customer_service_test(show_conversation: bool = True):
     print("🤖 CUSTOMER SERVICE BOT INTEGRATION TEST")
     print("=" * 60)
     
-    simulator = ConversationSimulator('configs/customer_service.yaml')
+    simulator = ConversationSimulator('src/scenarios/customer_service/config.yaml')
     test_cases = load_jsonl('tests/test_corpus/customer_service_bot.jsonl')
     
     if not test_cases:
@@ -234,7 +234,7 @@ async def run_medical_bot_test(show_conversation: bool = True):
     print("🏥 MEDICAL BOT INTEGRATION TEST")
     print("=" * 60)
     
-    simulator = ConversationSimulator('configs/medical_bot.yaml')
+    simulator = ConversationSimulator('src/scenarios/medical_bot/config.yaml')
     test_cases = load_jsonl('tests/test_corpus/medical_bot.jsonl')
     
     if not test_cases:
@@ -263,7 +263,7 @@ async def main():
     show_conversation = not args.quiet
     
     if args.test == 'customer' or args.test == 'all':
-        simulator = ConversationSimulator('configs/customer_service.yaml')
+        simulator = ConversationSimulator('src/scenarios/customer_service/config.yaml')
         test_cases = load_jsonl('tests/test_corpus/customer_service_bot.jsonl')
         if args.transcript:
             await simulator.print_transcript(test_cases)
@@ -271,7 +271,7 @@ async def main():
             await run_customer_service_test(show_conversation)
     
     if args.test == 'medical' or args.test == 'all':
-        simulator = ConversationSimulator('configs/medical_bot.yaml')
+        simulator = ConversationSimulator('src/scenarios/medical_bot/config.yaml')
         test_cases = load_jsonl('tests/test_corpus/medical_bot.jsonl')
         if args.transcript:
             await simulator.print_transcript(test_cases)

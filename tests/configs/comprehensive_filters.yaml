@@ -1,0 +1,55 @@
+# Phase 5a: Comprehensive Filter Configuration
+# This configuration combines simple and AI-based filters for maximum coverage and reliability
+
+filters:
+  # Simple filters for speed and reliability (first line of defense)
+  - name: "simple_pii_detection"
+    type: "pii_detection"
+    enabled: true
+    patterns: ["ssn", "credit_card", "email", "phone", "ip_address"]
+    confidence_threshold: 0.8
+    on_error: "block"
+  
+  - name: "simple_toxicity_detection"
+    type: "toxicity_detection"
+    enabled: true
+    categories: ["hate_speech", "harassment", "threats", "sexual_harassment", "violence"]
+    confidence_threshold: 0.7
+    on_error: "block"
+  
+  - name: "simple_code_generation"
+    type: "code_generation"
+    enabled: true
+    categories: ["code_blocks", "code_injection", "file_operations"]
+    confidence_threshold: 0.6
+    min_keywords: 3
+    on_error: "warn"
+  
+  # AI-based filters for higher accuracy (second line of defense)
+  - name: "ai_pii_detection"
+    type: "ai_pii_detection"
+    enabled: true
+    api_key: "${OPENAI_API_KEY}"
+    confidence_threshold: 0.8
+    on_error: "allow"
+  
+  - name: "ai_toxicity_detection"
+    type: "ai_toxicity_detection"
+    enabled: true
+    api_key: "${OPENAI_API_KEY}"
+    confidence_threshold: 0.7
+    on_error: "allow"
+  
+  - name: "ai_code_generation"
+    type: "ai_code_generation"
+    enabled: true
+    api_key: "${OPENAI_API_KEY}"
+    confidence_threshold: 0.6
+    on_error: "warn"
+
+# Configuration Strategy:
+# 1. Simple filters run first for speed and reliability
+# 2. AI filters run second for higher accuracy and context understanding
+# 3. AI filters automatically fallback to simple detection if unavailable
+# 4. Different error handling policies for different filter types
+# 5. All AI filters use centralized model configuration (gpt-4.1-nano) 
