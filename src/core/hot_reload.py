@@ -32,9 +32,12 @@ class ConfigFileHandler(FileSystemEventHandler):
         if Path(str(event.src_path)) != self.config_path:
             return
             
+        print(f"[HotReload] File event detected: {event.src_path}")
+        
         # Debounce rapid file changes
         current_time = time.time()
         if current_time - self.last_modified < self.debounce_time:
+            print(f"[HotReload] Debouncing rapid change (last: {self.last_modified}, current: {current_time})")
             return
             
         self.last_modified = current_time
@@ -64,6 +67,7 @@ class HotReloadManager:
         self.backup_config: Optional[Dict[str, Any]] = None
         self.is_watching = False
         self.reload_count = 0
+        self._watched_directories = set()  # Track watched directories
         
     def start_watching(self, config_path: str, initial_config: Dict[str, Any], 
                       reload_callback: Callable[[Dict[str, Any]], None]) -> bool:
@@ -82,8 +86,14 @@ class HotReloadManager:
             handler = ConfigFileHandler(config_path, reload_callback)
             self.handlers.append(handler)
             
-            # Start watching the file
-            self.observer.schedule(handler, str(config_path_obj.parent), recursive=False)
+            # Get the directory to watch
+            watch_directory = str(config_path_obj.parent)
+            
+            # Only schedule the directory if we haven't watched it before
+            if watch_directory not in self._watched_directories:
+                self.observer.schedule(handler, watch_directory, recursive=False)
+                self._watched_directories.add(watch_directory)
+                print(f"[HotReload] Scheduled watch for directory: {watch_directory}")
             
             if not self.is_watching:
                 self.observer.start()

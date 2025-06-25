@@ -309,16 +309,42 @@ This is an early-stage project. Contributions are welcome!
 
 MIT License - see [LICENSE](LICENSE) file for details.
 
-## Hot Reload (Experimental)
+## 🔄 Hot Reload (Phase 4b)
 
-You can enable hot reload mode to automatically reload the config file while a scenario is running. This is useful for rapid iteration and long-running processes.
+### Enabling Hot Reload
+- Use the `--hot-reload` flag with the CLI:
+  ```bash
+  python3 stinger.py --scenario customer_service --hot-reload
+  ```
+- You can also set the environment variable `STINGER_HOT_RELOAD=1`.
+- Hot reload watches your config file for changes and reloads it live (in dev/local environments).
 
-- Enable with the `--hot-reload` flag:
+### Status & Debug Output
+- Use `--debug` for detailed output:
   ```bash
   python3 stinger.py --scenario customer_service --hot-reload --debug
   ```
-- The pipeline will detect changes to the config file and reload the filter pipeline on the fly.
-- Works with any scenario and custom config file.
-- You can also set the environment variable `STINGER_HOT_RELOAD=1` to enable hot reload in any runner.
+- Status (reload count, current/backup config, etc.) is printed in debug output and available via the API.
 
-**Note:** This feature is experimental and best used for development and testing. 
+### Known Limitations
+- File system event tests (integration/system) may be flaky in CI or some environments.
+- To skip these in CI, use:
+  ```bash
+  pytest -m "not integration"
+  ```
+
+### Example Workflow
+1. Start a scenario with hot reload:
+   ```bash
+   python3 stinger.py --scenario customer_service --hot-reload --debug
+   ```
+2. Edit and save your config file (e.g., `configs/customer_service.yaml`).
+3. The system will reload and validate the config live. If invalid, it rolls back to the last good config.
+
+### Troubleshooting
+- If you see import errors, ensure you are running from the project root and that `src` and `tests` have `__init__.py` files.
+- If hot reload does not trigger, try running the integration tests locally:
+  ```bash
+  pytest tests/test_hot_reload_integration.py -v -m integration
+  ```
+- For more details, see `demo_hot_reload.py` for a programmatic demonstration. 
