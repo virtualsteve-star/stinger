@@ -26,12 +26,6 @@ try:
 except ImportError:
     from shared.base_runner import BaseConversationSimulator, load_jsonl
 
-def use_hot_reload():
-    return (
-        '--hot-reload' in sys.argv or
-        os.environ.get('STINGER_HOT_RELOAD') == '1'
-    )
-
 async def run_customer_service_test(show_conversation: bool = True, show_transcript: bool = False, debug: bool = False):
     """Run the customer service bot integration test."""
     print("🤖 CUSTOMER SERVICE BOT INTEGRATION TEST")
@@ -50,15 +44,7 @@ async def run_customer_service_test(show_conversation: bool = True, show_transcr
     )
     test_cases = load_jsonl(test_data_path)
     
-    # Use hot reload pipeline if enabled
-    if use_hot_reload():
-        print("[HotReload] Using HotReloadPipeline for config changes.")
-        # Note: HotReloadPipeline is not yet integrated with BaseConversationSimulator
-        # For now, we'll use the standard pipeline but show hot reload is enabled
-        print("[HotReload] Hot reload enabled - config changes will be detected")
-        simulator = BaseConversationSimulator(config_path, debug=debug)
-    else:
-        simulator = BaseConversationSimulator(config_path, debug=debug)
+    simulator = BaseConversationSimulator(config_path, debug=debug)
     
     if not test_cases:
         print("❌ No test cases found!")
@@ -93,7 +79,6 @@ Examples:
                        help='Show conversation transcript with inline moderation tags')
     parser.add_argument('--debug', action='store_true',
                        help='Show detailed filter debug output')
-    parser.add_argument('--hot-reload', action='store_true', help='Enable hot reload mode for config changes (no-op in runner)')
     
     args = parser.parse_args()
     

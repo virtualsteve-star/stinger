@@ -21,14 +21,10 @@ if SRC_PATH not in sys.path:
 if TESTS_PATH not in sys.path:
     sys.path.insert(0, TESTS_PATH)
 
-from src.core.pipeline import HotReloadPipeline
-from tests.shared.base_runner import BaseConversationSimulator, load_jsonl
-
-def use_hot_reload():
-    return (
-        '--hot-reload' in sys.argv or
-        os.environ.get('STINGER_HOT_RELOAD') == '1'
-    )
+try:
+    from tests.shared.base_runner import BaseConversationSimulator, load_jsonl
+except ImportError:
+    from shared.base_runner import BaseConversationSimulator, load_jsonl
 
 async def run_medical_bot_test(show_conversation: bool = True, show_transcript: bool = False, debug: bool = False):
     """Run the medical bot integration test."""
@@ -48,13 +44,7 @@ async def run_medical_bot_test(show_conversation: bool = True, show_transcript: 
     )
     test_cases = load_jsonl(test_data_path)
     
-    # Use hot reload pipeline if enabled
-    if use_hot_reload():
-        print("[HotReload] Using HotReloadPipeline for config changes.")
-        print("[HotReload] Hot reload enabled - config changes will be detected")
-        simulator = BaseConversationSimulator(config_path, debug=debug)
-    else:
-        simulator = BaseConversationSimulator(config_path, debug=debug)
+    simulator = BaseConversationSimulator(config_path, debug=debug)
     
     if not test_cases:
         print("❌ No test cases found!")
@@ -89,7 +79,6 @@ Examples:
                        help='Show conversation transcript with inline moderation tags')
     parser.add_argument('--debug', action='store_true',
                        help='Show detailed filter debug output')
-    parser.add_argument('--hot-reload', action='store_true', help='Enable hot reload mode for config changes (no-op in runner)')
     
     args = parser.parse_args()
     

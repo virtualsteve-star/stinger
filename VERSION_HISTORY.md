@@ -2,6 +2,85 @@
 
 This document tracks the version history of the Stinger LLM Guardrails Framework.
 
+## Version 0.0.4 - Hot Reload Rollback & Simplification (2024-12-22)
+
+### 🎯 Overview
+Rollback of hot reload functionality to simplify the codebase and improve reliability. Removes complex file system watching and threading dependencies that were causing test failures and maintenance overhead.
+
+**Implementation Plan**: [Phase 4c Hot Reload Rollback Plan](plans/Phase4c_Hot_Reload_Rollback_Plan.md) ✅ COMPLETED
+
+### 🔄 Changes Made
+
+#### Hot Reload Removal
+- **Complete Code Removal**: All hot reload source files deleted
+  - `src/core/hot_reload.py` - Hot reload manager and CLI
+  - `demo_hot_reload.py` - Demonstration script
+- **Test Cleanup**: All hot reload test files removed
+  - `tests/test_hot_reload.py` - Unit tests
+  - `tests/test_hot_reload_integration.py` - Integration tests
+  - `tests/test_hot_reload_manual.py` - Manual tests
+- **Pipeline Simplification**: Removed HotReloadPipeline class from `src/core/pipeline.py`
+- **CLI Cleanup**: Removed `--hot-reload` flag from `stinger.py`
+
+#### Core Functionality Preservation
+- **FilterPipeline**: Basic pipeline functionality remains intact
+- **Configuration Loading**: Standard config loading works perfectly
+- **All Filters**: All filtering logic preserved and functional
+- **Test Scenarios**: Customer service and medical bot scenarios unaffected
+
+#### Documentation Updates
+- **README.md**: Removed hot reload documentation section
+- **VERSION_HISTORY.md**: Documented rollback decision and rationale
+- **Scenario Runners**: Cleaned up hot reload references in test runners
+
+### 🏗️ Architecture Simplification
+- **Removed Complexity**: No more file system watching or threading
+- **Simplified Dependencies**: No watchdog library dependency
+- **Cleaner Codebase**: Focused on core content filtering functionality
+- **Improved Reliability**: No more flaky integration tests
+
+### 📁 Project Structure Changes
+```
+stinger/
+├── src/core/
+│   ├── pipeline.py        # SIMPLIFIED: Removed HotReloadPipeline
+│   └── config.py          # UNCHANGED: Basic config loading
+├── tests/
+│   ├── scenarios/         # UNCHANGED: All scenarios preserved
+│   └── test_*.py          # CLEANED: Hot reload tests removed
+└── stinger.py             # SIMPLIFIED: Removed --hot-reload flag
+```
+
+### 🧪 Test Reliability
+- **Removed Flaky Tests**: No more file system event dependencies
+- **Focused Testing**: Tests now focus on core filtering functionality
+- **Improved CI**: No more observer lifecycle management issues
+- **Cleaner Execution**: Simpler test execution without threading complexity
+
+### 🎯 Rollback Rationale
+Hot reload was intended as a development convenience but became a source of:
+- **Test Failures**: File system watching complexity caused flaky tests
+- **Maintenance Overhead**: Complex observer lifecycle management
+- **Scope Creep**: Feature grew beyond its intended purpose
+- **Reliability Issues**: OS-level file watching inconsistencies
+
+### ✅ Benefits Achieved
+1. **Simplified Architecture**: No complex file watching or threading
+2. **Improved Reliability**: No more flaky integration tests
+3. **Faster Execution**: No observer overhead
+4. **Easier Maintenance**: Less code to maintain and debug
+5. **Clear Focus**: Back to core content filtering functionality
+
+### 🔄 Next Steps
+Ready for Phase 4: External API integration (OpenAI Moderation, etc.)
+
+**Phase 4c Status**: ✅ **COMPLETE**  
+**Implementation Date**: December 2024  
+**Core Functionality**: 100% preserved  
+**Test Reliability**: Significantly improved
+
+---
+
 ## Version 0.0.3 - Comprehensive Integration Testing (2024-12-22)
 
 ### 🎯 Overview
