@@ -120,4 +120,13 @@ Before submitting any changes:
 #   - To close issues via API, use a PATCH request with a personal access token.
 # - If all else fails, review and close issues manually via the GitHub web interface.
 # - Always add a relevant comment when closing issues, referencing code, tests, or documentation as appropriate.
-# - Document any changes to issue handling in this section for future maintainers. 
+# - Document any changes to issue handling in this section for future maintainers.
+
+# .cursor configuration
+# Always use 'virtualsteve-star/stinger' as the GitHub repo for CLI and issue-related actions
+GITHUB_REPO=virtualsteve-star/stinger
+
+# DATE REMINDER
+# ALWAYS use the real current date when documenting completion dates, timestamps, or any time-related information
+# Run 'date' command to get the current date/time before writing dates in documentation
+# Never assume or guess dates - always verify with the system date 
