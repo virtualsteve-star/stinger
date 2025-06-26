@@ -9,11 +9,13 @@ import asyncio
 import logging
 from typing import Dict, Any, List, Optional, Union, TypedDict
 from pathlib import Path
+from datetime import datetime
 
 from .guardrail_interface import GuardrailInterface, GuardrailResult, GuardrailRegistry, GuardrailFactory
 from .config import ConfigLoader
 from .guardrail_interface import GuardrailRegistry, GuardrailFactory, GuardrailInterface
 from .preset_configs import PresetConfigs
+from .conversation import Conversation, Turn
 from ..utils.exceptions import PipelineError, ConfigurationError
 
 logger = logging.getLogger(__name__)
@@ -26,6 +28,7 @@ class PipelineResult(TypedDict):
     reasons: List[str]
     details: Dict[str, Any]
     pipeline_type: str
+    conversation_id: Optional[str]
 
 
 class PipelineStatus(TypedDict):
@@ -45,10 +48,11 @@ class GuardrailPipeline:
     - Run content through input and output guardrails
     - Get clear, actionable results
     - Handle errors gracefully
+    - Support optional conversation context for multi-turn scenarios
     
     Example:
         ```python
-        from stinger import GuardrailPipeline
+        from stinger import GuardrailPipeline, Conversation
         
         # Create pipeline from preset
         pipeline = GuardrailPipeline.from_preset("customer_service")
@@ -56,8 +60,14 @@ class GuardrailPipeline:
         # Or create from config file
         pipeline = GuardrailPipeline("config.yaml")
         
-        # Check input content
+        # Check input content (single-turn)
         result = pipeline.check_input("Hello, world!")
+        if result['blocked']:
+            print(f"Input blocked: {result['reasons']}")
+        
+        # Check input content with conversation context
+        conversation = Conversation("user_123")
+        result = pipeline.check_input("Hello, world!", conversation=conversation)
         if result['blocked']:
             print(f"Input blocked: {result['reasons']}")
         
@@ -214,15 +224,16 @@ class GuardrailPipeline:
         
         return pipeline
     
-    def check_input(self, content: str) -> PipelineResult:
+    def check_input(self, content: str, conversation: Optional[Conversation] = None) -> PipelineResult:
         """
         Check input content through all input guardrails.
         
         Args:
             content: The input content to check
+            conversation: Optional conversation context for multi-turn scenarios
             
         Returns:
-            Dict with 'blocked', 'warnings', 'reasons', and 'details' keys
+            Dict with 'blocked', 'warnings', 'reasons', 'details', and 'conversation_id' keys
             
         Raises:
             ValueError: If content is None or empty
@@ -231,17 +242,40 @@ class GuardrailPipeline:
         if content is None:
             raise ValueError("Content cannot be None")
         
-        return self._run_pipeline(self.input_pipeline, content, "input")
+        # Check conversation rate limits if provided
+        if conversation and conversation.check_rate_limit():
+            return {
+                'blocked': True,
+                'warnings': [],
+                'reasons': [f"Rate limit exceeded for conversation {conversation.conversation_id}"],
+                'details': {'rate_limit': 'exceeded'},
+                'pipeline_type': 'input',
+                'conversation_id': conversation.conversation_id
+            }
+        
+        # Add prompt to conversation if provided
+        if conversation:
+            conversation.add_prompt(content)
+        
+        # Run pipeline and get results
+        result = self._run_pipeline(self.input_pipeline, content, "input", conversation)
+        
+        # Annotate guardrail results into conversation if provided
+        if conversation and conversation.turns:
+            self._annotate_guardrail_results(conversation.turns[-1], result)
+        
+        return result
     
-    def check_output(self, content: str) -> PipelineResult:
+    def check_output(self, content: str, conversation: Optional[Conversation] = None) -> PipelineResult:
         """
         Check output content through all output guardrails.
         
         Args:
             content: The output content to check
+            conversation: Optional conversation context for multi-turn scenarios
             
         Returns:
-            Dict with 'blocked', 'warnings', 'reasons', and 'details' keys
+            Dict with 'blocked', 'warnings', 'reasons', 'details', and 'conversation_id' keys
             
         Raises:
             ValueError: If content is None or empty
@@ -250,9 +284,61 @@ class GuardrailPipeline:
         if content is None:
             raise ValueError("Content cannot be None")
         
-        return self._run_pipeline(self.output_pipeline, content, "output")
+        # Check conversation rate limits if provided
+        if conversation and conversation.check_rate_limit():
+            return {
+                'blocked': True,
+                'warnings': [],
+                'reasons': [f"Rate limit exceeded for conversation {conversation.conversation_id}"],
+                'details': {'rate_limit': 'exceeded'},
+                'pipeline_type': 'output',
+                'conversation_id': conversation.conversation_id
+            }
+        
+        # Add response to conversation if provided
+        if conversation:
+            try:
+                # Try to add response to the most recent incomplete turn
+                conversation.add_response(content)
+            except ValueError as e:
+                # If no prompt-only turn exists, this is an error in the conversation flow
+                # Log the error and create a new turn with empty prompt and the response
+                logger.warning(f"No prompt found for response in conversation {conversation.conversation_id}: {e}")
+                conversation.add_turn("", content)
+        
+        # Run pipeline and get results
+        result = self._run_pipeline(self.output_pipeline, content, "output", conversation)
+        
+        # Annotate guardrail results into conversation if provided
+        if conversation and conversation.turns:
+            self._annotate_guardrail_results(conversation.turns[-1], result)
+        
+        return result
     
-    def _run_pipeline(self, pipeline: List[GuardrailInterface], content: str, pipeline_type: str) -> PipelineResult:
+    def _annotate_guardrail_results(self, turn: Turn, result: PipelineResult) -> None:
+        """
+        Annotate guardrail results into turn metadata.
+        
+        Args:
+            turn: The turn to annotate
+            result: The pipeline result to annotate
+        """
+        # Store guardrail results in turn metadata
+        turn.metadata.update({
+            'guardrail_results': {
+                'blocked': result['blocked'],
+                'warnings': result['warnings'],
+                'reasons': result['reasons'],
+                'details': result['details'],
+                'pipeline_type': result['pipeline_type'],
+                'timestamp': datetime.now().isoformat()
+            }
+        })
+        
+        # Log annotation
+        logger.debug(f"Annotated guardrail results to turn in conversation {result['conversation_id']}: blocked={result['blocked']}")
+    
+    def _run_pipeline(self, pipeline: List[GuardrailInterface], content: str, pipeline_type: str, conversation: Optional[Conversation] = None) -> PipelineResult:
         """
         Run content through a pipeline of guardrails.
         
@@ -260,6 +346,7 @@ class GuardrailPipeline:
             pipeline: List of guardrail instances
             content: Content to check
             pipeline_type: Type of pipeline for logging
+            conversation: Optional conversation context
             
         Returns:
             Standardized result dictionary
@@ -271,6 +358,11 @@ class GuardrailPipeline:
         warnings: List[str] = []
         reasons: List[str] = []
         details: Dict[str, Any] = {}
+        conversation_id = conversation.conversation_id if conversation else None
+        
+        # Log conversation context if available
+        if conversation:
+            logger.info(f"Processing {pipeline_type} for conversation {conversation_id} (turn {conversation.get_turn_count()})")
         
         for guardrail in pipeline:
             try:
@@ -292,8 +384,18 @@ class GuardrailPipeline:
                     'details': result.details
                 }
                 
+                # Log with conversation context if available
+                if conversation:
+                    logger.debug(f"Guardrail {guardrail.name} result for conversation {conversation_id}: blocked={result.blocked}, confidence={result.confidence}")
+                else:
+                    logger.debug(f"Guardrail {guardrail.name} result: blocked={result.blocked}, confidence={result.confidence}")
+                
             except Exception as e:
-                logger.error(f"Error running {guardrail.name} guardrail: {e}")
+                error_msg = f"Error running {guardrail.name} guardrail: {e}"
+                if conversation:
+                    error_msg += f" (conversation {conversation_id})"
+                logger.error(error_msg)
+                
                 reasons.append(f"{guardrail.name}: Error - {str(e)}")
                 details[guardrail.name] = {
                     'error': str(e),
@@ -306,7 +408,8 @@ class GuardrailPipeline:
             'warnings': warnings,
             'reasons': reasons,
             'details': details,
-            'pipeline_type': pipeline_type
+            'pipeline_type': pipeline_type,
+            'conversation_id': conversation_id
         }
     
     def get_guardrail_status(self) -> PipelineStatus:

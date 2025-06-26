@@ -23,6 +23,9 @@ from .core.guardrail_interface import (
 # Configuration utilities
 from .core.config import ConfigLoader
 
+# Conversation abstraction
+from .core.conversation import Conversation, Turn
+
 # Common guardrail types for easy access
 __all__ = [
     # High-level API
@@ -38,4 +41,8 @@ __all__ = [
     
     # Configuration
     "ConfigLoader",
+    
+    # Conversation abstraction
+    "Conversation",
+    "Turn",
 ]

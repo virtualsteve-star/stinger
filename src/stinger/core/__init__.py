@@ -13,6 +13,7 @@ from .guardrail_interface import (
     GuardrailFactory
 )
 from .config import ConfigLoader
+from .conversation import Conversation, Turn
 
 __all__ = [
     "GuardrailPipeline",
@@ -23,4 +24,6 @@ __all__ = [
     "GuardrailRegistry",
     "GuardrailFactory",
     "ConfigLoader",
+    "Conversation",
+    "Turn",
 ]

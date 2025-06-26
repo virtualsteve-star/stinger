@@ -7,27 +7,287 @@ Stinger provides a simple, powerful API for safeguarding LLM applications with c
 ## Quick Start
 
 ```python
-from stinger import GuardrailPipeline
+from stinger import GuardrailPipeline, Conversation
 
 # Create a pipeline from configuration
 pipeline = GuardrailPipeline("config.yaml")
 
-# Check input content
+# Single-turn usage (backward compatible)
 result = pipeline.check_input("Hello, world!")
 if result['blocked']:
     print(f"Input blocked: {result['reasons']}")
 
+# Multi-turn conversation usage
+conversation = Conversation("user_123", user_id="alice@example.com")
+result = pipeline.check_input("Hello, I need help", conversation=conversation)
+if result['blocked']:
+    print(f"Input blocked: {result['reasons']}")
+
 # Check output content  
-result = pipeline.check_output("Here's your response...")
+result = pipeline.check_output("Here's your response...", conversation=conversation)
 if result['blocked']:
     print(f"Output blocked: {result['reasons']}")
 ```
 
 ## Core Classes
 
+### Conversation
+
+Manages multi-turn conversations with rate limiting, logging context, and conversation history.
+
+#### Constructor
+
+```python
+Conversation(
+    conversation_id: Optional[str] = None,
+    user_id: Optional[str] = None,
+    metadata: Optional[Dict[str, Any]] = None,
+    rate_limit: Optional[Dict[str, int]] = None
+) -> None
+```
+
+**Parameters:**
+- `conversation_id`: Unique conversation identifier. If None, generates UUID.
+- `user_id`: Optional user identifier for tracking.
+- `metadata`: Optional metadata dictionary.
+- `rate_limit`: Optional rate limit configuration.
+    Format: {"turns_per_minute": 10, "turns_per_hour": 100}
+
+**Example:**
+```python
+# Basic conversation
+conv = Conversation("user_123")
+
+# Conversation with user ID and metadata
+conv = Conversation(
+    "user_123", 
+    user_id="alice@example.com",
+    metadata={"session_id": "abc", "ip_address": "192.168.1.1"}
+)
+
+# Conversation with rate limiting
+conv = Conversation(
+    "user_123",
+    rate_limit={"turns_per_minute": 5, "turns_per_hour": 50}
+)
+```
+
+#### Methods
+
+##### add_turn()
+
+```python
+add_turn(content: str, turn_type: str, metadata: Optional[Dict[str, Any]] = None) -> Turn
+```
+
+Add a turn to the conversation.
+
+**Parameters:**
+- `content`: The content of the turn (prompt or response)
+- `turn_type`: Type of turn ('prompt' or 'response')
+- `metadata`: Optional metadata for this turn
+
+**Returns:**
+- `Turn`: The created Turn object
+
+**Raises:**
+- `ValueError`: If turn_type is invalid
+
+**Example:**
+```python
+conv = Conversation("user_123")
+turn = conv.add_turn("Hello, how can I help?", "prompt")
+turn = conv.add_turn("I need help with my account", "response")
+```
+
+##### get_history()
+
+```python
+get_history(limit: Optional[int] = None) -> List[Turn]
+```
+
+Get conversation history.
+
+**Parameters:**
+- `limit`: Optional limit on number of turns to return
+
+**Returns:**
+- `List[Turn]`: List of turns in chronological order
+
+**Example:**
+```python
+# Get all history
+history = conv.get_history()
+
+# Get last 5 turns
+recent_history = conv.get_history(limit=5)
+```
+
+##### get_prompts()
+
+```python
+get_prompts() -> List[Turn]
+```
+
+Get all prompt turns.
+
+**Returns:**
+- `List[Turn]`: List of prompt turns
+
+**Example:**
+```python
+prompts = conv.get_prompts()
+for prompt in prompts:
+    print(f"Prompt: {prompt.content}")
+```
+
+##### get_responses()
+
+```python
+get_responses() -> List[Turn]
+```
+
+Get all response turns.
+
+**Returns:**
+- `List[Turn]`: List of response turns
+
+**Example:**
+```python
+responses = conv.get_responses()
+for response in responses:
+    print(f"Response: {response.content}")
+```
+
+##### get_turn_count()
+
+```python
+get_turn_count() -> int
+```
+
+Get total number of turns.
+
+**Returns:**
+- `int`: Number of turns in the conversation
+
+**Example:**
+```python
+count = conv.get_turn_count()
+print(f"Conversation has {count} turns")
+```
+
+##### get_duration()
+
+```python
+get_duration() -> float
+```
+
+Get conversation duration in seconds.
+
+**Returns:**
+- `float`: Duration in seconds
+
+**Example:**
+```python
+duration = conv.get_duration()
+print(f"Conversation duration: {duration:.1f} seconds")
+```
+
+##### check_rate_limit()
+
+```python
+check_rate_limit(action: str = "block") -> bool
+```
+
+Check if rate limit is exceeded.
+
+**Parameters:**
+- `action`: Action to take when limit exceeded ('block', 'warn', 'log')
+
+**Returns:**
+- `bool`: True if rate limit is exceeded, False otherwise
+
+**Example:**
+```python
+if conv.check_rate_limit():
+    print("Rate limit exceeded!")
+
+# Just warn instead of block
+if conv.check_rate_limit(action="warn"):
+    print("Rate limit warning")
+```
+
+##### set_rate_limit()
+
+```python
+set_rate_limit(rate_limit: Dict[str, int]) -> None
+```
+
+Set or update rate limit configuration.
+
+**Parameters:**
+- `rate_limit`: Rate limit configuration
+    Format: {"turns_per_minute": 10, "turns_per_hour": 100}
+
+**Example:**
+```python
+conv.set_rate_limit({"turns_per_minute": 5, "turns_per_hour": 50})
+```
+
+##### reset_rate_limit()
+
+```python
+reset_rate_limit() -> None
+```
+
+Reset rate limit tracking.
+
+**Example:**
+```python
+conv.reset_rate_limit()
+```
+
+##### to_dict()
+
+```python
+to_dict() -> Dict[str, Any]
+```
+
+Convert conversation to dictionary for serialization.
+
+**Returns:**
+- `Dict[str, Any]`: Dictionary representation of conversation
+
+**Example:**
+```python
+conv_dict = conv.to_dict()
+# Save to file, database, etc.
+```
+
+##### from_dict()
+
+```python
+@classmethod
+from_dict(data: Dict[str, Any]) -> Conversation
+```
+
+Create conversation from dictionary.
+
+**Parameters:**
+- `data`: Dictionary representation of conversation
+
+**Returns:**
+- `Conversation`: Restored conversation object
+
+**Example:**
+```python
+# Restore from saved data
+conv = Conversation.from_dict(saved_data)
+```
+
 ### GuardrailPipeline
 
-The main class for using Stinger guardrails. Provides a simple, synchronous interface for content screening.
+The main class for using Stinger guardrails. Provides a simple, synchronous interface for content screening with optional conversation support.
 
 #### Constructor
 
@@ -57,16 +317,17 @@ pipeline = GuardrailPipeline()
 ##### check_input()
 
 ```python
-check_input(content: str) -> PipelineResult
+check_input(content: str, conversation: Optional[Conversation] = None) -> PipelineResult
 ```
 
 Check input content through all input guardrails.
 
 **Parameters:**
 - `content`: The input content to check
+- `conversation`: Optional conversation context for multi-turn scenarios
 
 **Returns:**
-- `PipelineResult`: Dictionary with 'blocked', 'warnings', 'reasons', and 'details' keys
+- `PipelineResult`: Dictionary with 'blocked', 'warnings', 'reasons', 'details', and 'conversation_id' keys
 
 **Raises:**
 - `ValueError`: If content is None or empty
@@ -74,26 +335,32 @@ Check input content through all input guardrails.
 
 **Example:**
 ```python
+# Single-turn usage (backward compatible)
 result = pipeline.check_input("User input here")
 if result['blocked']:
     print(f"Input blocked: {result['reasons']}")
-elif result['warnings']:
-    print(f"Warnings: {result['warnings']}")
+
+# Multi-turn usage with conversation
+conv = Conversation("user_123")
+result = pipeline.check_input("User input here", conversation=conv)
+if result['blocked']:
+    print(f"Input blocked: {result['reasons']}")
 ```
 
 ##### check_output()
 
 ```python
-check_output(content: str) -> PipelineResult
+check_output(content: str, conversation: Optional[Conversation] = None) -> PipelineResult
 ```
 
 Check output content through all output guardrails.
 
 **Parameters:**
 - `content`: The output content to check
+- `conversation`: Optional conversation context for multi-turn scenarios
 
 **Returns:**
-- `PipelineResult`: Dictionary with 'blocked', 'warnings', 'reasons', and 'details' keys
+- `PipelineResult`: Dictionary with 'blocked', 'warnings', 'reasons', 'details', and 'conversation_id' keys
 
 **Raises:**
 - `ValueError`: If content is None or empty
@@ -101,7 +368,14 @@ Check output content through all output guardrails.
 
 **Example:**
 ```python
+# Single-turn usage (backward compatible)
 result = pipeline.check_output("LLM response here")
+if result['blocked']:
+    print(f"Output blocked: {result['reasons']}")
+
+# Multi-turn usage with conversation
+conv = Conversation("user_123")
+result = pipeline.check_output("LLM response here", conversation=conv)
 if result['blocked']:
     print(f"Output blocked: {result['reasons']}")
 ```
@@ -213,6 +487,31 @@ if success:
 
 ## Data Types
 
+### Turn
+
+Represents a single turn in a conversation.
+
+```python
+@dataclass
+class Turn:
+    timestamp: datetime        # When the turn occurred
+    content: str              # The content of the turn
+    turn_type: str            # Type of turn ('prompt' or 'response')
+    metadata: Dict[str, Any]  # Optional metadata for this turn
+```
+
+**Example:**
+```python
+from datetime import datetime
+
+turn = Turn(
+    timestamp=datetime.now(),
+    content="Hello, how can I help?",
+    turn_type="prompt",
+    metadata={"confidence": 0.95}
+)
+```
+
 ### PipelineResult
 
 Type definition for guardrail check results.
@@ -224,6 +523,7 @@ class PipelineResult(TypedDict):
     reasons: List[str]     # List of blocking reasons
     details: Dict[str, Any] # Detailed results from each guardrail
     pipeline_type: str     # Type of pipeline ("input" or "output")
+    conversation_id: Optional[str] # Conversation ID if conversation was provided
 ```
 
 **Example:**
@@ -232,6 +532,12 @@ result = pipeline.check_input("Test content")
 print(f"Blocked: {result['blocked']}")
 print(f"Reasons: {result['reasons']}")
 print(f"Warnings: {result['warnings']}")
+print(f"Conversation ID: {result['conversation_id']}")
+
+# With conversation
+conv = Conversation("user_123")
+result = pipeline.check_input("Test content", conversation=conv)
+print(f"Conversation ID: {result['conversation_id']}")  # "user_123"
 ```
 
 ### PipelineStatus
@@ -391,4 +697,113 @@ print(f"Blocked: {result['blocked']}")
 print(f"Reasons: {result['reasons']}")
 print(f"Warnings: {result['warnings']}")
 print(f"Details: {result['details']}")
+```
+
+## Conversation Examples
+
+### Basic Multi-turn Usage
+
+```python
+from stinger import GuardrailPipeline, Conversation
+
+# Create pipeline and conversation
+pipeline = GuardrailPipeline.from_preset("customer_service")
+conv = Conversation("user_123", user_id="alice@example.com")
+
+# Simulate a conversation
+user_inputs = [
+    "Hello, I need help",
+    "My account number is 123-45-6789",
+    "I can't log in"
+]
+
+llm_outputs = [
+    "How can I assist you?",
+    "I understand you're having login issues"
+]
+
+# Process the conversation
+for user_input in user_inputs:
+    result = pipeline.check_input(user_input, conversation=conv)
+    if result['blocked']:
+        print(f"Input blocked: {result['reasons']}")
+        break
+
+for llm_output in llm_outputs:
+    result = pipeline.check_output(llm_output, conversation=conv)
+    if result['blocked']:
+        print(f"Output blocked: {result['reasons']}")
+        break
+
+# Check conversation state
+print(f"Conversation has {conv.get_turn_count()} turns")
+print(f"Duration: {conv.get_duration():.1f} seconds")
+```
+
+### Rate Limiting
+
+```python
+from stinger import GuardrailPipeline, Conversation
+
+# Create conversation with rate limits
+conv = Conversation(
+    "user_123",
+    rate_limit={"turns_per_minute": 5, "turns_per_hour": 50}
+)
+
+pipeline = GuardrailPipeline.from_preset("customer_service")
+
+# Process multiple inputs
+for i in range(10):
+    result = pipeline.check_input(f"Message {i+1}", conversation=conv)
+    if result['blocked'] and 'rate_limit' in result['details']:
+        print(f"Rate limit exceeded at message {i+1}")
+        break
+```
+
+### Conversation Serialization
+
+```python
+from stinger import Conversation
+import json
+
+# Create and use conversation
+conv = Conversation("user_123", user_id="alice@example.com")
+conv.add_turn("Hello", "prompt")
+conv.add_turn("Hi there", "response")
+
+# Serialize to JSON
+conv_dict = conv.to_dict()
+with open("conversation.json", "w") as f:
+    json.dump(conv_dict, f, indent=2)
+
+# Restore from JSON
+with open("conversation.json", "r") as f:
+    saved_data = json.load(f)
+restored_conv = Conversation.from_dict(saved_data)
+
+# Verify restoration
+assert restored_conv.conversation_id == "user_123"
+assert restored_conv.get_turn_count() == 2
+```
+
+### Logging and Traceability
+
+```python
+import logging
+from stinger import GuardrailPipeline, Conversation
+
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+
+# Create conversation and pipeline
+conv = Conversation("user_123", user_id="alice@example.com")
+pipeline = GuardrailPipeline.from_preset("customer_service")
+
+# Process content (logs will include conversation context)
+result = pipeline.check_input("Test content", conversation=conv)
+
+# Logs will show:
+# INFO: Processing input for conversation user_123 (turn 1)
+# DEBUG: Guardrail toxicity_check result for conversation user_123: blocked=False, confidence=0.1
 ``` 

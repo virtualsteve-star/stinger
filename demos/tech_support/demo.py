@@ -9,8 +9,8 @@ import sys
 import time
 from pathlib import Path
 
-# Add parent directory to path so we can import stinger
-sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+# Add src directory to path so we can import stinger
+sys.path.insert(0, str(Path(__file__).parent.parent.parent / "src"))
 
 from stinger import GuardrailPipeline
 from demo_utils import (
