@@ -2,6 +2,8 @@
 
 A powerful, easy-to-use Python framework for safeguarding LLM applications with comprehensive content filtering and moderation capabilities.
 
+> **Note:** PyPI installation (`pip install stinger`) is coming soon! For now, install from source (see below).
+
 ## ✨ Features
 
 - **🛡️ Comprehensive Guardrails**: Toxicity detection, PII protection, code generation prevention, and more
@@ -13,10 +15,10 @@ A powerful, easy-to-use Python framework for safeguarding LLM applications with 
 
 ## 🚀 Quick Start
 
-### Installation
+### Installation (from source)
 
 ```bash
-pip install stinger
+pip install .
 ```
 
 ### Basic Usage
@@ -38,33 +40,14 @@ if result['blocked']:
     print(f"Output blocked: {result['reasons']}")
 ```
 
-### Simple Example
+## 🖥️ Command Line Interface (CLI)
 
-```python
-from stinger import GuardrailPipeline
+After installing Stinger, you can use the CLI:
 
-# Initialize pipeline
-pipeline = GuardrailPipeline()
-
-# Process user input
-user_input = "Hello, how can you help me?"
-input_result = pipeline.check_input(user_input)
-
-if input_result['blocked']:
-    print("Input blocked by guardrails")
-    return
-
-# Generate LLM response
-llm_response = generate_response(user_input)
-
-# Check LLM response
-output_result = pipeline.check_output(llm_response)
-
-if output_result['blocked']:
-    print("Response blocked by guardrails")
-    return
-
-print("Response approved:", llm_response)
+```sh
+stinger demo
+stinger check-prompt "My SSN is 123-45-6789."
+stinger check-response "Here is your password: hunter2"
 ```
 
 ## 🛡️ Available Guardrails
@@ -214,6 +197,8 @@ python3 examples/simple_usage.py
 
 ## 🔧 Development
 
+> **Note:** Stinger uses a modern `src/` layout. All package code is under `src/stinger/`.
+
 ### Installation from Source
 
 ```bash
@@ -231,15 +216,16 @@ pytest tests/
 ### Project Structure
 
 ```
-stinger/
-├── core/           # Core components and high-level API
-├── filters/        # Guardrail implementations
-├── data/           # Keyword lists and data files
-├── scenarios/      # Pre-configured scenarios
-├── demos/          # Demo applications
-├── examples/       # Code examples
-├── tests/          # Test suite
-└── docs/           # Documentation
+src/
+  └── stinger/
+      ├── core/           # Core components and high-level API
+      ├── filters/        # Guardrail implementations
+      ├── data/           # Keyword lists and data files
+      ├── scenarios/      # Pre-configured scenarios
+      ├── utils/          # Utilities and exceptions
+      ├── adapters/       # Model adapters
+      ├── cli.py          # CLI entry point
+      └── ...
 ```
 
 ## 🤝 Contributing
