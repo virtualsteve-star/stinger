@@ -19,4 +19,8 @@ dependencies = [
 ]
 
 [tool.setuptools.packages.find]
-where = ["stinger"] 
+where = ["src"]
+include = ["stinger*"]
+
+[project.scripts]
+stinger = "stinger.cli:main" 
