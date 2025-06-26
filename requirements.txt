@@ -6,3 +6,4 @@ cryptography>=41.0.0
 openai>=1.0.0
 jsonschema
 # Add any other dependencies here 
+zipp>=3.19.1 # not directly required, pinned by Snyk to avoid a vulnerability
