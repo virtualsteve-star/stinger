@@ -1,6 +1,6 @@
 import yaml
 from pathlib import Path
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 from ..utils.exceptions import ConfigurationError
 import jsonschema
 
@@ -25,7 +25,89 @@ CONFIG_SCHEMA = {
                                 "simple_code_generation", "ai_code_generation"
                             ]},
                             "enabled": {"type": "boolean"},
-                            "on_error": {"type": "string", "enum": ["block", "allow", "skip"]},
+                            "on_error": {"type": "string", "enum": ["block", "allow", "skip", "warn"]},
+                            "min_length": {"type": "integer"},
+                            "max_length": {"type": "integer"},
+                            "keyword": {"type": "string"},
+                            "keywords": {
+                                "oneOf": [
+                                    {"type": "array", "items": {"type": "string"}},
+                                    {"type": "string"}
+                                ]
+                            },
+                            "keywords_file": {"type": "string"},
+                            "keyword_files": {
+                                "type": "array",
+                                "items": {"type": "string"}
+                            },
+                            "case_sensitive": {"type": "boolean"},
+                            "patterns": {
+                                "type": "array",
+                                "items": {"type": "string"}
+                            },
+                            "action": {"type": "string"},
+                            "thresholds": {
+                                "type": "object",
+                                "properties": {
+                                    "allow": {
+                                        "type": "array",
+                                        "items": {"type": "integer"},
+                                        "minItems": 2,
+                                        "maxItems": 2
+                                    },
+                                    "warn": {
+                                        "type": "array",
+                                        "items": {"type": "integer"},
+                                        "minItems": 2,
+                                        "maxItems": 2
+                                    },
+                                    "block": {
+                                        "type": "array",
+                                        "items": {"type": "integer"},
+                                        "minItems": 2,
+                                        "maxItems": 2
+                                    }
+                                }
+                            },
+                            "rules": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {"type": "string"},
+                                        "type": {"type": "string", "enum": ["regex", "keyword", "combination", "ai_scorer"]},
+                                        "certainty": {"type": "integer", "minimum": 1, "maximum": 100},
+                                        "description": {"type": "string"},
+                                        "pattern": {"type": "string"},
+                                        "keywords": {
+                                            "type": "array",
+                                            "items": {"type": "string"}
+                                        },
+                                        "logic": {"type": "string"},
+                                        "case_sensitive": {"type": "boolean"}
+                                    },
+                                    "required": ["name", "type", "certainty", "description"]
+                                }
+                            }
+                        },
+                        "required": ["name", "type", "enabled", "on_error"]
+                    }
+                },
+                "output": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "name": {"type": "string"},
+                            "type": {"type": "string", "enum": [
+                                "keyword_block", "keyword_list", "regex_filter", "length_filter", "url_filter", "pass_through",
+                                "content_moderation", "prompt_injection",
+                                "simple_pii_detection", "ai_pii_detection",
+                                "simple_toxicity_detection", "ai_toxicity_detection",
+                                "simple_code_generation", "ai_code_generation"
+                            ]},
+                            "enabled": {"type": "boolean"},
+                            "on_error": {"type": "string", "enum": ["block", "allow", "skip", "warn"]},
                             "min_length": {"type": "integer"},
                             "max_length": {"type": "integer"},
                             "keyword": {"type": "string"},
@@ -138,15 +220,14 @@ class ConfigLoader:
         pipeline = self.config.get('pipeline', {})
         return pipeline.get(pipeline_type, [])
     
-    def build_filters(self, config: Dict[str, Any] = None) -> list:
+    def build_filters(self, config: Optional[Dict[str, Any]] = None) -> list:
         """Build filter instances from configuration."""
         if config is None:
+            if self.config is None:
+                raise ConfigurationError("No configuration provided")
             config = self.config
         else:
             self.config = config  # Ensure get_pipeline_config works
-        
-        if not config:
-            raise ConfigurationError("No configuration provided")
         
         from ..filters import FILTER_REGISTRY
         

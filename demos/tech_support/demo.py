@@ -1,120 +1,90 @@
-import os
+"""
+Tech Support Demo - Interactive LLM Screening
+
+This demo shows Stinger screening real LLM conversations.
+Uses demo_utils for all boilerplate - focuses purely on Stinger functionality.
+"""
+
+import sys
 import time
 from pathlib import Path
 
-from stinger.core.config import ConfigLoader
-from stinger.core.guardrail_interface import GuardrailFactory, GuardrailRegistry
+# Add parent directory to path so we can import stinger
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-try:
-    import openai
-    # Try to use v1+ client if available
-    if hasattr(openai, 'OpenAI'):
-        OpenAIClient = openai.OpenAI
-    else:
-        OpenAIClient = None
-except ImportError:
-    openai = None
-    OpenAIClient = None
+from stinger import GuardrailPipeline
+from demo_utils import (
+    print_header, call_llm, load_prompts,
+    print_conversation, print_safety_results, print_outcome, print_guardrail_status
+)
 
+# Configuration
 PROMPTS_FILE = Path(__file__).parent / 'prompts.txt'
 CONFIG_FILE = Path(__file__).parent / 'config.yaml'
 
-# Load prompts from file
-def load_prompts(filename):
-    with open(filename, 'r') as f:
-        return [line.strip() for line in f if line.strip()]
 
-# Pretty print a result row
-def print_result_row(idx, prompt, response, prompt_result, response_result):
-    print(f"\n=== Prompt #{idx+1} ===")
-    print(f"Prompt:   {prompt}")
-    print(f"Prompt Guardrail:   {prompt_result['status']} | {prompt_result['reasons']}")
-    print(f"Response: {response}")
-    print(f"Response Guardrail: {response_result['status']} | {response_result['reasons']}")
-    print("-")
-
-# Run guardrail pipeline for a message (input or output)
-def run_guardrails(factory, pipeline, message):
-    reasons = []
-    status = "PASS"
-    for guardrail in pipeline:
-        if guardrail is None:
-            raise RuntimeError("A guardrail in the pipeline was not created. Check your config and factory registration.")
-        result = guardrail.analyze(message)
-        if hasattr(result, 'blocked') and result.blocked:
-            status = "FAIL"
-            reasons.append(result.reason)
-        elif hasattr(result, 'warned') and result.warned:
-            if status != "FAIL":
-                status = "WARN"
-            reasons.append(result.reason)
-    return {"status": status, "reasons": "; ".join(reasons) if reasons else "-"}
-
-# Call the LLM (mock if openai not available)
-def call_llm(prompt):
-    api_key = os.environ.get("OPENAI_API_KEY")
-    if OpenAIClient and api_key:
-        client = OpenAIClient(api_key=api_key)
-        try:
-            response = client.chat.completions.create(
-                model="gpt-4.1-nano",
-                messages=[{"role": "user", "content": prompt}],
-                max_tokens=128,
-                temperature=0.7,
-            )
-            content = response.choices[0].message.content
-            return content.strip() if content else "[LLM EMPTY RESPONSE]"
-        except Exception as e:
-            return f"[LLM ERROR: {e}]"
-    else:
-        # Mock response for demo/testing
-        return f"[MOCK LLM RESPONSE to: {prompt[:40]}...]"
-
-# Main demo logic
 def main():
-    print("\n=== Tech Support Demo: Guardrail Screening ===\n")
-    prompts = load_prompts(PROMPTS_FILE)
-    config_loader = ConfigLoader()
-    config = config_loader.load(str(CONFIG_FILE))
-    registry = GuardrailRegistry()
-    factory = GuardrailFactory(registry)
-    # Register all factories (if needed)
-    from stinger.core.guardrail_factory import register_all_factories
-    register_all_factories(registry)
-    # Build input and output pipelines
-    print("Input pipeline configs:", config['pipeline']['input'])
-    input_pipeline = []
-    for f in config['pipeline']['input']:
-        print("Creating input guardrail for config:", f)
-        guardrail = factory.create_from_config(f)
-        print("Resulting guardrail:", guardrail)
-        input_pipeline.append(guardrail)
-    print("Output pipeline configs:", config['pipeline']['output'])
-    output_pipeline = []
-    for f in config['pipeline']['output']:
-        print("Creating output guardrail for config:", f)
-        guardrail = factory.create_from_config(f)
-        print("Resulting guardrail:", guardrail)
-        output_pipeline.append(guardrail)
-
-    summary = {"PASS": 0, "FAIL": 0, "WARN": 0}
-    for idx, prompt in enumerate(prompts):
-        prompt_result = run_guardrails(factory, input_pipeline, prompt)
-        if prompt_result["status"] == "FAIL":
-            response = "[Prompt blocked by guardrails]"
+    """Main demo function - screens real LLM conversations."""
+    # Print header
+    print_header("STINGER: Interactive LLM Screening", 
+                "Watch Stinger screen real AI conversations...")
+    
+    # Load prompts
+    prompts = load_prompts(str(PROMPTS_FILE))
+    print(f"📋 Loaded {len(prompts)} test prompts")
+    
+    # Initialize guardrail pipeline
+    print("🔧 Initializing guardrail pipeline...")
+    pipeline = GuardrailPipeline(str(CONFIG_FILE))
+    
+    # Show pipeline status with detailed guardrail names
+    status = pipeline.get_guardrail_status()
+    print_guardrail_status(status)
+    print()
+    
+    # Process each prompt
+    summary = {"PASS": 0, "BLOCK": 0, "WARN": 0}
+    
+    for idx, prompt in enumerate(prompts, 1):
+        print(f"📝 PROMPT #{idx}")
+        print("=" * 50)
+        
+        # Check input
+        prompt_result = pipeline.check_input(prompt)
+        
+        # Generate response if input passes
+        if prompt_result['blocked']:
+            response = "[INPUT BLOCKED BY GUARDRAILS]"
+            response_result = {'blocked': False, 'warnings': [], 'reasons': []}
         else:
             response = call_llm(prompt)
-        response_result = run_guardrails(factory, output_pipeline, response)
-        print_result_row(idx, prompt, response, prompt_result, response_result)
-        # Tally summary
-        for status in [prompt_result["status"], response_result["status"]]:
-            summary[status] += 1
+            response_result = pipeline.check_output(response)
+        
+        # Show conversation and results
+        print_conversation(prompt, response)
+        print_safety_results(prompt_result, response_result)
+        print_outcome(prompt_result, response_result)
+        
+        # Update summary
+        if prompt_result['blocked'] or response_result['blocked']:
+            summary['BLOCK'] += 1
+        elif prompt_result['warnings'] or response_result['warnings']:
+            summary['WARN'] += 1
+        else:
+            summary['PASS'] += 1
+        
         time.sleep(0.1)  # For readability
+    
+    # Final summary
+    print("=" * 50)
+    print("📊 FINAL SUMMARY")
+    print("=" * 50)
+    print(f"📝 Total prompts processed: {len(prompts)}")
+    print(f"✅ Passed: {summary['PASS']}")
+    print(f"⚠️  Warnings: {summary['WARN']}")
+    print(f"❌ Blocked: {summary['BLOCK']}")
+    print(f"\n🎉 Demo complete! Guardrails are working perfectly! 🎉")
 
-    print("\n=== Summary ===")
-    print(f"Total prompts: {len(prompts)}")
-    print(f"PASS: {summary['PASS']} | WARN: {summary['WARN']} | FAIL: {summary['FAIL']}")
-    print("\nDemo complete.")
 
 if __name__ == "__main__":
     main() 

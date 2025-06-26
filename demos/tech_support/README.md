@@ -1,51 +1,89 @@
 # Tech Support Demo
 
-This demo showcases the developer experience and effectiveness of Stinger's guardrail system for a Tech Support LLM agent.
+This demo shows how **Stinger** protects AI conversations in real-world scenarios.
 
-## Purpose
-- **Evaluate developer experience**: Demonstrates how easy it is to integrate and configure guardrails for a real-world use case.
-- **Showcase guardrail effectiveness**: Screens both prompts and LLM responses for toxicity, PII, and code generation risks.
-- **System evaluation**: Provides pretty-printed results and a summary for rapid assessment.
+## What You'll See
 
-## How It Works
-- Loads a set of tech support prompts (good and bad) from `prompts.txt`.
-- Screens each prompt using the configured guardrails (toxicity, PII, code generation).
-- If a prompt passes, it is sent to the LLM (OpenAI, or a mock if no API key is set).
-- The LLM response is also screened by the same guardrails.
-- Results are printed in a readable format, with a summary at the end.
+The demo presents realistic tech support conversations and shows how Stinger:
+- ✅ **Allows** normal, helpful conversations
+- ❌ **Blocks** dangerous requests (hacking, harmful code)
+- ⚠️ **Flags** sensitive content (personal info) for human review
+- 🛡️ **Protects** both users and AI systems
 
-## Setup
-1. **Install dependencies** (from the project root):
-   ```bash
-   pip install -r requirements.txt
-   ```
-2. **Set your OpenAI API key** (optional, for real LLM responses):
-   ```bash
-   export OPENAI_API_KEY=sk-...
-   ```
-   If not set, the demo will use mock LLM responses.
+## Demo Files
 
-## Running the Demo
-From the project root:
-```bash
-python demos/tech_support/demo.py
+### `simple_demo.py` - Real-World Scenarios
+Shows 5 realistic tech support scenarios with detailed safety analysis:
+- Normal password reset request
+- User asking for hacking code
+- Personal information accidentally shared
+- Toxic user message
+- AI trying to generate dangerous code
+
+**Focus**: Demonstrates Stinger's comprehensive protection capabilities.
+
+### `one_liner_demo.py` - Minimal Code
+Shows the absolute minimum code needed to use Stinger:
+```python
+user_result = pipeline.check_input(user_message)
+ai_result = pipeline.check_output(ai_response)
 ```
 
-## Files
-- `demo.py` — Main demo script
-- `prompts.txt` — Example tech support prompts (good and bad)
-- `config.yaml` — Guardrail scenario configuration
+**Focus**: Proves Stinger is simple to integrate - just two lines of code.
 
-## Interpreting Results
-- Each prompt and response is shown with its guardrail status:
-  - `PASS`: No issues detected
-  - `FAIL`: Blocked by guardrails (with reasons)
-  - `WARN`: Warning (not blocking, but flagged)
-- The summary shows the total number of passes, warnings, and failures.
+### `demo.py` - Interactive LLM Screening
+Screens real LLM conversations using prompts from `prompts.txt`:
+- Loads prompts from file
+- Calls actual LLM (or mock if no API key)
+- Screens both input and output
+- Shows real-time safety analysis
 
-## Customization
-- Add or modify prompts in `prompts.txt`.
-- Adjust guardrail configuration in `config.yaml` to test different scenarios.
+**Focus**: Demonstrates Stinger in a real AI conversation workflow.
+
+### `demo_utils.py` - All Boilerplate
+Handles all the non-Stinger functionality:
+- Pretty printing and formatting
+- LLM calls (real or mock)
+- File loading
+- Presentation logic
+
+**Focus**: Keeps main demos focused purely on Stinger functionality.
+
+## Running the Demos
+
+```bash
+# Run the comprehensive demo
+python3 simple_demo.py
+
+# Run the minimal demo
+python3 one_liner_demo.py
+
+# Run the interactive LLM demo
+python3 demo.py
+```
+
+## Demo Structure
+
+Each demo follows this pattern:
+1. **Initialize** Stinger with configuration
+2. **Define** realistic scenarios (or load from file)
+3. **Check** both user input and AI output
+4. **Show** what happens (allowed/blocked/flagged)
+5. **Summarize** the protection results
+
+The demos use `demo_utils.py` for all presentation logic, keeping the main code focused on demonstrating Stinger's core functionality.
+
+## What Makes This Demo Great
+
+✅ **Real-world scenarios** - Not contrived examples  
+✅ **Clear outcomes** - Shows exactly what gets blocked/flagged  
+✅ **Simple code** - Focuses on Stinger usage, not presentation  
+✅ **Natural flow** - Reads like actual conversations  
+✅ **Comprehensive** - Covers multiple safety concerns  
+✅ **Interactive** - Can use real LLMs or mock responses  
+✅ **Modular** - All boilerplate separated into utils  
+
+The demos prove that Stinger is both **powerful** (catches real threats) and **simple** (easy to integrate).
 
 ---
 This demo is part of Stinger Phase 5c and is intended for system evaluation and developer experience review. 

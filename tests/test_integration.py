@@ -217,8 +217,8 @@ async def run_customer_service_test(show_conversation: bool = True):
     print("🤖 CUSTOMER SERVICE BOT INTEGRATION TEST")
     print("=" * 60)
     
-    simulator = ConversationSimulator('src/scenarios/customer_service/config.yaml')
-    test_cases = load_jsonl('tests/test_corpus/customer_service_bot.jsonl')
+    simulator = ConversationSimulator('../src/scenarios/customer_service/config.yaml')
+    test_cases = load_jsonl('test_corpus/customer_service_bot.jsonl')
     
     if not test_cases:
         print("❌ No test cases found!")
@@ -234,8 +234,8 @@ async def run_medical_bot_test(show_conversation: bool = True):
     print("🏥 MEDICAL BOT INTEGRATION TEST")
     print("=" * 60)
     
-    simulator = ConversationSimulator('src/scenarios/medical_bot/config.yaml')
-    test_cases = load_jsonl('tests/test_corpus/medical_bot.jsonl')
+    simulator = ConversationSimulator('../src/scenarios/medical_bot/config.yaml')
+    test_cases = load_jsonl('test_corpus/medical_bot.jsonl')
     
     if not test_cases:
         print("❌ No test cases found!")
@@ -263,16 +263,16 @@ async def main():
     show_conversation = not args.quiet
     
     if args.test == 'customer' or args.test == 'all':
-        simulator = ConversationSimulator('src/scenarios/customer_service/config.yaml')
-        test_cases = load_jsonl('tests/test_corpus/customer_service_bot.jsonl')
+        simulator = ConversationSimulator('../src/scenarios/customer_service/config.yaml')
+        test_cases = load_jsonl('test_corpus/customer_service_bot.jsonl')
         if args.transcript:
             await simulator.print_transcript(test_cases)
         else:
             await run_customer_service_test(show_conversation)
     
     if args.test == 'medical' or args.test == 'all':
-        simulator = ConversationSimulator('src/scenarios/medical_bot/config.yaml')
-        test_cases = load_jsonl('tests/test_corpus/medical_bot.jsonl')
+        simulator = ConversationSimulator('../src/scenarios/medical_bot/config.yaml')
+        test_cases = load_jsonl('test_corpus/medical_bot.jsonl')
         if args.transcript:
             await simulator.print_transcript(test_cases)
         else:
