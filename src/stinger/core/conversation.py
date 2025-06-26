@@ -10,7 +10,7 @@ import time
 import logging
 from dataclasses import dataclass, field
 from typing import Dict, Any, List, Optional, Union
-from datetime import datetime
+from datetime import datetime, timedelta
 
 logger = logging.getLogger(__name__)
 
@@ -382,19 +382,19 @@ class Conversation:
         exceeded = False
         details = []
         
-        # Check per-minute limit
+        # Check per-minute limit using rolling 60-second window
         if 'turns_per_minute' in self.rate_limit:
-            minute_ago = now.replace(second=0, microsecond=0)
+            minute_ago = now.replace(microsecond=0) - timedelta(seconds=60)
             minute_turns = [t for t in self.rate_limit_turns if t >= minute_ago]
-            if len(minute_turns) > self.rate_limit['turns_per_minute']:
+            if len(minute_turns) >= self.rate_limit['turns_per_minute']:
                 exceeded = True
                 details.append(f"minute limit: {len(minute_turns)}/{self.rate_limit['turns_per_minute']}")
         
-        # Check per-hour limit
+        # Check per-hour limit using rolling 3600-second window
         if 'turns_per_hour' in self.rate_limit:
-            hour_ago = now.replace(minute=0, second=0, microsecond=0)
+            hour_ago = now.replace(microsecond=0) - timedelta(seconds=3600)
             hour_turns = [t for t in self.rate_limit_turns if t >= hour_ago]
-            if len(hour_turns) > self.rate_limit['turns_per_hour']:
+            if len(hour_turns) >= self.rate_limit['turns_per_hour']:
                 exceeded = True
                 details.append(f"hour limit: {len(hour_turns)}/{self.rate_limit['turns_per_hour']}")
         
@@ -434,12 +434,12 @@ class Conversation:
         now = datetime.now()
         cutoff = now
         
-        # Keep entries from the last hour if we have hourly limits
+        # Keep entries from the last hour if we have hourly limits (rolling 3600-second window)
         if 'turns_per_hour' in self.rate_limit:
-            cutoff = now.replace(minute=0, second=0, microsecond=0)
-        # Keep entries from the last minute if we have minute limits
+            cutoff = now.replace(microsecond=0) - timedelta(seconds=3600)
+        # Keep entries from the last minute if we have minute limits (rolling 60-second window)
         elif 'turns_per_minute' in self.rate_limit:
-            cutoff = now.replace(second=0, microsecond=0)
+            cutoff = now.replace(microsecond=0) - timedelta(seconds=60)
         
         self.rate_limit_turns = [t for t in self.rate_limit_turns if t >= cutoff]
     
