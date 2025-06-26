@@ -1,0 +1,32 @@
+pipeline:
+  input:
+  - enabled: true
+    name: pii_check
+    on_error: warn
+    type: simple_pii_detection
+  - config:
+      categories:
+      - harassment
+      - threats
+      confidence_threshold: 0.8
+    enabled: true
+    name: toxicity_check
+    on_error: warn
+    type: simple_toxicity_detection
+  - config:
+      max_length: 2000
+      min_length: 1
+    enabled: true
+    name: length_check
+    on_error: warn
+    type: length_filter
+  output:
+  - enabled: true
+    name: pii_check
+    on_error: block
+    type: simple_pii_detection
+  - enabled: true
+    name: code_generation_check
+    on_error: block
+    type: simple_code_generation
+version: '1.0'
