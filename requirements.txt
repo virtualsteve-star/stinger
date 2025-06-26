@@ -3,4 +3,6 @@ pytest>=7.0
 pytest-asyncio>=0.21.0
 watchdog>=3.0.0
 cryptography>=41.0.0
-openai>=1.0.0 
+openai>=1.0.0
+jsonschema
+# Add any other dependencies here 
