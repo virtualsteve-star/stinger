@@ -17,6 +17,7 @@ from .guardrail_interface import GuardrailRegistry, GuardrailFactory, GuardrailI
 from .preset_configs import PresetConfigs
 from .conversation import Conversation, Turn
 from ..utils.exceptions import PipelineError, ConfigurationError
+from .rate_limiter import get_global_rate_limiter
 
 logger = logging.getLogger(__name__)
 
@@ -115,6 +116,8 @@ class GuardrailPipeline:
             # Build pipelines
             self.input_pipeline = self._build_pipeline('input')
             self.output_pipeline = self._build_pipeline('output')
+            
+            self.global_rate_limiter = get_global_rate_limiter()
             
             logger.info(f"GuardrailPipeline initialized with {len(self.input_pipeline)} input and {len(self.output_pipeline)} output guardrails")
             
@@ -224,13 +227,15 @@ class GuardrailPipeline:
         
         return pipeline
     
-    def check_input(self, content: str, conversation: Optional[Conversation] = None) -> PipelineResult:
+    def check_input(self, content: str, conversation: Optional[Conversation] = None, api_key: Optional[str] = None, role: Optional[str] = None) -> PipelineResult:
         """
         Check input content through all input guardrails.
         
         Args:
             content: The input content to check
             conversation: Optional conversation context for multi-turn scenarios
+            api_key: Optional API key for global rate limiting
+            role: Optional user role for role-based overrides
             
         Returns:
             Dict with 'blocked', 'warnings', 'reasons', 'details', and 'conversation_id' keys
@@ -241,6 +246,22 @@ class GuardrailPipeline:
         """
         if content is None:
             raise ValueError("Content cannot be None")
+        
+        # Check global rate limits if API key provided
+        if api_key:
+            global_rate_result = self.global_rate_limiter.check_rate_limit(api_key, role=role)
+            if global_rate_result["exceeded"]:
+                return {
+                    'blocked': True,
+                    'warnings': [],
+                    'reasons': [f"Global rate limit exceeded for API key {api_key}"],
+                    'details': {'global_rate_limit': global_rate_result},
+                    'pipeline_type': 'input',
+                    'conversation_id': conversation.conversation_id if conversation else None
+                }
+            
+            # Record the request
+            self.global_rate_limiter.record_request(api_key)
         
         # Check conversation rate limits if provided
         if conversation and conversation.check_rate_limit():
@@ -266,13 +287,15 @@ class GuardrailPipeline:
         
         return result
     
-    def check_output(self, content: str, conversation: Optional[Conversation] = None) -> PipelineResult:
+    def check_output(self, content: str, conversation: Optional[Conversation] = None, api_key: Optional[str] = None, role: Optional[str] = None) -> PipelineResult:
         """
         Check output content through all output guardrails.
         
         Args:
             content: The output content to check
             conversation: Optional conversation context for multi-turn scenarios
+            api_key: Optional API key for global rate limiting
+            role: Optional user role for role-based overrides
             
         Returns:
             Dict with 'blocked', 'warnings', 'reasons', 'details', and 'conversation_id' keys
@@ -283,6 +306,22 @@ class GuardrailPipeline:
         """
         if content is None:
             raise ValueError("Content cannot be None")
+        
+        # Check global rate limits if API key provided
+        if api_key:
+            global_rate_result = self.global_rate_limiter.check_rate_limit(api_key, role=role)
+            if global_rate_result["exceeded"]:
+                return {
+                    'blocked': True,
+                    'warnings': [],
+                    'reasons': [f"Global rate limit exceeded for API key {api_key}"],
+                    'details': {'global_rate_limit': global_rate_result},
+                    'pipeline_type': 'output',
+                    'conversation_id': conversation.conversation_id if conversation else None
+                }
+            
+            # Record the request
+            self.global_rate_limiter.record_request(api_key)
         
         # Check conversation rate limits if provided
         if conversation and conversation.check_rate_limit():

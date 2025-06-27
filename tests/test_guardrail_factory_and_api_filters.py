@@ -1,7 +1,7 @@
 """
-Phase 5 Tests
+Guardrail Factory, Registry, and API-based Filter Tests
 
-Tests for the new pluggable classifier filters with OpenAI integration.
+Tests for the extensible guardrail/filter system, including legacy adapters and OpenAI-based filters.
 """
 
 import pytest
@@ -204,8 +204,8 @@ class TestLegacyFilterAdapters:
         assert result.blocked is False
 
 
-class TestPhase5Filters:
-    """Test the Phase 5 OpenAI-based filters."""
+class TestGuardrailFactoryAndAPIFilters:
+    """Test the Guardrail Factory and API-based Filters."""
     
     @pytest.mark.asyncio
     async def test_content_moderation_filter_unavailable(self):
@@ -236,7 +236,7 @@ class TestPhase5Filters:
                 assert "unavailable" in result.reason.lower() or "error" in result.reason.lower()
             
         except ImportError:
-            pytest.skip("Phase 5 filters not available")
+            pytest.skip("Guardrail Factory and API-based Filters not available")
     
     @pytest.mark.asyncio
     async def test_content_moderation_filter_available(self):
@@ -275,7 +275,7 @@ class TestPhase5Filters:
                 assert "passed" in result.reason.lower() or "safe" in result.reason.lower()
             
         except ImportError:
-            pytest.skip("Phase 5 filters not available")
+            pytest.skip("Guardrail Factory and API-based Filters not available")
     
     @pytest.mark.asyncio
     async def test_prompt_injection_filter_unavailable(self):
@@ -306,7 +306,7 @@ class TestPhase5Filters:
                 assert "unavailable" in result.reason.lower() or "error" in result.reason.lower()
             
         except ImportError:
-            pytest.skip("Phase 5 filters not available")
+            pytest.skip("Guardrail Factory and API-based Filters not available")
     
     @pytest.mark.asyncio
     async def test_prompt_injection_filter_available(self):
@@ -347,7 +347,7 @@ class TestPhase5Filters:
                 assert "no prompt injection" in result.reason.lower() or "safe" in result.reason.lower()
             
         except ImportError:
-            pytest.skip("Phase 5 filters not available")
+            pytest.skip("Guardrail Factory and API-based Filters not available")
 
 
 if __name__ == "__main__":

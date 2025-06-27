@@ -161,11 +161,11 @@ class TestConversationPipelineIntegration:
         result2 = pipeline.check_input("Second message", conversation=conv)
         assert not result2['blocked']
         
-        # Third input should not be blocked (rate limit is per turn, not per prompt)
+        # Third input should be blocked (rate limit is 2 turns per minute)
         result3 = pipeline.check_input("Third message", conversation=conv)
-        assert not result3['blocked']
+        assert result3['blocked']
         
-        # Fourth input should be blocked
+        # Fourth input should also be blocked
         result4 = pipeline.check_input("Fourth message", conversation=conv)
         assert result4['blocked']
     
