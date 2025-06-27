@@ -92,8 +92,8 @@ async def run_test_suite(config_path: str, test_corpus_path: str, suite_name: st
     return passed == total
 
 async def main():
-    """Run all Phase 2 test suites."""
-    print("🚀 Starting Phase 2 Test Suite")
+    """Run all Classic Filter Pipeline test suites."""
+    print("🚀 Starting Classic Filter Pipeline Test Suite")
     print("=" * 50)
     
     # Test suites to run
@@ -130,7 +130,7 @@ async def main():
     
     print("\n" + "=" * 50)
     if all_passed:
-        print("🎉 All Phase 2 test suites passed!")
+        print("🎉 All Classic Filter Pipeline test suites passed!")
         sys.exit(0)
     else:
         print("💥 Some test suites failed!")
