@@ -2,6 +2,15 @@
 # Always work against the 'dev' branch for all development, except when explicitly instructed to use 'main'.
 # This ensures safe, reviewable PRs and keeps main stable.
 
+# CRITICAL BRANCH WORKFLOW RULE
+# NEVER push directly to main branch. ALWAYS:
+# 1. Work on dev branch
+# 2. Make changes and commit to dev
+# 3. Push to origin/dev
+# 4. Create PR from dev to main
+# 5. Merge via PR, never direct push to main
+# This rule is non-negotiable for code safety and review process.
+
 # Stinger LLM Guardrails Framework - Development Rules
 
 ## Code Quality & Architecture
