@@ -280,21 +280,29 @@ Current User Input: {current_prompt}
             return conversation.get_history(limit=self.max_context_turns)
         
         elif self.context_strategy == "suspicious":
-            # Smart: focus on turns with suspicious indicators
+            # Smart: focus on turns with suspicious indicators and their context
             all_turns = conversation.get_history()
-            suspicious_turns = []
+            relevant_indices = set()  # Use set to avoid duplicates
             
-            for turn in all_turns:
+            # Find suspicious turns and their context
+            for i, turn in enumerate(all_turns):
                 if self._has_suspicious_indicators(turn.prompt):
-                    suspicious_turns.append(turn)
-                    # Include 1-2 turns before for context
-                    turn_index = all_turns.index(turn)
-                    if turn_index > 0:
-                        suspicious_turns.insert(-1, all_turns[turn_index - 1])
-                    if turn_index > 1:
-                        suspicious_turns.insert(-2, all_turns[turn_index - 2])
+                    # Add the suspicious turn
+                    relevant_indices.add(i)
+                    # Add 1-2 turns before for context (if available)
+                    if i > 0:
+                        relevant_indices.add(i - 1)
+                    if i > 1:
+                        relevant_indices.add(i - 2)
+                    # Add 1 turn after for context (if available)
+                    if i < len(all_turns) - 1:
+                        relevant_indices.add(i + 1)
             
-            return suspicious_turns[-self.max_context_turns:]
+            # Convert to sorted list of turns
+            relevant_turns = [all_turns[i] for i in sorted(relevant_indices)]
+            
+            # Return the most recent turns up to the limit
+            return relevant_turns[-self.max_context_turns:]
         
         elif self.context_strategy == "mixed":
             # Hybrid: combine recent and suspicious turns, deduplicated, up to max_context_turns
