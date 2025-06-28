@@ -19,6 +19,7 @@
 | **6** | **Policy & Context Controls** ✅ | • Enhanced rate limiting per API key / user  • Topic allow/deny lists  • Role-based overrides  • Health monitoring dashboard  • Comprehensive documentation (Getting Started, Extensibility Guide)  • **PyPI publishing moved to Phase 6b** | *All policy and context controls implemented and tested*  <br/>*Health monitoring dashboard functional*  <br/>*Documentation complete and user-friendly*  <br/>*71/71 tests passing (100% success rate)*  <br/>*Framework ready for production use* |
 | **6a** | **Documentation Review & Sample Code** 🔴 | • Comprehensive documentation review and cleanup  • Executable sample code creation  • Getting Started guide validation  • API documentation updates  • Sample code testing and validation | *All documentation reviewed and updated*  <br/>*Complete set of executable samples created*  <br/>*All samples tested and verified to work*  <br/>*Documentation examples match sample code exactly*  <br/>*Users can run samples directly without modification* |
 | **6b** | **PyPI Publishing** 🔴 | • Package preparation and validation  • TestPyPI publishing and testing  • PyPI publishing and GitHub release  • Post-release verification and monitoring  • Release documentation and changelog | *Package successfully published to PyPI*  <br/>*Package successfully published to TestPyPI*  <br/>*Installation works in clean environments*  <br/>*All functionality verified from PyPI install*  <br/>*GitHub release created with proper documentation* |
+| **6c** | **Compliance Logging** 🔴 | • Structured logging for compliance and audit trails  • Configurable log levels and output formats  • Integration with external logging systems  • Audit trail for all guardrail decisions  • Compliance reporting and analytics  • Log rotation and retention policies | *All guardrail decisions logged with full context*  <br/>*Logs integrate with SIEM and compliance systems*  <br/>*Audit trails support regulatory requirements*  <br/>*Compliance reports generated automatically*  <br/>*Log management follows security best practices* |
 | **7** | **Observability & CI** | • Structured logs to SIEM  • Prometheus metrics  • GitHub Actions running full suites on PRs  • Configuration testing framework  • Automatic rollback on validation failures  • **Performance logging for guardrail filters (execution times, latency, throughput)** | *CI green across all branches*  <br/>*Dashboards show live metrics and filter execution times*  <br/>*Config changes validated before deployment*  <br/>**Performance logs available for all guardrail filters** |
 | **8** | **Hardening & Docs** | • Fail‑closed defaults  • Security reviews  • Developer guide & API docs  • Production deployment guide  • Incident response procedures | *Security review signed off*  <br/>*v1.0 tag published*  <br/>*Documentation complete for all personas* |
 
@@ -158,6 +159,18 @@
 - **Installation Verification**: Testing package installation in clean environments
 - **Documentation Updates**: PyPI-specific documentation and installation instructions
 - **Quality Assurance**: Final validation and post-release monitoring
+
+### Phase 6c Additions 🔴
+- **Structured Logging**: Comprehensive logging system for compliance and audit trails
+- **Configurable Logging**: Log levels, output formats, and integration with external systems
+- **Audit Trail**: Complete record of all guardrail decisions with full context
+- **Compliance Integration**: Integration with SIEM and compliance monitoring systems
+- **Reporting System**: Automated compliance reports and analytics
+- **Log Management**: Log rotation, retention policies, and security best practices
+- **Regulatory Support**: Audit trails that support regulatory requirements (GDPR, HIPAA, etc.)
+- **Decision Transparency**: Full visibility into guardrail decision-making process
+- **Performance Monitoring**: Log-based performance tracking and optimization
+- **Security Compliance**: Log management following security and compliance standards
 
 - Compound filters now use additive certainty scoring (not weights).
 - All rules use 'certainty' (0-100) instead of 'weight'.
