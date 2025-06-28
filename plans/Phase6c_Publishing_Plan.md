@@ -1,10 +1,10 @@
-# Phase 6a Publishing Plan – LLM Guardrails Framework
+# Phase 6c Publishing Plan – LLM Guardrails Framework
 
 ## Status: 🔴 PENDING
 
-**Start Date**: TBD (After Phase 6 completion)  
+**Start Date**: TBD (After Phase 6b completion)  
 **Current Status**: Not started  
-**Dependencies**: Phase 6 (Policy and Context Controls) ✅ COMPLETE
+**Dependencies**: Phase 6b (Compliance Logging) 🔴 PENDING
 
 ## Objectives
 - Prepare and publish the Stinger LLM Guardrails Framework to PyPI and TestPyPI
