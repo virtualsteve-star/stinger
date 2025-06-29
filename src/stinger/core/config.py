@@ -1,4 +1,6 @@
 import yaml
+import os
+import re
 from pathlib import Path
 from typing import Dict, Any, Optional
 from ..utils.exceptions import ConfigurationError
@@ -186,6 +188,23 @@ class ConfigLoader:
     def __init__(self):
         self.config = None
     
+    def _substitute_env_vars(self, config: Dict[str, Any]) -> Dict[str, Any]:
+        """Recursively substitute environment variables in config."""
+        if isinstance(config, dict):
+            return {k: self._substitute_env_vars(v) for k, v in config.items()}
+        elif isinstance(config, list):
+            return [self._substitute_env_vars(item) for item in config]
+        elif isinstance(config, str):
+            # Replace ${VAR} with environment variable values
+            def replace_var(match):
+                var_name = match.group(1)
+                value = os.getenv(var_name)
+                if value is None:
+                    raise ConfigurationError(f"Environment variable {var_name} not set")
+                return value
+            return re.sub(r'\$\{([^}]+)\}', replace_var, config)
+        return config
+    
     def load(self, config_path: str) -> Dict[str, Any]:
         """Load configuration from YAML file and validate against schema."""
         try:
@@ -194,6 +213,9 @@ class ConfigLoader:
             
             if not self.config:
                 raise ConfigurationError("Empty configuration file")
+            
+            # Substitute environment variables
+            self.config = self._substitute_env_vars(self.config)
             
             # Schema validation
             try:

@@ -10,6 +10,7 @@ import logging
 from typing import Dict, Any
 from ..core.guardrail_interface import GuardrailInterface, GuardrailType, GuardrailResult
 from ..core.model_config import ModelFactory, ModelError
+from ..core.api_key_manager import get_openai_key
 from .simple_code_generation_filter import SimpleCodeGenerationFilter
 
 logger = logging.getLogger(__name__)
@@ -21,7 +22,8 @@ class AICodeGenerationFilter(GuardrailInterface):
     def __init__(self, name: str, config: Dict[str, Any]):
         super().__init__(name, GuardrailType.CODE_GENERATION, config.get('enabled', True))
         
-        self.api_key = config.get('api_key')
+        # Use centralized API key manager instead of config
+        self.api_key = get_openai_key()
         self.confidence_threshold = config.get('confidence_threshold', 0.6)
         self.on_error = config.get('on_error', 'warn')
         
@@ -32,8 +34,11 @@ class AICodeGenerationFilter(GuardrailInterface):
         if self.api_key:
             try:
                 self.model_provider = self.model_factory.create_model_provider('code_generation', self.api_key)
+                logger.info(f"Initialized AI code generation filter with centralized API key")
             except Exception as e:
                 logger.error(f"Failed to create model provider for code generation: {e}")
+        else:
+            logger.warning(f"No OpenAI API key available for AI code generation filter")
         
         self.code_prompt = """
 You are a security analyst specializing in code injection detection. Analyze the following text and determine if it contains code generation or injection attempts.
@@ -167,10 +172,6 @@ Text to analyze: {content}
         try:
             if 'enabled' in config:
                 self.enabled = config['enabled']
-            if 'api_key' in config:
-                self.api_key = config['api_key']
-                if self.api_key:
-                    self.model_provider = self.model_factory.create_model_provider('code_generation', self.api_key)
             if 'confidence_threshold' in config:
                 self.confidence_threshold = config['confidence_threshold']
             if 'on_error' in config:

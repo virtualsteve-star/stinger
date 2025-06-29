@@ -15,6 +15,14 @@ try:
 except ImportError:
     ResultType = Any
 
+# Import centralized API key manager
+try:
+    from src.stinger.core.api_key_manager import get_openai_key
+except ImportError:
+    # Fallback for demo purposes
+    def get_openai_key():
+        return os.environ.get("OPENAI_API_KEY")
+
 
 def print_header(title: str, subtitle: Optional[str] = None) -> None:
     """Print a beautiful demo header."""
@@ -153,7 +161,8 @@ def format_scenario(title: str, description: str, user_prompt: str, model_respon
 
 def call_llm(prompt: str) -> str:
     """Call the LLM (mock if OpenAI not available)."""
-    api_key = os.environ.get("OPENAI_API_KEY")
+    # Use centralized API key manager instead of direct environment access
+    api_key = get_openai_key()
     
     try:
         import openai

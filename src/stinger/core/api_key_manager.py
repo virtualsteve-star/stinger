@@ -313,4 +313,39 @@ class APIKeyManager:
     
     def get_secure_storage_path(self) -> str:
         """Get the path to secure storage."""
-        return str(Path.home() / '.stinger' / 'api_keys.enc') 
+        return str(Path.home() / '.stinger' / 'api_keys.enc')
+
+
+# Global API key manager instance
+_api_key_manager = None
+
+def _get_api_key_manager() -> APIKeyManager:
+    """Get or create global API key manager instance."""
+    global _api_key_manager
+    if _api_key_manager is None:
+        _api_key_manager = APIKeyManager()
+    return _api_key_manager
+
+def get_api_key(service: str = 'openai') -> Optional[str]:
+    """Get API key for specified service."""
+    return _get_api_key_manager().get_key(service)
+
+def validate_api_key_config() -> Dict[str, bool]:
+    """Validate all API key configurations."""
+    return _get_api_key_manager().health_check()
+
+def set_api_key(service: str, key: str, encrypt: bool = True) -> bool:
+    """Set API key for specified service."""
+    return _get_api_key_manager().set_key(service, key, encrypt)
+
+def get_openai_key() -> Optional[str]:
+    """Get OpenAI API key (convenience function)."""
+    return get_api_key('openai')
+
+def get_azure_openai_key() -> Optional[str]:
+    """Get Azure OpenAI API key (convenience function)."""
+    return get_api_key('azure_openai')
+
+def get_anthropic_key() -> Optional[str]:
+    """Get Anthropic API key (convenience function)."""
+    return get_api_key('anthropic') 

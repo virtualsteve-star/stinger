@@ -112,4 +112,14 @@ dmypy.json
 
 # OS
 .DS_Store
-Thumbs.db test_api_keys.yaml
+Thumbs.db
+
+# API Keys and Secrets
+test_api_keys.yaml
+*.key
+*.pem
+*.env
+secrets/
+api_keys/
+.env.local
+.env.production
