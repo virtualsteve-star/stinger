@@ -188,12 +188,64 @@ python3 demo.py
 python3 examples/simple_usage.py
 ```
 
-## 📚 Documentation
+## 📚 Learning Resources
 
+Stinger provides multiple ways to learn and explore its capabilities:
+
+### **🎓 Getting Started Examples** (`/examples/getting_started/`)
+**Perfect for:** Learning Stinger step by step
+
+Follow the structured learning path with 9 numbered examples:
+
+```bash
+# Start with basic installation
+python examples/getting_started/01_basic_installation.py
+
+# Learn about filters and presets
+python examples/getting_started/02_simple_filter.py
+
+# Explore rate limiting
+python examples/getting_started/03_global_rate_limiting.py
+
+# Master the conversation API
+python examples/getting_started/04_conversation_api.py
+
+# Continue through all examples...
+python examples/getting_started/05_conversation_rate_limiting.py
+python examples/getting_started/06_health_monitoring.py
+python examples/getting_started/07_cli_and_yaml_config.py
+python examples/getting_started/08_security_audit_trail.py
+python examples/getting_started/09_troubleshooting_and_testing.py
+```
+
+### **🔬 Interactive Demos** (`/demos/`)
+**Perfect for:** Exploring advanced features and complex scenarios
+
+```bash
+# Comprehensive conversation management
+python demos/conversation_demo.py
+
+# Advanced rate limiting scenarios
+python demos/global_rate_limiting_demo.py
+
+# Topic-based content filtering
+python demos/topic_filter_demo.py
+
+# Complete tech support scenario
+cd demos/tech_support
+python demo.py
+```
+
+### **📖 Documentation**
+- [Getting Started Guide](docs/GETTING_STARTED.md) - Complete learning guide
 - [API Reference](docs/API_REFERENCE.md) - Complete API documentation
 - [Configuration Guide](docs/CONFIGURATION.md) - Configuration file format
-- [Examples](examples/) - Code examples and demos
-- [Testing](tests/) - Test suite and scenarios
+
+### **Learning Path**
+1. **Start with examples** (01-09) to learn the basics
+2. **Explore demos** for advanced features and scenarios
+3. **Check documentation** for detailed reference
+4. **Review tests** for edge cases and validation
 
 ## 🔧 Development
 
