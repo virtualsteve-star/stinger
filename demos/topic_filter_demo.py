@@ -127,23 +127,30 @@ class TopicFilterDemo:
         import yaml
         
         pipeline_config = {
-            'input_guardrails': [
-                {
-                    'type': 'topic_filter',
-                    'name': 'customer_service_filter',
-                    'mode': 'allow',
-                    'allow_topics': ['account', 'billing', 'support', 'help'],
-                    'confidence_threshold': 0.5
-                },
-                {
-                    'type': 'topic_filter',
-                    'name': 'content_moderation_filter',
-                    'mode': 'deny',
-                    'deny_topics': ['hate speech', 'violence', 'threats'],
-                    'confidence_threshold': 0.6
-                }
-            ],
-            'output_guardrails': []
+            'version': '1.0',
+            'pipeline': {
+                'input': [
+                    {
+                        'type': 'content_moderation',
+                        'name': 'customer_service_filter',
+                        'mode': 'allow',
+                        'allow_topics': ['account', 'billing', 'support', 'help'],
+                        'confidence_threshold': 0.5,
+                        'enabled': True,
+                        'on_error': 'block'
+                    },
+                    {
+                        'type': 'content_moderation',
+                        'name': 'content_moderation_filter',
+                        'mode': 'deny',
+                        'deny_topics': ['hate speech', 'violence', 'threats'],
+                        'confidence_threshold': 0.6,
+                        'enabled': True,
+                        'on_error': 'block'
+                    }
+                ],
+                'output': []
+            }
         }
         
         # Create temporary config file

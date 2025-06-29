@@ -194,9 +194,9 @@ conv = Conversation.human_ai("user123", "assistant")
 conv.add_exchange("Hello", "Hi there!")
 conv.add_exchange("How are you?", "I'm doing well, thanks!")
 
-# Check rate limit status
-status = conv.get_rate_limit_status()
-print(f"Remaining requests: {status['remaining']}")
+# Check if rate limit is exceeded
+exceeded = conv.check_rate_limit(action="warn")
+print(f"Rate limit exceeded: {exceeded}")
 ```
 
 ## 🧪 Testing Your Setup
@@ -299,6 +299,23 @@ python examples/getting_started/04_conversation_api.py
 - Automatic guardrail application
 - Conversation context and history management
 
+Example usage:
+```python
+from stinger import Conversation
+
+conv = Conversation.human_ai("user123", "assistant")
+conv.add_exchange("Hello", "Hi there! How can I help you today?")
+conv.add_exchange("How are you?", "I'm doing well, thanks for asking!")
+
+# Check if rate limit is exceeded
+exceeded = conv.check_rate_limit(action="warn")
+print(f"Rate limit exceeded: {exceeded}")
+
+# Get conversation history
+for turn in conv.get_history():
+    print(f"Prompt: {turn.prompt} | Response: {turn.response}")
+```
+
 ### **05_conversation_rate_limiting.py** - Conversation Rate Limiting
 ```bash
 python examples/getting_started/05_conversation_rate_limiting.py
@@ -315,6 +332,17 @@ python examples/getting_started/06_health_monitoring.py
 - Check guardrail status and configuration
 - View detailed health metrics
 
+Example usage:
+```python
+from stinger import health_monitor
+
+status = health_monitor.get_status()
+print(f"Overall status: {status['overall']}")
+print(f"Pipeline status: {status['pipeline']}")
+print(f"API keys status: {status['api_keys']}")
+print(f"Rate limiter status: {status['rate_limiter']}")
+```
+
 ### **07_cli_and_yaml_config.py** - CLI and YAML Configuration
 ```bash
 python examples/getting_started/07_cli_and_yaml_config.py
@@ -322,6 +350,45 @@ python examples/getting_started/07_cli_and_yaml_config.py
 - Use the command-line interface
 - Create and load custom YAML configurations
 - Understand configuration structure
+
+Example YAML config:
+```yaml
+version: '1.0'
+pipeline:
+  input:
+    - name: toxicity_check
+      type: simple_toxicity_detection
+      enabled: true
+      on_error: block
+      config:
+        categories: [hate_speech, harassment]
+        confidence_threshold: 0.8
+    - name: pii_check
+      type: simple_pii_detection
+      enabled: true
+      on_error: warn
+    - name: length_check
+      type: length_filter
+      enabled: true
+      on_error: warn
+      config:
+        max_length: 1000
+        min_length: 1
+  output:
+    - name: content_moderation
+      type: content_moderation
+      enabled: true
+      on_error: block
+```
+
+Load and use the config in Python:
+```python
+from stinger import GuardrailPipeline
+
+pipeline = GuardrailPipeline('configs/custom_example.yaml')
+result = pipeline.check_input('Test content')
+print(result)
+```
 
 ### **08_security_audit_trail.py** - Security Audit Trail
 ```bash
@@ -331,6 +398,16 @@ python examples/getting_started/08_security_audit_trail.py
 - Track all security decisions for compliance
 - Use smart environment detection for automatic setup
 - Implement PII redaction and forensic analysis
+
+Example usage:
+```python
+from stinger import audit
+
+audit.enable()  # Zero-config, just works!
+
+# Enable with file destination and PII redaction
+audit.enable('audit.log', redact_pii=True)
+```
 
 ### **09_troubleshooting_and_testing.py** - Troubleshooting and Testing
 ```bash

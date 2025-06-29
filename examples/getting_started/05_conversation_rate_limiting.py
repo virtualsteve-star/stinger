@@ -39,11 +39,11 @@ def main():
         conv.add_exchange(prompt, response)
         
         # Check rate limit status
-        status = conv.get_rate_limit_status()
-        print(f"   Rate limit: {status['remaining']} requests remaining")
+        status = conv.check_rate_limit(action="warn")
+        print(f"   Rate limit exceeded: {status}")
         
         # Show if rate limited
-        if status['remaining'] <= 0:
+        if status:
             print("   ⚠️  Rate limit reached!")
             break
     
@@ -63,10 +63,13 @@ def main():
     print("\n4. Rate limit information:")
     print("-" * 25)
     
-    status = conv.get_rate_limit_status()
-    print(f"   Current remaining: {status['remaining']}")
-    print(f"   Limit: {status.get('limit', 'N/A')}")
-    print(f"   Window: {status.get('window', 'N/A')}")
+    # Check if rate limit is configured
+    if conv.rate_limit:
+        print(f"   Rate limit config: {conv.rate_limit}")
+        exceeded = conv.check_rate_limit(action="log")
+        print(f"   Currently exceeded: {exceeded}")
+    else:
+        print("   No rate limit configured")
     
     print("\n🎉 Rate limiting working! Conversations are automatically rate limited.")
 
