@@ -1,5 +1,11 @@
 import asyncio
-from src.filters.content_moderation_filter import ContentModerationFilter
+import sys
+from pathlib import Path
+
+# Add src to path for imports
+sys.path.insert(0, str(Path(__file__).parent.parent / 'src'))
+
+from filters.content_moderation_filter import ContentModerationFilter
 
 async def test():
     filter = ContentModerationFilter('test', {

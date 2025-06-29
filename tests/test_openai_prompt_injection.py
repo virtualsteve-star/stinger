@@ -1,5 +1,11 @@
 import asyncio
-from src.filters.prompt_injection_filter import PromptInjectionFilter
+import sys
+from pathlib import Path
+
+# Add src to path for imports
+sys.path.insert(0, str(Path(__file__).parent.parent / 'src'))
+
+from filters.prompt_injection_filter import PromptInjectionFilter
 
 async def test():
     filter = PromptInjectionFilter('test', {

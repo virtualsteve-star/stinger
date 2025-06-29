@@ -15,7 +15,7 @@ cd Stinger
 pip install -r requirements.txt
 
 # Set up your API keys
-python manage_api_keys.py add openai
+python scripts/manage_api_keys.py add openai
 ```
 
 ### 2. Your First Guardrail Check
@@ -129,16 +129,16 @@ Stinger supports multiple AI providers. Set up your keys:
 
 ```bash
 # Add OpenAI API key
-python manage_api_keys.py add openai
+python scripts/manage_api_keys.py add openai
 
 # Test your key
-python manage_api_keys.py test openai
+python scripts/manage_api_keys.py test openai
 
 # List configured services
-python manage_api_keys.py list
+python scripts/manage_api_keys.py list
 ```
 
-## 🏥 Health Monitoring
+## �� Health Monitoring
 
 Monitor your system's health:
 
@@ -228,13 +228,13 @@ export PYTHONPATH=src:$PYTHONPATH
 **2. API Key Issues**
 ```bash
 # Check if your key is set up
-python manage_api_keys.py list
+python scripts/manage_api_keys.py list
 
 # Test your key
-python manage_api_keys.py test openai
+python scripts/manage_api_keys.py test openai
 
 # Re-add if needed
-python manage_api_keys.py add openai
+python scripts/manage_api_keys.py add openai
 ```
 
 **3. Configuration Errors**

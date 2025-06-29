@@ -457,12 +457,12 @@ def query(conversation_id: str = None, user_id: str = None,
                         record_time = datetime.fromisoformat(record["timestamp"].replace('Z', '+00:00'))
                         if record_time < current_time - timedelta(hours=1):
                             continue
-                    if start_time:
+                    elif start_time:
                         record_time = datetime.fromisoformat(record["timestamp"].replace('Z', '+00:00'))
                         start_dt = datetime.fromisoformat(start_time.replace('Z', '+00:00'))
                         if record_time < start_dt:
                             continue
-                    if end_time:
+                    elif end_time:
                         record_time = datetime.fromisoformat(record["timestamp"].replace('Z', '+00:00'))
                         end_dt = datetime.fromisoformat(end_time.replace('Z', '+00:00'))
                         if record_time > end_dt:
