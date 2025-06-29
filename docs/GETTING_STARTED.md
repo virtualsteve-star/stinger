@@ -263,6 +263,95 @@ Now that you're up and running:
 4. **Monitor Performance**: Use health monitoring for production insights
 5. **Join the Community**: Contribute and share your use cases
 
+## 📚 Getting Started Examples
+
+We've created a comprehensive set of examples to help you learn Stinger step by step. Each example is self-contained and demonstrates specific features:
+
+### **01_basic_installation.py** - Basic Installation
+```bash
+python examples/getting_started/01_basic_installation.py
+```
+- Verify Stinger installation
+- Test basic imports and functionality
+- Confirm API key setup
+
+### **02_simple_filter.py** - Simple Filter Presets
+```bash
+python examples/getting_started/02_simple_filter.py
+```
+- Use pre-configured filter presets
+- Test customer service and medical bot presets
+- Understand blocking vs warning behavior
+
+### **03_global_rate_limiting.py** - Global Rate Limiting
+```bash
+python examples/getting_started/03_global_rate_limiting.py
+```
+- Global rate limiting for API keys
+- Monitor rate limit status across users
+- Understand rate limit windows and tracking
+
+### **04_conversation_api.py** - Conversation API
+```bash
+python examples/getting_started/04_conversation_api.py
+```
+- Use the Conversation API for multi-turn interactions
+- Automatic guardrail application
+- Conversation context and history management
+
+### **05_conversation_rate_limiting.py** - Conversation Rate Limiting
+```bash
+python examples/getting_started/05_conversation_rate_limiting.py
+```
+- Rate limiting within conversations
+- Monitor conversation-specific rate limits
+- Understand conversation turn limits
+
+### **06_health_monitoring.py** - Health Monitoring
+```bash
+python examples/getting_started/06_health_monitoring.py
+```
+- Monitor system health and performance
+- Check guardrail status and configuration
+- View detailed health metrics
+
+### **07_cli_and_yaml_config.py** - CLI and YAML Configuration
+```bash
+python examples/getting_started/07_cli_and_yaml_config.py
+```
+- Use the command-line interface
+- Create and load custom YAML configurations
+- Understand configuration structure
+
+### **08_security_audit_trail.py** - Security Audit Trail
+```bash
+python examples/getting_started/08_security_audit_trail.py
+```
+- Enable security audit logging with zero configuration
+- Track all security decisions for compliance
+- Use smart environment detection for automatic setup
+- Implement PII redaction and forensic analysis
+
+### **09_troubleshooting_and_testing.py** - Troubleshooting and Testing
+```bash
+python examples/getting_started/09_troubleshooting_and_testing.py
+```
+- Debug common issues
+- Test your setup comprehensively
+- Validate configuration and API keys
+
+### Running All Examples
+```bash
+# Run all examples in sequence
+for example in examples/getting_started/*.py; do
+    echo "Running $example..."
+    python "$example"
+    echo "---"
+done
+```
+
+Each example is designed to be run independently and includes clear output showing what's happening. They follow the same structure as this Getting Started guide and provide hands-on experience with Stinger's features.
+
 ## 🎯 Quick Reference
 
 ### CLI Commands
@@ -304,4 +393,4 @@ output_guardrails:
 
 ---
 
-**🎉 You're all set! Stinger is protecting your LLM applications.** 
+**🎉 You're all set! Stinger is protecting your LLM applications.**

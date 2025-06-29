@@ -237,4 +237,23 @@ examples/
 - All samples tested and verified to work
 - Documentation examples match sample code exactly
 - Users can run samples directly without modification
-- Sample code provides clear learning path for new users 
+- Sample code provides clear learning path for new users
+
+## Notes on Existing Examples
+
+### Current `examples/simple_usage.py`
+- **Keep for now**: The existing `simple_usage.py` file demonstrates excellent code quality with minimal boilerplate
+- **Preserve quality**: All new examples should maintain the same tight, focused approach
+- **Future replacement**: Once the new getting started series adequately covers all functionality in `simple_usage.py`, we can remove it
+- **Assessment criteria**: New examples should cover:
+  - Basic pipeline initialization
+  - Input/output guardrail testing
+  - Dynamic configuration updates
+  - Real-world test cases
+  - Clear, actionable output
+
+### Migration Strategy
+- Create new examples following the tight, focused approach of `simple_usage.py`
+- Ensure new examples cover all functionality currently in `simple_usage.py`
+- Test that new examples provide the same learning value
+- Only then remove `simple_usage.py` to avoid duplication 

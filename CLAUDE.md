@@ -1,17 +1,17 @@
-# BRANCH POLICY REMINDER
-# Always work against the 'dev' branch for all development, except when explicitly instructed to use 'main'.
-# This ensures safe, reviewable PRs and keeps main stable.
+# CLAUDE.md - AI Assistant Guidelines for Stinger Project
 
-# CRITICAL BRANCH WORKFLOW RULE
-# NEVER push directly to main branch. ALWAYS:
-# 1. Work on dev branch
-# 2. Make changes and commit to dev
-# 3. Push to origin/dev
-# 4. Create PR from dev to main
-# 5. Merge via PR, never direct push to main
-# This rule is non-negotiable for code safety and review process.
+## BRANCH POLICY REMINDER
+Always work against the 'dev' branch for all development, except when explicitly instructed to use 'main'.
+This ensures safe, reviewable PRs and keeps main stable.
 
-# Stinger LLM Guardrails Framework - Development Rules
+## CRITICAL BRANCH WORKFLOW RULE
+NEVER push directly to main branch. ALWAYS:
+1. Work on dev branch
+2. Make changes and commit to dev
+3. Push to origin/dev
+4. Create PR from dev to main
+5. Merge via PR, never direct push to main
+This rule is non-negotiable for code safety and review process.
 
 ## Code Quality & Architecture
 
@@ -88,8 +88,20 @@
 - Avoid copy/paste by using `--body-file` flag for issue content
 - Example: `gh issue create --title "Title" --body-file issue.md`
 
-## Code Review Checklist
+## AI Model Configuration
+**IMPORTANT**: Always use "gpt-4.1-nano" as the base model for AI filters, NOT "gpt-4o-mini"
+This has been discussed and agreed upon - gpt-4.1-nano is the correct model name
+Use this consistently across all AI-based filters and adapters
 
+## GitHub Repository
+Always use 'virtualsteve-star/stinger' as the GitHub repo for CLI and issue-related actions
+
+## Date Handling
+ALWAYS use the real current date when documenting completion dates, timestamps, or any time-related information
+Run 'date' command to get the current date/time before writing dates in documentation
+Never assume or guess dates - always verify with the system date
+
+## Code Review Checklist
 Before submitting any changes:
 - [ ] Code follows project architecture patterns
 - [ ] Tests are meaningful and pass
@@ -100,42 +112,3 @@ Before submitting any changes:
 
 ## Remember
 **Quality over speed. Architecture over quick fixes. Tests that actually test.**
-
-# Cursor configuration for Stinger project
-
-# IMPORTANT: Always use "gpt-4.1-nano" as the base model for AI filters, NOT "gpt-4o-mini"
-# This has been discussed and agreed upon - gpt-4.1-nano is the correct model name
-# Use this consistently across all AI-based filters and adapters
-
-# Project-specific settings
-{
-  "projectName": "Stinger",
-  "defaultModel": "gpt-4.1-nano",
-  "aiFilters": {
-    "contentModeration": "gpt-4.1-nano",
-    "promptInjection": "gpt-4.1-nano", 
-    "piiDetection": "gpt-4.1-nano",
-    "toxicityDetection": "gpt-4.1-nano",
-    "codeGeneration": "gpt-4.1-nano"
-  }
-}
-
-# ---
-# NOTES ON GITHUB ISSUE HANDLING (for future reference)
-#
-# - Preferred: Use GitHub CLI (gh issue list, gh issue close) for listing and closing issues.
-#   - If CLI output is broken, try using the GitHub API with curl for listing issues:
-#     curl -s "https://api.github.com/repos/virtualsteve-star/stinger/issues?state=open" | jq '.[] | {number, title, state}'
-#   - To close issues via API, use a PATCH request with a personal access token.
-# - If all else fails, review and close issues manually via the GitHub web interface.
-# - Always add a relevant comment when closing issues, referencing code, tests, or documentation as appropriate.
-# - Document any changes to issue handling in this section for future maintainers.
-
-# .cursor configuration
-# Always use 'virtualsteve-star/stinger' as the GitHub repo for CLI and issue-related actions
-GITHUB_REPO=virtualsteve-star/stinger
-
-# DATE REMINDER
-# ALWAYS use the real current date when documenting completion dates, timestamps, or any time-related information
-# Run 'date' command to get the current date/time before writing dates in documentation
-# Never assume or guess dates - always verify with the system date 
