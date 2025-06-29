@@ -224,7 +224,12 @@ class GuardrailPipeline:
                 else:
                     logger.warning(f"Failed to create {pipeline_type} guardrail from config: {config}")
             except Exception as e:
-                logger.error(f"Error creating {pipeline_type} guardrail: {e}")
+                # Log the error with full context but continue building pipeline
+                guardrail_name = config.get('name', 'unknown')
+                guardrail_type = config.get('type', 'unknown')
+                logger.error(f"Failed to create {pipeline_type} guardrail '{guardrail_name}' of type '{guardrail_type}': {e}")
+                logger.debug(f"Full config: {config}")
+                # Continue processing other guardrails instead of failing completely
         
         return pipeline
     
@@ -379,6 +384,157 @@ class GuardrailPipeline:
         
         return result
     
+    async def check_input_async(self, content: str, conversation: Optional[Conversation] = None, api_key: Optional[str] = None, role: Optional[str] = None) -> PipelineResult:
+        """
+        Async version of check_input - Check input content through all input guardrails.
+        
+        Args:
+            content: The input content to check
+            conversation: Optional conversation context for multi-turn scenarios
+            api_key: Optional API key for global rate limiting
+            role: Optional user role for role-based overrides
+            
+        Returns:
+            Dict with 'blocked', 'warnings', 'reasons', 'details', and 'conversation_id' keys
+            
+        Raises:
+            ValueError: If content is None or empty
+            RuntimeError: If pipeline execution fails
+        """
+        if content is None:
+            raise ValueError("Content cannot be None")
+        
+        # Check global rate limits if API key provided
+        if api_key:
+            global_rate_result = self.global_rate_limiter.check_rate_limit(api_key, role=role)
+            if global_rate_result["exceeded"]:
+                return {
+                    'blocked': True,
+                    'warnings': [],
+                    'reasons': [f"Global rate limit exceeded for API key {api_key}"],
+                    'details': {'global_rate_limit': global_rate_result},
+                    'pipeline_type': 'input',
+                    'conversation_id': conversation.conversation_id if conversation else None
+                }
+                
+            # Record the request
+            self.global_rate_limiter.record_request(api_key)
+        
+        # Check conversation rate limits if provided
+        if conversation and conversation.check_rate_limit():
+            return {
+                'blocked': True,
+                'warnings': [],
+                'reasons': [f"Rate limit exceeded for conversation {conversation.conversation_id}"],
+                'details': {'rate_limit': 'exceeded'},
+                'pipeline_type': 'input',
+                'conversation_id': conversation.conversation_id
+            }
+        
+        # Add prompt to conversation if provided
+        if conversation:
+            conversation.add_prompt(content)
+        
+        # Log user prompt to audit trail
+        request_id = getattr(conversation, 'current_request_id', None) if conversation else None
+        user_id = getattr(conversation, 'initiator', None) if conversation else None
+        conversation_id = conversation.conversation_id if conversation else None
+        
+        audit.log_prompt(
+            prompt=content,
+            user_id=user_id,
+            conversation_id=conversation_id,
+            request_id=request_id
+        )
+        
+        # Run pipeline and get results
+        result = await self._run_pipeline_async(self.input_pipeline, content, "input", conversation)
+        
+        # Annotate guardrail results into conversation if provided
+        if conversation and conversation.turns:
+            self._annotate_guardrail_results(conversation.turns[-1], result)
+        
+        return result
+    
+    async def check_output_async(self, content: str, conversation: Optional[Conversation] = None, api_key: Optional[str] = None, role: Optional[str] = None) -> PipelineResult:
+        """
+        Async version of check_output - Check output content through all output guardrails.
+        
+        Args:
+            content: The output content to check
+            conversation: Optional conversation context for multi-turn scenarios
+            api_key: Optional API key for global rate limiting
+            role: Optional user role for role-based overrides
+            
+        Returns:
+            Dict with 'blocked', 'warnings', 'reasons', 'details', and 'conversation_id' keys
+            
+        Raises:
+            ValueError: If content is None or empty
+            RuntimeError: If pipeline execution fails
+        """
+        if content is None:
+            raise ValueError("Content cannot be None")
+        
+        # Check global rate limits if API key provided
+        if api_key:
+            global_rate_result = self.global_rate_limiter.check_rate_limit(api_key, role=role)
+            if global_rate_result["exceeded"]:
+                return {
+                    'blocked': True,
+                    'warnings': [],
+                    'reasons': [f"Global rate limit exceeded for API key {api_key}"],
+                    'details': {'global_rate_limit': global_rate_result},
+                    'pipeline_type': 'output',
+                    'conversation_id': conversation.conversation_id if conversation else None
+                }
+            
+            # Record the request
+            self.global_rate_limiter.record_request(api_key)
+        
+        # Check conversation rate limits if provided
+        if conversation and conversation.check_rate_limit():
+            return {
+                'blocked': True,
+                'warnings': [],
+                'reasons': [f"Rate limit exceeded for conversation {conversation.conversation_id}"],
+                'details': {'rate_limit': 'exceeded'},
+                'pipeline_type': 'output',
+                'conversation_id': conversation.conversation_id
+            }
+        
+        # Add response to conversation if provided
+        if conversation:
+            try:
+                # Try to add response to the most recent incomplete turn
+                conversation.add_response(content)
+            except ValueError as e:
+                # If no prompt-only turn exists, this is an error in the conversation flow
+                # Log the error and create a new turn with empty prompt and the response
+                logger.warning(f"No prompt found for response in conversation {conversation.conversation_id}: {e}")
+                conversation.add_turn("", content)
+        
+        # Log LLM response to audit trail
+        request_id = getattr(conversation, 'current_request_id', None) if conversation else None
+        user_id = getattr(conversation, 'initiator', None) if conversation else None
+        conversation_id = conversation.conversation_id if conversation else None
+        
+        audit.log_response(
+            response=content,
+            user_id=user_id,
+            conversation_id=conversation_id,
+            request_id=request_id
+        )
+        
+        # Run pipeline and get results
+        result = await self._run_pipeline_async(self.output_pipeline, content, "output", conversation)
+        
+        # Annotate guardrail results into conversation if provided
+        if conversation and conversation.turns:
+            self._annotate_guardrail_results(conversation.turns[-1], result)
+        
+        return result
+    
     def _annotate_guardrail_results(self, turn: Turn, result: PipelineResult) -> None:
         """
         Annotate guardrail results into turn metadata.
@@ -403,6 +559,21 @@ class GuardrailPipeline:
         logger.debug(f"Annotated guardrail results to turn in conversation {result['conversation_id']}: blocked={result['blocked']}")
     
     def _run_pipeline(self, pipeline: List[GuardrailInterface], content: str, pipeline_type: str, conversation: Optional[Conversation] = None) -> PipelineResult:
+        """
+        Sync wrapper for pipeline execution - runs the async pipeline in a new event loop.
+        """
+        try:
+            # Try to get current event loop
+            current_loop = asyncio.get_running_loop()
+            # If we're in an async context, this will cause issues
+            logger.warning("Running pipeline in sync context while async loop is active. Consider using async methods.")
+        except RuntimeError:
+            # No running loop, safe to use asyncio.run
+            pass
+        
+        return asyncio.run(self._run_pipeline_async(pipeline, content, pipeline_type, conversation))
+    
+    async def _run_pipeline_async(self, pipeline: List[GuardrailInterface], content: str, pipeline_type: str, conversation: Optional[Conversation] = None) -> PipelineResult:
         """
         Run content through a pipeline of guardrails.
         
@@ -430,14 +601,17 @@ class GuardrailPipeline:
         
         for guardrail in pipeline:
             try:
-                # Run the async analyze method in a sync context
-                result = asyncio.run(guardrail.analyze(content))
+                # Run the async analyze method properly
+                result = await guardrail.analyze(content)
                 
                 if result.blocked:
                     blocked = True
                     reasons.append(f"{guardrail.name}: {result.reason}")
                 
-                if result.confidence > 0.5 and not result.blocked:
+                # Check if this should be a warning - only if the original action was 'warn'
+                # or if it's a high-confidence non-blocked result that isn't an explicit 'allow'
+                original_action = result.details.get('action', '')
+                if original_action == 'warn' or (result.confidence > 0.5 and not result.blocked and original_action != 'allow'):
                     warnings.append(f"{guardrail.name}: {result.reason}")
                 
                 # Store detailed results
@@ -452,10 +626,11 @@ class GuardrailPipeline:
                 request_id = getattr(conversation, 'current_request_id', None) if conversation else None
                 user_id = getattr(conversation, 'initiator', None) if conversation else None
                 
-                # Determine decision type for audit
+                # Determine decision type for audit based on original action
+                original_action = result.details.get('action', '')
                 if result.blocked:
                     decision = "block"
-                elif result.confidence > 0.5:
+                elif original_action == 'warn' or (result.confidence > 0.5 and not result.blocked and original_action != 'allow'):
                     decision = "warn"
                 else:
                     decision = "allow"
@@ -553,41 +728,75 @@ class GuardrailPipeline:
         
         return status
     
-    def enable_guardrail(self, name: str) -> bool:
+    def enable_guardrail(self, name: str, pipeline_type: Optional[str] = None) -> bool:
         """
         Enable a specific guardrail by name.
         
         Args:
             name: Name of the guardrail to enable
+            pipeline_type: Optional pipeline type ('input', 'output'). If None, enables all matching names.
             
         Returns:
             True if guardrail was found and enabled, False otherwise
         """
-        for guardrail in self.input_pipeline + self.output_pipeline:
-            if guardrail.name == name:
-                guardrail.enable()
-                logger.info(f"Enabled guardrail: {name}")
-                return True
-        logger.warning(f"Guardrail not found: {name}")
-        return False
+        found = False
+        
+        if pipeline_type is None or pipeline_type == 'input':
+            for guardrail in self.input_pipeline:
+                if guardrail.name == name:
+                    guardrail.enable()
+                    logger.info(f"Enabled input guardrail: {name}")
+                    found = True
+                    if pipeline_type == 'input':
+                        break
+                        
+        if pipeline_type is None or pipeline_type == 'output':
+            for guardrail in self.output_pipeline:
+                if guardrail.name == name:
+                    guardrail.enable()
+                    logger.info(f"Enabled output guardrail: {name}")
+                    found = True
+                    if pipeline_type == 'output':
+                        break
+        
+        if not found:
+            logger.warning(f"Guardrail not found: {name}" + (f" in {pipeline_type} pipeline" if pipeline_type else ""))
+        return found
     
-    def disable_guardrail(self, name: str) -> bool:
+    def disable_guardrail(self, name: str, pipeline_type: Optional[str] = None) -> bool:
         """
         Disable a specific guardrail by name.
         
         Args:
             name: Name of the guardrail to disable
+            pipeline_type: Optional pipeline type ('input', 'output'). If None, disables all matching names.
             
         Returns:
             True if guardrail was found and disabled, False otherwise
         """
-        for guardrail in self.input_pipeline + self.output_pipeline:
-            if guardrail.name == name:
-                guardrail.disable()
-                logger.info(f"Disabled guardrail: {name}")
-                return True
-        logger.warning(f"Guardrail not found: {name}")
-        return False
+        found = False
+        
+        if pipeline_type is None or pipeline_type == 'input':
+            for guardrail in self.input_pipeline:
+                if guardrail.name == name:
+                    guardrail.disable()
+                    logger.info(f"Disabled input guardrail: {name}")
+                    found = True
+                    if pipeline_type == 'input':
+                        break
+                        
+        if pipeline_type is None or pipeline_type == 'output':
+            for guardrail in self.output_pipeline:
+                if guardrail.name == name:
+                    guardrail.disable()
+                    logger.info(f"Disabled output guardrail: {name}")
+                    found = True
+                    if pipeline_type == 'output':
+                        break
+        
+        if not found:
+            logger.warning(f"Guardrail not found: {name}" + (f" in {pipeline_type} pipeline" if pipeline_type else ""))
+        return found
     
     def get_guardrail_config(self, name: str) -> Optional[Dict[str, Any]]:
         """

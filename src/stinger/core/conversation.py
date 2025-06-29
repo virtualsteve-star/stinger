@@ -8,6 +8,7 @@ including rate limiting, logging context, and conversation history.
 import uuid
 import time
 import logging
+import threading
 from dataclasses import dataclass, field
 from typing import Dict, Any, List, Optional, Union
 from datetime import datetime, timedelta
@@ -114,6 +115,9 @@ class Conversation:
         self.turns: List[Turn] = []
         self.created_at = datetime.now()
         self.last_activity = self.created_at
+        
+        # Thread safety lock for state mutations
+        self._lock = threading.Lock()
         
         # Rate limiting configuration
         self.rate_limit = rate_limit or {}
@@ -270,26 +274,27 @@ class Conversation:
         Returns:
             The created Turn object
         """
-        turn = Turn(
-            timestamp=datetime.now(),
-            prompt=prompt,
-            response=response,
-            speaker=self.initiator,
-            listener=self.responder,
-            speaker_type=self.initiator_type,
-            listener_type=self.responder_type,
-            metadata=metadata or {}
-        )
-        
-        self.turns.append(turn)
-        self.last_activity = turn.timestamp
-        self.rate_limit_turns.append(turn.timestamp)
-        
-        # Clean up old rate limit entries
-        self._cleanup_rate_limit_entries()
-        
-        logger.debug(f"Added turn to conversation {self.conversation_id}: {self.initiator} -> {self.responder}")
-        return turn
+        with self._lock:
+            turn = Turn(
+                timestamp=datetime.now(),
+                prompt=prompt,
+                response=response,
+                speaker=self.initiator,
+                listener=self.responder,
+                speaker_type=self.initiator_type,
+                listener_type=self.responder_type,
+                metadata=metadata or {}
+            )
+            
+            self.turns.append(turn)
+            self.last_activity = turn.timestamp
+            self.rate_limit_turns.append(turn.timestamp)
+            
+            # Clean up old rate limit entries
+            self._cleanup_rate_limit_entries()
+            
+            logger.debug(f"Added turn to conversation {self.conversation_id}: {self.initiator} -> {self.responder}")
+            return turn
     
     def add_prompt(self, prompt: str, metadata: Optional[Dict[str, Any]] = None) -> Turn:
         """
@@ -318,16 +323,19 @@ class Conversation:
         Raises:
             ValueError: If no prompt-only turn exists
         """
-        if not self.turns or self.turns[-1].response is not None:
-            raise ValueError("No prompt-only turn exists to add response to")
-        
-        turn = self.turns[-1]
-        turn.response = response
-        if metadata:
-            turn.metadata.update(metadata)
-        
-        logger.debug(f"Added response to conversation {self.conversation_id}: {self.responder} -> {self.initiator}")
-        return turn
+        with self._lock:
+            if not self.turns or self.turns[-1].response is not None:
+                raise ValueError("No prompt-only turn exists to add response to")
+            
+            turn = self.turns[-1]
+            turn.response = response
+            if metadata:
+                turn.metadata.update(metadata)
+            
+            self.last_activity = datetime.now()
+            
+            logger.debug(f"Added response to conversation {self.conversation_id}: {self.responder} -> {self.initiator}")
+            return turn
     
     def get_history(self, limit: Optional[int] = None) -> List[Turn]:
         """
@@ -418,13 +426,15 @@ class Conversation:
             rate_limit: Rate limit configuration
                 Format: {"turns_per_minute": 10, "turns_per_hour": 100}
         """
-        self.rate_limit = rate_limit
-        logger.info(f"Updated rate limit for conversation {self.conversation_id}: {rate_limit}")
+        with self._lock:
+            self.rate_limit = rate_limit
+            logger.info(f"Updated rate limit for conversation {self.conversation_id}: {rate_limit}")
     
     def reset_rate_limit(self) -> None:
         """Reset rate limit tracking."""
-        self.rate_limit_turns.clear()
-        logger.info(f"Reset rate limit tracking for conversation {self.conversation_id}")
+        with self._lock:
+            self.rate_limit_turns.clear()
+            logger.info(f"Reset rate limit tracking for conversation {self.conversation_id}")
     
     def _cleanup_rate_limit_entries(self) -> None:
         """Remove old rate limit entries to prevent memory bloat."""

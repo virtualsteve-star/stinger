@@ -1,0 +1,26 @@
+# Stinger Web Demo Backend Requirements
+# 
+# These dependencies are needed for the FastAPI backend that serves
+# the Stinger guardrails web demo interface.
+
+# Web framework and server
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+python-multipart>=0.0.6
+
+# Template engine for serving static files
+jinja2>=3.1.0
+
+# Async file operations
+aiofiles>=23.0.0
+
+# CORS middleware (included with FastAPI but explicitly listed)
+# Required for communication between React frontend and FastAPI backend
+
+# Development and testing
+pytest>=7.0.0
+pytest-asyncio>=0.21.0
+httpx>=0.25.0  # For testing FastAPI endpoints
+
+# Note: Core Stinger dependencies are handled by the main project requirements.txt
+# This file only includes additional dependencies specific to the web demo backend.

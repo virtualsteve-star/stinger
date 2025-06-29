@@ -1,0 +1,49 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.13.2, pytest-8.4.1, pluggy-1.6.0 -- /Library/Frameworks/Python.framework/Versions/3.13/bin/python3.13
+cachedir: .pytest_cache
+rootdir: /Users/steve/Documents/GitHub/Stinger
+configfile: pytest.ini
+plugins: anyio-4.9.0, asyncio-1.0.0
+asyncio: mode=Mode.STRICT, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 12 items
+
+test_main.py::test_health_endpoint PASSED                                [  8%]
+test_main.py::test_guardrails_endpoint FAILED                            [ 16%]
+test_main.py::test_presets_endpoint PASSED                               [ 25%]
+test_main.py::test_conversation_endpoint PASSED                          [ 33%]
+test_main.py::test_audit_log_endpoint PASSED                             [ 41%]
+test_main.py::test_chat_endpoint FAILED                                  [ 50%]
+test_main.py::test_chat_with_pii FAILED                                  [ 58%]
+test_main.py::test_guardrail_settings_update FAILED                      [ 66%]
+test_main.py::test_conversation_reset PASSED                             [ 75%]
+test_main.py::test_preset_loading PASSED                                 [ 83%]
+test_main.py::test_invalid_chat_message PASSED                           [ 91%]
+test_main.py::test_invalid_preset PASSED                                 [100%]
+
+=================================== FAILURES ===================================
+___________________________ test_guardrails_endpoint ___________________________
+test_main.py:40: in test_guardrails_endpoint
+    assert response.status_code == 200
+E   assert 500 == 200
+E    +  where 500 = <Response [500 Internal Server Error]>.status_code
+______________________________ test_chat_endpoint ______________________________
+test_main.py:85: in test_chat_endpoint
+    assert response.status_code == 200
+E   assert 500 == 200
+E    +  where 500 = <Response [500 Internal Server Error]>.status_code
+______________________________ test_chat_with_pii ______________________________
+test_main.py:103: in test_chat_with_pii
+    assert response.status_code == 200
+E   assert 500 == 200
+E    +  where 500 = <Response [500 Internal Server Error]>.status_code
+________________________ test_guardrail_settings_update ________________________
+test_main.py:116: in test_guardrail_settings_update
+    assert response.status_code == 200
+E   assert 500 == 200
+E    +  where 500 = <Response [500 Internal Server Error]>.status_code
+=========================== short test summary info ============================
+FAILED test_main.py::test_guardrails_endpoint - assert 500 == 200
+FAILED test_main.py::test_chat_endpoint - assert 500 == 200
+FAILED test_main.py::test_chat_with_pii - assert 500 == 200
+FAILED test_main.py::test_guardrail_settings_update - assert 500 == 200
+========================= 4 failed, 8 passed in 0.38s ==========================

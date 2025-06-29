@@ -1,0 +1,12 @@
+
+> stinger-web-demo-frontend@1.0.0 test
+> react-scripts test --watchAll=false
+
+No tests found, exiting with code 1
+Run with `--passWithNoTests` to exit with code 0
+In /Users/steve/Documents/GitHub/Stinger/demos/web_demo/frontend
+  8 files checked.
+  testMatch: /Users/steve/Documents/GitHub/Stinger/demos/web_demo/frontend/src/**/__tests__/**/*.{js,jsx,ts,tsx}, /Users/steve/Documents/GitHub/Stinger/demos/web_demo/frontend/src/**/*.{spec,test}.{js,jsx,ts,tsx} - 0 matches
+  testPathIgnorePatterns: /node_modules/ - 8 matches
+  testRegex:  - 0 matches
+Pattern:  - 0 matches

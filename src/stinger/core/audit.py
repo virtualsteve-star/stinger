@@ -95,8 +95,12 @@ class AuditTrail:
         # Shutdown async buffering
         self._shutdown_async_buffering()
         
-        if self._file_handle and self._file_handle != sys.stdout:
-            self._file_handle.close()
+        # Close file handle safely
+        if hasattr(self, '_file_handle') and self._file_handle and self._file_handle != sys.stdout:
+            try:
+                self._file_handle.close()
+            except:
+                pass  # Ignore errors during cleanup
             self._file_handle = None
             
     def is_enabled(self) -> bool:
@@ -206,6 +210,14 @@ class AuditTrail:
         
     def _setup_destination(self):
         """Setup the audit log destination."""
+        # Close any existing file handle first
+        if hasattr(self, '_file_handle') and self._file_handle and self._file_handle != sys.stdout:
+            try:
+                self._file_handle.close()
+            except:
+                pass  # Ignore errors during cleanup
+            self._file_handle = None
+            
         if isinstance(self._destination, list):
             # Multiple destinations not implemented yet - use first one
             destination = self._destination[0]
@@ -218,7 +230,12 @@ class AuditTrail:
             # File destination
             path = Path(destination)
             path.parent.mkdir(parents=True, exist_ok=True)
-            self._file_handle = open(path, 'a', encoding='utf-8')
+            try:
+                self._file_handle = open(path, 'a', encoding='utf-8')
+            except Exception as e:
+                # Fallback to stdout if file can't be opened
+                print(f"Warning: Could not open audit log file {path}: {e}")
+                self._file_handle = sys.stdout
             
     def _redact_if_needed(self, text: str) -> str:
         """Redact PII if redaction is enabled."""
