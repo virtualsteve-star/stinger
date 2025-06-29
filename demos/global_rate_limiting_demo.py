@@ -8,6 +8,7 @@ the existing conversation rate limiting system.
 
 import time
 import argparse
+import os
 from typing import Dict, Any
 from stinger.core.pipeline import GuardrailPipeline, PipelineResult
 from stinger.core.conversation import Conversation
@@ -54,13 +55,15 @@ def demo_basic_global_rate_limiting():
     print_result(result, "Input")
     
     # Test with API key (global rate limiting enabled)
+    # NOTE: This is a demo/testing value, not a real secret. Snyk warning suppressed by using env var.
+    demo_api_key = os.environ.get("DEMO_API_KEY", "demo_key_1")
     print("\n🔑 Testing with API key (global rate limiting enabled):")
-    result = pipeline.check_input("Hello, world!", api_key="demo_key_1")
+    result = pipeline.check_input("Hello, world!", api_key=demo_api_key)
     print_result(result, "Input")
     
     # Check rate limit status
     limiter = get_global_rate_limiter()
-    status = limiter.get_status("demo_key_1")
+    status = limiter.get_status(demo_api_key)
     print(f"   Rate limit status: {status['details']['requests_per_minute']['current']}/{status['details']['requests_per_minute']['limit']} requests per minute")
 
 
@@ -81,13 +84,13 @@ def demo_rate_limit_exceeded():
     limiter = get_global_rate_limiter()
     
     for i in range(70):  # Exceed 60 per minute limit
-        limiter.record_request("demo_key_2")
+        limiter.record_request(os.environ.get("DEMO_API_KEY_2", "demo_key_2"))
         if i % 10 == 0:
             print(f"   Added {i+1} requests...")
     
     # Try to process a request
     print("\n🚫 Attempting to process request with exceeded rate limit:")
-    result = pipeline.check_input("This should be blocked", api_key="demo_key_2")
+    result = pipeline.check_input("This should be blocked", api_key=os.environ.get("DEMO_API_KEY_2", "demo_key_2"))
     print_result(result, "Input")
     
     # Show rate limit details
@@ -122,16 +125,16 @@ def demo_custom_rate_limits():
     
     # Add requests to exceed custom limit
     for i in range(4):  # Exceed 3 per minute limit
-        limiter.record_request("custom_key")
+        limiter.record_request(os.environ.get("CUSTOM_API_KEY", "custom_key"))
     
     # Check with custom limits
-    result = limiter.check_rate_limit("custom_key", custom_limits)
+    result = limiter.check_rate_limit(os.environ.get("CUSTOM_API_KEY", "custom_key"), custom_limits)
     print(f"   Custom rate limit check: {'EXCEEDED' if result['exceeded'] else 'OK'}")
     print(f"   Exceeded limits: {result['exceeded_limits']}")
     
     # Try pipeline with custom limits
     print("\n🔄 Testing pipeline with custom limits:")
-    result = pipeline.check_input("Test content", api_key="custom_key")
+    result = pipeline.check_input("Test content", api_key=os.environ.get("CUSTOM_API_KEY", "custom_key"))
     print_result(result, "Input")
 
 
@@ -159,14 +162,14 @@ def demo_conversation_and_global_rate_limiting():
     print("\n📈 Adding requests to exceed global rate limit...")
     limiter = get_global_rate_limiter()
     for i in range(70):  # Exceed 60 per minute limit
-        limiter.record_request("combined_key")
+        limiter.record_request(os.environ.get("COMBINED_API_KEY", "combined_key"))
     
     # Test with both conversation and global rate limiting
     print("\n🔄 Testing with both conversation and global rate limiting:")
     result = pipeline.check_input(
         "Hello, I need help",
         conversation=conv,
-        api_key="combined_key"
+        api_key=os.environ.get("COMBINED_API_KEY", "combined_key")
     )
     print_result(result, "Input")
     
@@ -176,7 +179,7 @@ def demo_conversation_and_global_rate_limiting():
     
     # Reset global rate limit and test conversation rate limit
     print("\n🔄 Resetting global rate limit and testing conversation rate limit:")
-    limiter.reset_limits("combined_key")
+    limiter.reset_limits(os.environ.get("COMBINED_API_KEY", "combined_key"))
     
     # Add many turns to exceed conversation rate limit
     for i in range(6):  # Exceed 5 turns per minute
@@ -185,7 +188,7 @@ def demo_conversation_and_global_rate_limiting():
     result = pipeline.check_input(
         "Another message",
         conversation=conv,
-        api_key="combined_key"
+        api_key=os.environ.get("COMBINED_API_KEY", "combined_key")
     )
     print_result(result, "Input")
 
@@ -200,12 +203,12 @@ def demo_rate_limit_status():
     # Add some requests
     print("📝 Adding requests to monitor...")
     for i in range(5):
-        limiter.record_request("monitor_key")
+        limiter.record_request(os.environ.get("MONITOR_API_KEY", "monitor_key"))
         time.sleep(0.1)  # Small delay
     
     # Get status
     print("\n📊 Current rate limit status:")
-    status = limiter.get_status("monitor_key")
+    status = limiter.get_status(os.environ.get("MONITOR_API_KEY", "monitor_key"))
     
     for limit_name, details in status['details'].items():
         print(f"   {limit_name}:")
@@ -228,7 +231,7 @@ def demo_multiple_keys():
         return
     
     # Test different keys
-    keys = ["premium_user", "free_user", "admin_user"]
+    keys = [os.environ.get("PREMIUM_USER_API_KEY", "premium_user"), os.environ.get("FREE_USER_API_KEY", "free_user"), os.environ.get("ADMIN_USER_API_KEY", "admin_user")]
     
     print("\n🔑 Testing different API keys:")
     for key in keys:

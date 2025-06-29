@@ -117,7 +117,12 @@ class LengthFilterAdapter(LegacyFilterAdapter):
     
     def __init__(self, name: str, config: Dict[str, Any]):
         from .length_filter import LengthFilter
-        legacy_filter = LengthFilter(config)
+        # Extract the nested config if it exists, otherwise use the config as-is
+        filter_config = config.get('config', config).copy()
+        # Also copy top-level settings that LengthFilter needs
+        if 'action' not in filter_config and 'on_error' in config:
+            filter_config['action'] = config['on_error']
+        legacy_filter = LengthFilter(filter_config)
         super().__init__(name, GuardrailType.LENGTH_FILTER, legacy_filter)
 
 

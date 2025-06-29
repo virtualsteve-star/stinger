@@ -437,7 +437,10 @@ class GuardrailPipeline:
                     blocked = True
                     reasons.append(f"{guardrail.name}: {result.reason}")
                 
-                if result.confidence > 0.5 and not result.blocked:
+                # Check if this should be a warning - only if the original action was 'warn'
+                # or if it's a high-confidence non-blocked result that isn't an explicit 'allow'
+                original_action = result.details.get('action', '')
+                if original_action == 'warn' or (result.confidence > 0.5 and not result.blocked and original_action != 'allow'):
                     warnings.append(f"{guardrail.name}: {result.reason}")
                 
                 # Store detailed results
@@ -452,10 +455,11 @@ class GuardrailPipeline:
                 request_id = getattr(conversation, 'current_request_id', None) if conversation else None
                 user_id = getattr(conversation, 'initiator', None) if conversation else None
                 
-                # Determine decision type for audit
+                # Determine decision type for audit based on original action
+                original_action = result.details.get('action', '')
                 if result.blocked:
                     decision = "block"
-                elif result.confidence > 0.5:
+                elif original_action == 'warn' or (result.confidence > 0.5 and not result.blocked and original_action != 'allow'):
                     decision = "warn"
                 else:
                     decision = "allow"
