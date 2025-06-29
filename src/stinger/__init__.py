@@ -26,6 +26,9 @@ from .core.config import ConfigLoader
 # Conversation abstraction
 from .core.conversation import Conversation, Turn
 
+# Security audit trail
+from .core import audit
+
 # Common guardrail types for easy access
 __all__ = [
     # High-level API
@@ -45,4 +48,7 @@ __all__ = [
     # Conversation abstraction
     "Conversation",
     "Turn",
+    
+    # Security audit trail
+    "audit",
 ]

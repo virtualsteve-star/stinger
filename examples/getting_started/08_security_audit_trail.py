@@ -125,12 +125,53 @@ def main():
     
     stinger.audit.disable()
     
+    # 6. Compliance reporting with export utilities
+    print("\n6. Compliance reporting:")
+    print("   Creating sample audit data for export...")
+    
+    # Create a temporary audit file with sample data
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.log', delete=False) as f:
+        export_audit_file = f.name
+    
+    stinger.audit.enable(export_audit_file)
+    
+    # Generate sample compliance data
+    stinger.audit.log_prompt("What are the security policies?", user_id="compliance_user", conversation_id="audit_conv")
+    stinger.audit.log_guardrail_decision("policy_check", "allow", "Approved security query", 
+                                        user_id="compliance_user", conversation_id="audit_conv")
+    stinger.audit.log_response("Here are our security policies...", user_id="compliance_user", conversation_id="audit_conv")
+    
+    stinger.audit.disable()
+    
+    # Export to CSV for compliance reporting
+    csv_file = stinger.audit.export_csv(destination=export_audit_file)
+    print(f"   ✓ CSV export created: {csv_file}")
+    
+    # Export to JSON for analysis
+    json_file = stinger.audit.export_json(destination=export_audit_file)
+    print(f"   ✓ JSON export created: {json_file}")
+    
+    # Show sample of CSV content
+    import csv
+    with open(csv_file, 'r') as f:
+        reader = csv.DictReader(f)
+        rows = list(reader)
+    
+    print(f"   📊 CSV contains {len(rows)} audit records")
+    print(f"   📋 Available for compliance teams and auditors")
+    
+    # Clean up export files
+    os.unlink(export_audit_file)
+    os.unlink(csv_file)
+    os.unlink(json_file)
+    
     print("\n=== Complete Security Audit Trail ===")
     print("✓ Zero-config enable: audit.enable()")
     print("✓ Easy destinations: file or stdout")
     print("✓ Smart environment detection")
     print("✓ PII redaction when needed")
     print("✓ JSON format for easy analysis")
+    print("✓ Compliance export utilities (CSV/JSON)")
     print("✓ Designed for forensic analysis and compliance")
 
 

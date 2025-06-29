@@ -18,6 +18,7 @@ from .preset_configs import PresetConfigs
 from .conversation import Conversation, Turn
 from ..utils.exceptions import PipelineError, ConfigurationError
 from .rate_limiter import get_global_rate_limiter
+from . import audit
 
 logger = logging.getLogger(__name__)
 
@@ -278,6 +279,18 @@ class GuardrailPipeline:
         if conversation:
             conversation.add_prompt(content)
         
+        # Log user prompt to audit trail
+        request_id = getattr(conversation, 'current_request_id', None) if conversation else None
+        user_id = getattr(conversation, 'initiator', None) if conversation else None
+        conversation_id = conversation.conversation_id if conversation else None
+        
+        audit.log_prompt(
+            prompt=content,
+            user_id=user_id,
+            conversation_id=conversation_id,
+            request_id=request_id
+        )
+        
         # Run pipeline and get results
         result = self._run_pipeline(self.input_pipeline, content, "input", conversation)
         
@@ -344,6 +357,18 @@ class GuardrailPipeline:
                 # Log the error and create a new turn with empty prompt and the response
                 logger.warning(f"No prompt found for response in conversation {conversation.conversation_id}: {e}")
                 conversation.add_turn("", content)
+        
+        # Log LLM response to audit trail
+        request_id = getattr(conversation, 'current_request_id', None) if conversation else None
+        user_id = getattr(conversation, 'initiator', None) if conversation else None
+        conversation_id = conversation.conversation_id if conversation else None
+        
+        audit.log_response(
+            response=content,
+            user_id=user_id,
+            conversation_id=conversation_id,
+            request_id=request_id
+        )
         
         # Run pipeline and get results
         result = self._run_pipeline(self.output_pipeline, content, "output", conversation)
@@ -423,6 +448,29 @@ class GuardrailPipeline:
                     'details': result.details
                 }
                 
+                # Log guardrail decision to audit trail
+                request_id = getattr(conversation, 'current_request_id', None) if conversation else None
+                user_id = getattr(conversation, 'initiator', None) if conversation else None
+                
+                # Determine decision type for audit
+                if result.blocked:
+                    decision = "block"
+                elif result.confidence > 0.5:
+                    decision = "warn"
+                else:
+                    decision = "allow"
+                
+                audit.log_guardrail_decision(
+                    filter_name=guardrail.name,
+                    decision=decision,
+                    reason=result.reason,
+                    user_id=user_id,
+                    conversation_id=conversation_id,
+                    request_id=request_id,
+                    confidence=result.confidence,
+                    rule_triggered=getattr(result, 'rule_triggered', None)
+                )
+                
                 # Log with conversation context if available
                 if conversation:
                     logger.debug(f"Guardrail {guardrail.name} result for conversation {conversation_id}: blocked={result.blocked}, confidence={result.confidence}")
@@ -441,6 +489,20 @@ class GuardrailPipeline:
                     'blocked': False,
                     'confidence': 0.0
                 }
+                
+                # Log error decision to audit trail
+                request_id = getattr(conversation, 'current_request_id', None) if conversation else None
+                user_id = getattr(conversation, 'initiator', None) if conversation else None
+                
+                audit.log_guardrail_decision(
+                    filter_name=guardrail.name,
+                    decision="error",
+                    reason=f"Error: {str(e)}",
+                    user_id=user_id,
+                    conversation_id=conversation_id,
+                    request_id=request_id,
+                    confidence=0.0
+                )
         
         return {
             'blocked': blocked,
