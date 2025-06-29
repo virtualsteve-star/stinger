@@ -123,3 +123,7 @@ secrets/
 api_keys/
 .env.local
 .env.production
+
+# Logs
+logs/*
+!logs/.gitkeep
