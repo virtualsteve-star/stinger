@@ -196,14 +196,11 @@ function App() {
   };
 
   const handleSettingsChange = async (newSettings) => {
-    console.log('🚀 handleSettingsChange called with:', newSettings);
     try {
-      console.log('🚀 Calling apiService.updateGuardrailSettings...');
       await apiService.updateGuardrailSettings(newSettings);
 
       // Wait a moment to ensure backend updates are processed
       setTimeout(async () => {
-        console.log('🚀 Refreshing settings and status...');
         const [settingsData, statusData] = await Promise.all([
           apiService.getGuardrailSettings(),
           apiService.getSystemStatus()
@@ -212,7 +209,7 @@ function App() {
         setSystemStatus(statusData);
       }, 300); // 300ms delay
     } catch (err) {
-      console.error('🚀 Failed to update settings:', err);
+      console.error('Failed to update settings:', err);
       // Check if this is a connection error
       if (err.message.includes('Network error') || err.message.includes('ECONNREFUSED')) {
         setConnectionStatus('disconnected');

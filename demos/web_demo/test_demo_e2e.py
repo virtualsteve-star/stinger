@@ -300,12 +300,11 @@ class DemoTester:
             html = response.text
             
             # Check for key elements that should be in the React app
-            # Note: "chat" text is loaded by JavaScript, so check for static elements
+            # Note: Dynamic elements are loaded by JavaScript, so check for static elements
             required_elements = [
                 "Stinger",
-                "textarea",
                 "div id=\"root\"",
-                "bundle.js"
+                "static/js/bundle"  # React Scripts bundles as static/js/bundle.js
             ]
             
             for element in required_elements:
