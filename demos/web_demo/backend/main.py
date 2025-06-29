@@ -80,16 +80,14 @@ class SystemStatus(BaseModel):
 # Shared resources (app.state)
 executor = ThreadPoolExecutor(max_workers=4)
 
-# Async wrappers for guardrail operations
+# Direct async guardrail operations - no longer need thread pool wrappers
 async def check_input_async(pipeline, content, conversation):
-    """Run input guardrails in thread pool to avoid event loop conflicts."""
-    loop = asyncio.get_event_loop()
-    return await loop.run_in_executor(executor, pipeline.check_input, content, conversation)
+    """Run input guardrails using native async methods."""
+    return await pipeline.check_input_async(content, conversation)
 
 async def check_output_async(pipeline, content, conversation):
-    """Run output guardrails in thread pool to avoid event loop conflicts."""
-    loop = asyncio.get_event_loop()
-    return await loop.run_in_executor(executor, pipeline.check_output, content, conversation)
+    """Run output guardrails using native async methods."""
+    return await pipeline.check_output_async(content, conversation)
 
 # Configure logging
 logging.basicConfig(
@@ -161,11 +159,17 @@ async def lifespan(app: FastAPI):
             logger.info("🔄 Applying saved guardrail settings...")
             
             # Apply saved settings to pipeline
-            for guardrail in saved_settings.input_guardrails + saved_settings.output_guardrails:
+            for guardrail in saved_settings.input_guardrails:
                 if guardrail.enabled:
-                    current_pipeline.enable_guardrail(guardrail.name)
+                    current_pipeline.enable_guardrail(guardrail.name, pipeline_type='input')
                 else:
-                    current_pipeline.disable_guardrail(guardrail.name)
+                    current_pipeline.disable_guardrail(guardrail.name, pipeline_type='input')
+            
+            for guardrail in saved_settings.output_guardrails:
+                if guardrail.enabled:
+                    current_pipeline.enable_guardrail(guardrail.name, pipeline_type='output')
+                else:
+                    current_pipeline.disable_guardrail(guardrail.name, pipeline_type='output')
             
             logger.info("✅ Saved guardrail settings applied")
         else:
@@ -412,30 +416,24 @@ async def update_guardrail_settings(
         # Update input guardrails
         logger.info(f"Processing {len(settings.input_guardrails)} input guardrails:")
         for guardrail in settings.input_guardrails:
-            if guardrail.name in input_guardrails and guardrail.name not in processed_guardrails:
+            if guardrail.name in input_guardrails:
                 logger.info(f"  Input guardrail '{guardrail.name}': {'enabling' if guardrail.enabled else 'disabling'}")
                 if guardrail.enabled:
-                    pipeline.enable_guardrail(guardrail.name)
+                    pipeline.enable_guardrail(guardrail.name, pipeline_type='input')
                 else:
-                    pipeline.disable_guardrail(guardrail.name)
-                processed_guardrails.add(guardrail.name)
-            elif guardrail.name in processed_guardrails:
-                logger.info(f"  Skipping duplicate input guardrail: {guardrail.name}")
+                    pipeline.disable_guardrail(guardrail.name, pipeline_type='input')
             else:
                 logger.warning(f"  Input guardrail not found: {guardrail.name}")
         
         # Update output guardrails
         logger.info(f"Processing {len(settings.output_guardrails)} output guardrails:")
         for guardrail in settings.output_guardrails:
-            if guardrail.name in output_guardrails and guardrail.name not in processed_guardrails:
+            if guardrail.name in output_guardrails:
                 logger.info(f"  Output guardrail '{guardrail.name}': {'enabling' if guardrail.enabled else 'disabling'}")
                 if guardrail.enabled:
-                    pipeline.enable_guardrail(guardrail.name)
+                    pipeline.enable_guardrail(guardrail.name, pipeline_type='output')
                 else:
-                    pipeline.disable_guardrail(guardrail.name)
-                processed_guardrails.add(guardrail.name)
-            elif guardrail.name in processed_guardrails:
-                logger.info(f"  Skipping duplicate output guardrail: {guardrail.name}")
+                    pipeline.disable_guardrail(guardrail.name, pipeline_type='output')
             else:
                 logger.warning(f"  Output guardrail not found: {guardrail.name}")
         

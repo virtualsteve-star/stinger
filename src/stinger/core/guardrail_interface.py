@@ -9,6 +9,7 @@ from abc import ABC, abstractmethod
 from typing import Dict, Any, List, Optional, Callable
 from dataclasses import dataclass
 from enum import Enum
+import logging
 
 
 class GuardrailType(Enum):
@@ -135,7 +136,13 @@ class GuardrailRegistry:
     def create_guardrail(self, guardrail_type: GuardrailType, name: str, config: Dict[str, Any]) -> Optional[GuardrailInterface]:
         """Create a new guardrail instance using the registered factory."""
         if guardrail_type in self._factories:
-            return self._factories[guardrail_type](name, config)
+            try:
+                return self._factories[guardrail_type](name, config)
+            except Exception as e:
+                logger = logging.getLogger(__name__)
+                logger.error(f"Factory failed to create guardrail '{name}' of type '{guardrail_type}': {e}")
+                # Re-raise the exception instead of returning None for better error handling
+                raise
         return None
     
     def clear(self) -> None:
@@ -153,16 +160,19 @@ class GuardrailFactory:
     
     def create_from_config(self, config: Dict[str, Any]) -> Optional[GuardrailInterface]:
         """Create a guardrail from configuration dictionary."""
+        from ..utils.exceptions import ConfigurationError, InvalidGuardrailTypeError
+        
         name = config.get('name')
         guardrail_type_str = config.get('type')
         
         if not name or not guardrail_type_str:
-            return None
+            raise ConfigurationError("Guardrail configuration must include 'name' and 'type' fields")
         
         try:
             guardrail_type = GuardrailType(guardrail_type_str)
         except ValueError:
-            return None
+            valid_types = [t.value for t in GuardrailType]
+            raise InvalidGuardrailTypeError(guardrail_type_str, valid_types)
         
         return self.registry.create_guardrail(guardrail_type, name, config)
     

@@ -7,14 +7,15 @@
     "@testing-library/jest-dom": "^5.16.4",
     "@testing-library/react": "^13.3.0",
     "@testing-library/user-event": "^13.5.0",
+    "axios": "^1.6.0",
+    "babel-plugin-styled-components": "^2.1.4",
+    "date-fns": "^2.30.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-scripts": "5.0.1",
-    "styled-components": "^5.3.11",
-    "axios": "^1.6.0",
     "react-icons": "^4.11.0",
     "react-markdown": "^8.0.7",
-    "date-fns": "^2.30.0"
+    "react-scripts": "5.0.1",
+    "styled-components": "^5.3.11"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -40,5 +41,13 @@
       "last 1 safari version"
     ]
   },
-  "proxy": "https://localhost:8000"
+  "proxy": "https://localhost:8000",
+  "jest": {
+    "transformIgnorePatterns": [
+      "node_modules/(?!(axios|date-fns)/)"
+    ],
+    "moduleNameMapper": {
+      "^axios$": "axios/dist/node/axios.cjs"
+    }
+  }
 }
