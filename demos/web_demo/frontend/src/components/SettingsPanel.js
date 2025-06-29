@@ -341,7 +341,7 @@ function SettingsPanel({ settings, onSettingsChange, onPresetChange }) {
           {localSettings.input_guardrails.map((guardrail) => (
             <GuardrailItem key={guardrail.name} enabled={guardrail.enabled}>
               <GuardrailInfo>
-                <GuardrailName>{guardrail.name.replace('_', ' ')}</GuardrailName>
+                <GuardrailName>{guardrail.name.replace(/_/g, ' ')}</GuardrailName>
                 <GuardrailDescription>
                   {guardrailDescriptions[guardrail.name] || 'Custom guardrail filter'}
                 </GuardrailDescription>
@@ -365,7 +365,7 @@ function SettingsPanel({ settings, onSettingsChange, onPresetChange }) {
           {localSettings.output_guardrails.map((guardrail) => (
             <GuardrailItem key={guardrail.name} enabled={guardrail.enabled}>
               <GuardrailInfo>
-                <GuardrailName>{guardrail.name.replace('_', ' ')}</GuardrailName>
+                <GuardrailName>{guardrail.name.replace(/_/g, ' ')}</GuardrailName>
                 <GuardrailDescription>
                   {guardrailDescriptions[guardrail.name] || 'Custom guardrail filter'}
                 </GuardrailDescription>
