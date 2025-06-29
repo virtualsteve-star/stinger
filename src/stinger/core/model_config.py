@@ -74,14 +74,17 @@ class OpenAIModelProvider(ModelProvider):
 class ModelFactory:
     """Factory for creating model providers."""
     
-    def __init__(self, config_path: str = "src/core/configs/models.yaml"):
+    def __init__(self, config_path: str = "src/stinger/core/configs/models.yaml"):
         self.config = self._load_config(config_path)
     
     def _load_config(self, config_path: str) -> Dict[str, Any]:
         """Load model configuration from YAML file."""
         try:
             with open(config_path, 'r') as f:
-                return yaml.safe_load(f)
+                config = yaml.safe_load(f)
+                if isinstance(config, dict) and 'models' in config:
+                    return config['models']
+                return config
         except Exception as e:
             logger.warning(f"Failed to load model config from {config_path}: {e}")
             # Fallback to default configuration

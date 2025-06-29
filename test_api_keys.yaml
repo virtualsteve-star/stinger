@@ -1,8 +1,0 @@
-# TEMPORARY TESTING FILE - DELETE AFTER USE
-# This file should be added to .gitignore and deleted after testing
-
-api_keys:
-  openai:
-    encrypted: false
-    # Replace with your actual key for testing
-    key: "your-openai-api-key-here" 

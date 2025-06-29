@@ -1,4 +1,6 @@
 import yaml
+import os
+import re
 from pathlib import Path
 from typing import Dict, Any
 from ..utils.exceptions import ConfigurationError
@@ -100,14 +102,34 @@ class ConfigLoader:
     def __init__(self):
         self.config = None
     
+    def _substitute_env_vars(self, config: Dict[str, Any]) -> Dict[str, Any]:
+        """Recursively substitute environment variables in config."""
+        if isinstance(config, dict):
+            return {k: self._substitute_env_vars(v) for k, v in config.items()}
+        elif isinstance(config, list):
+            return [self._substitute_env_vars(item) for item in config]
+        elif isinstance(config, str):
+            # Replace ${VAR} with environment variable values
+            def replace_var(match):
+                var_name = match.group(1)
+                value = os.getenv(var_name)
+                if value is None:
+                    raise ConfigurationError(f"Environment variable {var_name} not set")
+                return value
+            return re.sub(r'\$\{([^}]+)\}', replace_var, config)
+        return config
+    
     def load(self, config_path: str) -> Dict[str, Any]:
         """Load configuration from YAML file and validate against schema."""
         try:
             with open(config_path, 'r') as f:
-                self.config = yaml.safe_load(f)
+                config_data = yaml.safe_load(f)
             
-            if not self.config:
+            if not config_data:
                 raise ConfigurationError("Empty configuration file")
+            
+            # Substitute environment variables
+            self.config = self._substitute_env_vars(config_data)
             
             # Schema validation
             try:
@@ -137,12 +159,17 @@ class ConfigLoader:
     def build_filters(self, config: Dict[str, Any] = None) -> list:
         """Build filter instances from configuration."""
         if config is None:
+            if self.config is None:
+                raise ConfigurationError("No configuration loaded")
             config = self.config
         else:
             self.config = config  # Ensure get_pipeline_config works
         
         if not config:
             raise ConfigurationError("No configuration provided")
+        
+        # Type assertion to satisfy the linter
+        config_dict: Dict[str, Any] = config
         
         from ..filters import FILTER_REGISTRY
         

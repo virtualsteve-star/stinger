@@ -11,7 +11,7 @@ import os
 import threading
 import queue
 import time
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from typing import Optional, Any, Dict, List, Union
 from pathlib import Path
 
@@ -457,12 +457,12 @@ def query(conversation_id: str = None, user_id: str = None,
                         record_time = datetime.fromisoformat(record["timestamp"].replace('Z', '+00:00'))
                         if record_time < current_time - timedelta(hours=1):
                             continue
-                    elif start_time:
+                    if start_time:
                         record_time = datetime.fromisoformat(record["timestamp"].replace('Z', '+00:00'))
                         start_dt = datetime.fromisoformat(start_time.replace('Z', '+00:00'))
                         if record_time < start_dt:
                             continue
-                    elif end_time:
+                    if end_time:
                         record_time = datetime.fromisoformat(record["timestamp"].replace('Z', '+00:00'))
                         end_dt = datetime.fromisoformat(end_time.replace('Z', '+00:00'))
                         if record_time > end_dt:

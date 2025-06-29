@@ -172,4 +172,16 @@ GITHUB_REPO=virtualsteve-star/stinger
 # DATE REMINDER
 # ALWAYS use the real current date when documenting completion dates, timestamps, or any time-related information
 # Run 'date' command to get the current date/time before writing dates in documentation
-# Never assume or guess dates - always verify with the system date 
+# Never assume or guess dates - always verify with the system date
+
+# ---
+# API KEY ENVIRONMENT VARIABLE HANDLING (Stinger)
+#
+# - API keys (e.g., OPENAI_API_KEY) should be set as environment variables, preferably using macOS Keychain for devs using Cursor or similar tools.
+# - The recommended workflow is:
+#     1. Store the key in Keychain: security add-generic-password -a "$USER" -s openai-api-key -w 'sk-...'
+#     2. Expose it as an environment variable: launchctl setenv OPENAI_API_KEY $(security find-generic-password -w -s openai-api-key)
+# - The Stinger centralized API key manager will automatically pick up the key from the environment.
+# - All filters and services must use the centralized manager for key access (never read keys directly from config or os.environ).
+# - See docs/API_KEY_HANDLING.md for full details.
+# --- 
