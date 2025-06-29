@@ -10,6 +10,7 @@ import logging
 from typing import Dict, Any, List, Optional, Union, TypedDict
 from pathlib import Path
 from datetime import datetime
+import concurrent.futures
 
 from .guardrail_interface import GuardrailInterface, GuardrailResult, GuardrailRegistry, GuardrailFactory
 from .config import ConfigLoader
@@ -291,9 +292,9 @@ class GuardrailPipeline:
         
         audit.log_prompt(
             prompt=content,
-            user_id=user_id,
-            conversation_id=conversation_id,
-            request_id=request_id
+            user_id=user_id or "",
+            conversation_id=conversation_id or "",
+            request_id=request_id or ""
         )
         
         # Run pipeline and get results
@@ -370,9 +371,9 @@ class GuardrailPipeline:
         
         audit.log_response(
             response=content,
-            user_id=user_id,
-            conversation_id=conversation_id,
-            request_id=request_id
+            user_id=user_id or "",
+            conversation_id=conversation_id or "",
+            request_id=request_id or ""
         )
         
         # Run pipeline and get results
@@ -442,9 +443,9 @@ class GuardrailPipeline:
         
         audit.log_prompt(
             prompt=content,
-            user_id=user_id,
-            conversation_id=conversation_id,
-            request_id=request_id
+            user_id=user_id or "",
+            conversation_id=conversation_id or "",
+            request_id=request_id or ""
         )
         
         # Run pipeline and get results
@@ -521,9 +522,9 @@ class GuardrailPipeline:
         
         audit.log_response(
             response=content,
-            user_id=user_id,
-            conversation_id=conversation_id,
-            request_id=request_id
+            user_id=user_id or "",
+            conversation_id=conversation_id or "",
+            request_id=request_id or ""
         )
         
         # Run pipeline and get results
@@ -565,13 +566,13 @@ class GuardrailPipeline:
         try:
             # Try to get current event loop
             current_loop = asyncio.get_running_loop()
-            # If we're in an async context, this will cause issues
-            logger.warning("Running pipeline in sync context while async loop is active. Consider using async methods.")
+            # If we're in an async context, we need to create a new task
+            with concurrent.futures.ThreadPoolExecutor() as executor:
+                future = executor.submit(asyncio.run, self._run_pipeline_async(pipeline, content, pipeline_type, conversation))
+                return future.result()
         except RuntimeError:
             # No running loop, safe to use asyncio.run
-            pass
-        
-        return asyncio.run(self._run_pipeline_async(pipeline, content, pipeline_type, conversation))
+            return asyncio.run(self._run_pipeline_async(pipeline, content, pipeline_type, conversation))
     
     async def _run_pipeline_async(self, pipeline: List[GuardrailInterface], content: str, pipeline_type: str, conversation: Optional[Conversation] = None) -> PipelineResult:
         """
@@ -639,11 +640,11 @@ class GuardrailPipeline:
                     filter_name=guardrail.name,
                     decision=decision,
                     reason=result.reason,
-                    user_id=user_id,
-                    conversation_id=conversation_id,
-                    request_id=request_id,
+                    user_id=user_id or "",
+                    conversation_id=conversation_id or "",
+                    request_id=request_id or "",
                     confidence=result.confidence,
-                    rule_triggered=getattr(result, 'rule_triggered', None)
+                    rule_triggered=getattr(result, 'rule_triggered', None) or ""
                 )
                 
                 # Log with conversation context if available
@@ -673,9 +674,9 @@ class GuardrailPipeline:
                     filter_name=guardrail.name,
                     decision="error",
                     reason=f"Error: {str(e)}",
-                    user_id=user_id,
-                    conversation_id=conversation_id,
-                    request_id=request_id,
+                    user_id=user_id or "",
+                    conversation_id=conversation_id or "",
+                    request_id=request_id or "",
                     confidence=0.0
                 )
         
