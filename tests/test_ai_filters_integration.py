@@ -8,6 +8,7 @@ import tempfile
 import yaml
 import sys
 from pathlib import Path
+import pytest
 
 # Add src to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent / 'src'))
@@ -16,6 +17,7 @@ from stinger.filters.ai_code_generation_filter import AICodeGenerationFilter
 from stinger.filters.ai_pii_detection_filter import AIPIIDetectionFilter
 from stinger.filters.ai_toxicity_detection_filter import AIToxicityDetectionFilter
 
+@pytest.mark.asyncio
 async def test_ai_filters_integration():
     """Test AI filters with centralized API key management."""
     print("Testing AI filters integration with centralized API key management...")
