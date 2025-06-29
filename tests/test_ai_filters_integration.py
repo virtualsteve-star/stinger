@@ -6,9 +6,15 @@ Test script to verify AI filters integration with centralized API key management
 import asyncio
 import tempfile
 import yaml
-from src.stinger.filters.ai_code_generation_filter import AICodeGenerationFilter
-from src.stinger.filters.ai_pii_detection_filter import AIPIIDetectionFilter
-from src.stinger.filters.ai_toxicity_detection_filter import AIToxicityDetectionFilter
+import sys
+from pathlib import Path
+
+# Add src to path for imports
+sys.path.insert(0, str(Path(__file__).parent.parent / 'src'))
+
+from stinger.filters.ai_code_generation_filter import AICodeGenerationFilter
+from stinger.filters.ai_pii_detection_filter import AIPIIDetectionFilter
+from stinger.filters.ai_toxicity_detection_filter import AIToxicityDetectionFilter
 
 async def test_ai_filters_integration():
     """Test AI filters with centralized API key management."""
