@@ -5,6 +5,15 @@
 **Document Version:** 0.2  
 **Date:** June 22, 2025
 
+> **⚠️ Historical Document Notice**  
+> This is the original Product Requirements Document (PRD) from the early stages of the project. It is maintained for historical reference and to document the initial vision and requirements. However, **this document is not actively updated** and may be out of date with the current implementation.  
+>   
+> For current project status and implementation details, please refer to:
+> - `specs/LLM_Guardrails_PhasePlan.md` - Current implementation phases and status
+> - `specs/LLM_Guardrails_Architecture.md` - Current architecture documentation
+> - `README.md` - Current project overview and usage
+> - `/examples` and `/demos` directories - Current working examples
+
 ---
 
 ## 1 Purpose

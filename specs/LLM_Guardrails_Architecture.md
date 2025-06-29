@@ -9,19 +9,25 @@
             |                                 ^
             v                                 |
  +----------+-----------+            +--------+---------+
- |  Input Guardrails    |<-----------+  Config Loader   |
- |  Pipeline            |            +---+--------------+
+ |  Conversation        |            |  Config Loader   |
+ |  Management          |            +---+--------------+
  +----------+-----------+                |
             |                            |
             v                            v
  +----------+-----------+        +-------+--------+
- | Underlying LLM / API |        | Logging /      |
- | (OpenAI, Anthropic)  |        | Observability  |
- +----------+-----------+        +-------+--------+
-            |                            ^
-            v                            |
- +----------+-----------+                |
- | Output Guardrails    |----------------+
+ |  Input Guardrails    |<--------+  Config Loader   |
+ |  Pipeline            |        +---+--------------+
+ +----------+-----------+            |
+            |                        |
+            v                        v
+ +----------+-----------+    +-------+--------+
+ | Underlying LLM / API |    | Audit Logging  |
+ | (OpenAI, Anthropic)  |    | & Compliance   |
+ +----------+-----------+    +-------+--------+
+            |                        ^
+            v                        |
+ +----------+-----------+            |
+ | Output Guardrails    |------------+
  | Pipeline             |
  +----------+-----------+
             |
@@ -31,7 +37,7 @@
  +----------------------+
 ```
 
-*Both guardrail pipelines share the same **Filter Plugin** mechanism.*
+*Both guardrail pipelines share the same **Filter Plugin** mechanism and **Audit Logging** system.*
 
 ## 2 Core Modules
 
@@ -39,14 +45,14 @@
 |--------|----------------|
 | **Config Loader** | Parse YAML/JSON configs, validate schema, expose runtime settings. |
 | **FilterPipeline** | Orchestrate filter execution, enforce order, aggregate results. |
-| **HotReloadPipeline** | Monitor config changes and rebuild filters automatically. |
+| **Conversation Management** | Handle multi-turn conversations, context tracking, rate limiting. |
 | **BaseFilter** | Abstract class implementing `run(content) → FilterResult`. |
 | **Rule‑Based Filters** | Regex, blacklist, language, length, URL/file‑type blocking. |
 | **Keyword List Filter** | Load keywords from files or inline configs with case sensitivity options. |
 | **Compound Scoring Filter** | Multi-rule weighted scoring with configurable thresholds. |
 | **Classifier Filters** | Wrap external or local AI services (PII, toxicity, jailbreak). |
 | **Result Handler** | Apply actions (`block`, `warn`, `modify`, etc.) and assemble response. |
-| **Logging / Metrics** | Emit structured logs and Prometheus counters/timers. |
+| **Audit Logging** | Structured logging for compliance and security audit trails. |
 | **Unified CLI** | Single entry point for running scenarios, tests, and debugging. |
 
 ## 3 Filter Types & Scoring System
@@ -88,9 +94,41 @@ thresholds:
   block: 61-100   # High risk - block content
 ```
 
-## 4 Error Handling & Degradation Strategy
+## 4 Conversation Management & Audit Logging
 
-### 4.1 Filter-Level Error Handling
+### 4.1 Conversation Infrastructure
+
+The framework provides comprehensive conversation management with:
+
+- **Conversation Types**: Factory methods for human_ai, bot_to_bot, agent_to_agent, human_to_human
+- **Turn Management**: Structured turns with prompt/response/speaker/listener
+- **Context Tracking**: Automatic conversation history passing to all guardrails
+- **Rate Limiting**: Per-conversation rate limiting with minute/hour limits
+- **Serialization**: Full conversation serialization (to_dict/from_dict) for persistence
+
+### 4.2 Audit Logging System
+
+The audit logging system provides:
+
+- **Structured Logging**: Complete record of all guardrail decisions with full context
+- **Async Performance**: Buffered logging with <10ms additional latency
+- **PII Redaction**: Automatic redaction of sensitive information using configurable patterns
+- **Export Utility**: Simple log export tool for compliance reporting
+- **Reliability**: Graceful failure handling - system continues operating during logging failures
+- **Developer Usability**: Simple configuration and human-readable log format
+
+### 4.3 Conversation-Aware Filters
+
+Filters can leverage conversation context for enhanced detection:
+
+- **Multi-turn Pattern Detection**: Trust-building, gradual escalation, context manipulation
+- **Context Preparation**: Recent, suspicious, mixed strategies for context preparation
+- **Long Conversation Management**: Token limits and truncation for long conversations
+- **Enhanced AI Analysis**: AI analysis prompts with conversation history
+
+## 5 Error Handling & Degradation Strategy
+
+### 5.1 Filter-Level Error Handling
 
 | Error Type | Default Behavior | Configuration |
 |------------|------------------|---------------|
@@ -100,7 +138,7 @@ thresholds:
 | **Resource Exhaustion** | Fail-closed (block request) | `resource_limit: block|allow` |
 | **Schema Validation** | Fail-closed (block request) | `schema_validation: strict|warn|off` |
 
-### 4.2 External API Failure Handling
+### 5.2 External API Failure Handling
 
 | Service | Circuit Breaker | Fallback Strategy | Retry Logic |
 |---------|----------------|-------------------|-------------|
@@ -109,7 +147,7 @@ thresholds:
 | **Google Safe Browsing** | 10 failures → 5min open | Allow request, log alert | 1 attempt, no retry |
 | **Local Models** | N/A (local) | Use rule-based fallback | N/A |
 
-### 4.3 Pipeline Degradation Modes
+### 5.3 Pipeline Degradation Modes
 
 | Mode | Trigger | Behavior | Recovery |
 |------|---------|----------|----------|
@@ -117,16 +155,16 @@ thresholds:
 | **Fail-Safe Mode** | Critical filter failure | Block all requests, log emergency | Manual intervention required |
 | **Bypass Mode** | Emergency override | Allow all requests, log everything | Manual intervention required |
 
-### 4.4 Error Recovery & Monitoring
+### 5.4 Error Recovery & Monitoring
 
 - **Health Checks**: Each filter reports health status every 30s
 - **Alert Thresholds**: Alert when >10% of requests hit circuit breakers
 - **Auto-Recovery**: Circuit breakers automatically close after timeout
 - **Manual Override**: Emergency bypass switches for critical situations
 
-## 5 Configuration Management & Validation
+## 6 Configuration Management & Validation
 
-### 5.1 Configuration Schema
+### 6.1 Configuration Schema
 
 ```yaml
 # Schema version and validation
@@ -171,11 +209,11 @@ pipelines:
         - name: ssn_pattern
           type: regex
           pattern: "\\b\\d{3}-\\d{2}-\\d{4}\\b"
-          weight: 8
+          certainty: 80
         - name: phone_pattern
           type: regex
           pattern: "\\b\\d{3}-\\d{3}-\\d{4}\\b"
-          weight: 5
+          certainty: 50
       on_error: "block"
     - name: "toxicity_filter"
       type: "classifier"
@@ -188,7 +226,7 @@ pipelines:
         recovery_timeout: 30
 ```
 
-### 5.2 Configuration Validation
+### 6.2 Configuration Validation
 
 | Validation Level | Checks | Action |
 |------------------|--------|--------|
@@ -197,14 +235,13 @@ pipelines:
 | **Semantic** | Filter dependencies, resource limits | Warn on suspicious configs |
 | **Runtime** | Filter availability, API connectivity | Log warnings, continue |
 
-### 5.3 Configuration Deployment
+### 6.3 Configuration Deployment
 
 - **Version Control**: All configs stored in Git with change history
 - **Rollback Capability**: Automatic rollback on validation failures
-- **Hot Reload**: Config changes applied without service restart
 - **Environment Isolation**: Separate configs for dev/staging/prod
 
-### 5.4 Configuration Testing
+### 6.4 Configuration Testing
 
 ```yaml
 # Test configuration changes before deployment
@@ -222,7 +259,7 @@ config_tests:
     description: "Ensure no new false positives/negatives"
 ```
 
-## 6 Testing Sub‑system
+## 7 Testing Sub‑system
 
 | Component | Detail |
 |-----------|--------|
@@ -230,13 +267,12 @@ config_tests:
 | **Test Corpus** | Labeled JSONL files stored under `/tests/**`. |
 | **Suite Config** | YAML: list of corpora, filters, expected pass criteria. |
 | **Scenario Runners** | Individual test runners for specific use cases (customer service, medical bot). |
-| **Hot Reload Testing** | Interactive testing for config changes without restart. |
 | **Autonomous Repair Hooks** | Scripts (`patch_config.py`) to let coding agents adjust YAML and rerun. |
 | **CI Integration** | GitHub Actions job: run suites on PR, fail build on regression. |
 
-## 7 Developer Experience Features
+## 8 Developer Experience Features
 
-### 7.1 Unified CLI Interface
+### 8.1 Unified CLI Interface
 
 ```bash
 # Run all scenarios
@@ -245,40 +281,35 @@ python3 stinger.py --all
 # Run specific scenario with debug
 python3 stinger.py --scenario customer_service --debug
 
-# Run with hot reload
-python3 stinger.py --scenario medical_bot --hot-reload
-
 # Custom config and test data
 python3 stinger.py --scenario customer_service --config custom.yaml --test-data custom.jsonl
 ```
 
-### 7.2 Debug & Observability
+### 8.2 Debug & Observability
 
 - **Filter-by-filter processing** with `--debug` flag
 - **Detailed error messages** with filter names and types
-- **Hot reload notifications** when config changes detected
 - **Schema validation errors** with clear field-level feedback
 
-### 7.3 Configuration Management
+### 8.3 Configuration Management
 
 - **External keyword files** for easier maintenance
 - **Schema validation** with comprehensive error reporting
-- **Hot reload** for rapid iteration
 - **Environment variable overrides** for flexible deployment
 
-## 8 Runtime Deployment Views
+## 9 Runtime Deployment Views
 
-### 8.1 Local Development
+### 9.1 Local Development
 * Developer installs package, runs `python3 stinger.py --scenario customer_service --debug`.  
 * Agents can run `python3 stinger.py --all` for comprehensive testing.
 
-### 8.2 Staging / Production
+### 9.2 Staging / Production
 * Deployed as a sidecar micro‑service or library inside the API server.  
 * Uses async calls to external moderation endpoints with timeouts.  
 * Logs shipped to central SIEM (Elastic, Splunk, etc.).  
 * Metrics scraped by Prometheus and visualised in Grafana.
 
-## 9 Data Stores
+## 10 Data Stores
 
 * **Config repo** – Version‑controlled YAML/JSON.  
 * **Keyword files** – Text files for keyword lists, versioned alongside code.
@@ -286,14 +317,14 @@ python3 stinger.py --scenario customer_service --config custom.yaml --test-data 
 * **Audit logs** – Structured, time‑series; retention policy 90 days.  
 * **Metrics store** – Prometheus TSDB.
 
-## 10 Extensibility Points
+## 11 Extensibility Points
 
 1. **Filter Plugins** – Drop‑in Python modules under `filters/`.  
 2. **Compound Filter Rules** – Extensible rule types (regex, keyword, combination, AI).
 3. **Classifier Adapters** – Abstract provider interface (`provider=openai|google|custom`).  
 4. **Action Hooks** – Custom logic on `block` or `warn` (e.g., revive request, notify Slack).  
 
-## 11 Security Considerations
+## 12 Security Considerations
 
 * All secrets in environment variables or secret manager.  
 * Default behaviour is **fail‑closed** for critical filters.  
