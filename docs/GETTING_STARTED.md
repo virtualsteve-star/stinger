@@ -283,45 +283,45 @@ python examples/getting_started/02_simple_filter.py
 - Test customer service and medical bot presets
 - Understand blocking vs warning behavior
 
-### **03_rate_limiting.py** - Rate Limiting Basics
+### **03_global_rate_limiting.py** - Global Rate Limiting
 ```bash
-python examples/getting_started/03_rate_limiting.py
+python examples/getting_started/03_global_rate_limiting.py
 ```
-- Basic rate limiting with conversations
-- Monitor rate limit status
-- Understand rate limit windows
+- Global rate limiting for API keys
+- Monitor rate limit status across users
+- Understand rate limit windows and tracking
 
 ### **04_conversation_api.py** - Conversation API
 ```bash
 python examples/getting_started/04_conversation_api.py
 ```
 - Use the Conversation API for multi-turn interactions
-- Automatic rate limiting and guardrail application
+- Automatic guardrail application
 - Conversation context and history management
 
-### **05_health_monitoring.py** - Health Monitoring
+### **05_conversation_rate_limiting.py** - Conversation Rate Limiting
 ```bash
-python examples/getting_started/05_health_monitoring.py
+python examples/getting_started/05_conversation_rate_limiting.py
+```
+- Rate limiting within conversations
+- Monitor conversation-specific rate limits
+- Understand conversation turn limits
+
+### **06_health_monitoring.py** - Health Monitoring
+```bash
+python examples/getting_started/06_health_monitoring.py
 ```
 - Monitor system health and performance
 - Check guardrail status and configuration
 - View detailed health metrics
 
-### **06_cli_and_yaml_config.py** - CLI and YAML Configuration
+### **07_cli_and_yaml_config.py** - CLI and YAML Configuration
 ```bash
-python examples/getting_started/06_cli_and_yaml_config.py
+python examples/getting_started/07_cli_and_yaml_config.py
 ```
 - Use the command-line interface
 - Create and load custom YAML configurations
 - Understand configuration structure
-
-### **07_troubleshooting_and_testing.py** - Troubleshooting and Testing
-```bash
-python examples/getting_started/07_troubleshooting_and_testing.py
-```
-- Debug common issues
-- Test your setup comprehensively
-- Validate configuration and API keys
 
 ### **08_security_audit_trail.py** - Security Audit Trail
 ```bash
@@ -331,6 +331,14 @@ python examples/getting_started/08_security_audit_trail.py
 - Track all security decisions for compliance
 - Use smart environment detection for automatic setup
 - Implement PII redaction and forensic analysis
+
+### **09_troubleshooting_and_testing.py** - Troubleshooting and Testing
+```bash
+python examples/getting_started/09_troubleshooting_and_testing.py
+```
+- Debug common issues
+- Test your setup comprehensively
+- Validate configuration and API keys
 
 ### Running All Examples
 ```bash
