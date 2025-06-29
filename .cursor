@@ -69,6 +69,40 @@
 - Include examples and usage patterns
 - Make the project accessible to new contributors
 
+## Commit and Workflow Guidelines
+
+### 7. Commit Batching (CRITICAL)
+- **BATCH CHANGES**: Group related changes together before committing
+- **NO MICRO-COMMITS**: Don't commit after every small change or file edit
+- **MEANINGFUL BATCHES**: Wait until you have a complete feature, fix, or logical group of changes
+- **EXAMPLES OF GOOD BATCHING**:
+  - All documentation updates together
+  - Complete feature implementation with tests
+  - All related refactoring changes
+  - All example/demo updates together
+- **EXAMPLES OF WHAT TO AVOID**:
+  - Committing after each README edit
+  - Committing individual file changes
+  - Committing before completing a logical unit of work
+
+### 8. Commit Message Standards
+- Use descriptive, meaningful commit messages
+- Include context about what was changed and why
+- Reference issue numbers when applicable
+- Use present tense ("Add feature" not "Added feature")
+
+### 9. Push Strategy
+- **PUSH BATCHES**: Only push when you have meaningful changes to share
+- **REVIEW BEFORE PUSH**: Ensure all changes in the batch are complete and tested
+- **AVOID PUSHING PARTIAL WORK**: Don't push incomplete features or broken code
+
+### 10. Workflow Best Practices
+- Make all related changes first
+- Test the complete set of changes
+- Commit everything together with a comprehensive message
+- Push once with the complete batch
+- Create PRs for significant changes
+
 ## Project-Specific Guidelines
 
 ### 9. Filter Development

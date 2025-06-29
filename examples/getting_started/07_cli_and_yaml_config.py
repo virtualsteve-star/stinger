@@ -71,7 +71,7 @@ def main():
             "output": [
                 {
                     "name": "content_moderation",
-                    "type": "content_moderation_filter",
+                    "type": "content_moderation",
                     "enabled": True,
                     "on_error": "block"
                 }
@@ -94,9 +94,8 @@ def main():
     print("-" * 35)
     
     try:
-        # Load config using ConfigLoader
-        loader = ConfigLoader()
-        pipeline = loader.load_pipeline_from_file(str(config_path))
+        # Load config using GuardrailPipeline
+        pipeline = GuardrailPipeline(str(config_path))
         
         print(f"   ✅ Config loaded successfully")
         
