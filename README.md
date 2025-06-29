@@ -7,6 +7,7 @@ A powerful, easy-to-use Python framework for safeguarding LLM applications with 
 ## ✨ Features
 
 - **🛡️ Comprehensive Guardrails**: Toxicity detection, PII protection, code generation prevention, and more
+- **🔒 Security Audit Trail**: Complete logging of all security decisions for compliance and forensics
 - **🎯 Simple API**: Get started in 3 lines of code
 - **⚡ High Performance**: Async-ready with synchronous convenience wrapper
 - **🔧 Configurable**: YAML-based configuration with runtime updates
@@ -64,6 +65,45 @@ stinger check-response "Here is your password: hunter2"
 - **Content Moderation**: AI-powered content screening
 - **URL Filtering**: Block malicious or unwanted URLs
 - **Toxicity Detection**: Screen generated responses
+
+## 🔒 Security Audit Trail
+
+Stinger provides comprehensive security audit logging for compliance and forensic analysis:
+
+### Zero-Config Audit Trail
+```python
+from stinger import audit
+
+# Enable with smart defaults (just works!)
+audit.enable()
+
+# Or specify destination
+audit.enable("./logs/security.log")
+
+# With PII redaction for compliance
+audit.enable("./logs/audit.log", redact_pii=True)
+```
+
+### Complete Security Tracking
+- **User Prompts**: All user inputs logged with attribution
+- **LLM Responses**: All AI responses tracked with context
+- **Guardrail Decisions**: Every security decision with full reasoning
+- **Conversation Flow**: Complete conversation reconstruction
+- **User Attribution**: IP, session, user ID tracking for forensics
+
+### Compliance Ready
+- **GDPR Compliance**: PII redaction while preserving audit value
+- **HIPAA Ready**: Healthcare data protection capabilities
+- **Enterprise Audit**: Complete audit trail for security reviews
+- **Forensic Analysis**: Reconstruct security incidents completely
+- **Async Performance**: Zero-impact logging with background processing
+
+### Audit Trail Features
+- **Smart Environment Detection**: Auto-configures for dev/prod/docker
+- **Async Buffering**: Background processing with <10ms latency impact
+- **Query Tools**: Easy audit trail searching and analysis
+- **Export Capabilities**: CSV/JSON export for compliance reporting
+- **Cannot be disabled in production**: Ensures audit trail integrity
 
 ## 📋 Configuration
 
@@ -129,6 +169,29 @@ pipeline.update_guardrail_config("toxicity_check", {"confidence_threshold": 0.9}
 }
 ```
 
+### Audit Trail API
+
+```python
+from stinger import audit
+
+# Enable audit trail
+audit.enable("./logs/audit.log")
+
+# Query audit trail
+records = audit.query(
+    conversation_id="conv_123",
+    user_id="user_456",
+    last_hour=True
+)
+
+# Export for compliance
+audit.export_csv("./logs/audit.log", "compliance_report.csv")
+
+# Get performance stats
+stats = audit.get_stats()
+print(f"Queued: {stats['queued']}, Written: {stats['written']}")
+```
+
 ## 📖 Examples
 
 ### Basic Usage
@@ -149,7 +212,10 @@ else:
 
 ### Advanced Usage
 ```python
-from stinger import GuardrailPipeline
+from stinger import GuardrailPipeline, audit
+
+# Enable security audit trail
+audit.enable("./logs/audit.log", redact_pii=True)
 
 # Initialize with custom config
 pipeline = GuardrailPipeline("my_config.yaml")
@@ -173,6 +239,8 @@ print(f"Blocked: {result['blocked']}")
 print(f"Reasons: {result['reasons']}")
 print(f"Warnings: {result['warnings']}")
 print(f"Details: {result['details']}")
+
+# All security decisions automatically logged to audit trail
 ```
 
 ## 🧪 Testing
@@ -190,62 +258,42 @@ python3 examples/simple_usage.py
 
 ## 📚 Learning Resources
 
-Stinger provides multiple ways to learn and explore its capabilities:
+### Examples (`/examples`)
+**Start here** - Minimal, focused code examples that mirror the Getting Started guide:
+- `01_basic_installation.py` - Installation and basic setup
+- `02_simple_filter.py` - Simple guardrail usage
+- `03_global_rate_limiting.py` - Rate limiting configuration
+- `04_conversation_api.py` - Conversation-based filtering
+- `05_conversation_rate_limiting.py` - Conversation rate limiting
+- `06_health_monitoring.py` - Health monitoring and status
+- `07_cli_and_yaml_config.py` - CLI and YAML configuration
+- `08_security_audit_trail.py` - Security audit trail setup and usage
+- `09_troubleshooting_and_testing.py` - Testing and debugging
 
-### **🎓 Getting Started Examples** (`/examples/getting_started/`)
-**Perfect for:** Learning Stinger step by step
-
-Follow the structured learning path with 9 numbered examples:
-
+**Run examples:**
 ```bash
-# Start with basic installation
-python examples/getting_started/01_basic_installation.py
-
-# Learn about filters and presets
-python examples/getting_started/02_simple_filter.py
-
-# Explore rate limiting
-python examples/getting_started/03_global_rate_limiting.py
-
-# Master the conversation API
-python examples/getting_started/04_conversation_api.py
-
-# Continue through all examples...
-python examples/getting_started/05_conversation_rate_limiting.py
-python examples/getting_started/06_health_monitoring.py
-python examples/getting_started/07_cli_and_yaml_config.py
-python examples/getting_started/08_security_audit_trail.py
-python examples/getting_started/09_troubleshooting_and_testing.py
+cd examples/getting_started
+python 01_basic_installation.py
 ```
 
-### **🔬 Interactive Demos** (`/demos/`)
-**Perfect for:** Exploring advanced features and complex scenarios
+### Demos (`/demos`)
+Advanced demonstrations showcasing specific features and scenarios:
+- `conversation_aware_prompt_injection_demo.py` - Advanced prompt injection detection
+- `global_rate_limiting_demo.py` - Rate limiting demonstrations
+- `topic_filter_demo.py` - Topic-based filtering
+- `tech_support/` - Complete tech support scenario with audit trail
 
+**Run demos:**
 ```bash
-# Comprehensive conversation management
-python demos/conversation_demo.py
-
-# Advanced rate limiting scenarios
-python demos/global_rate_limiting_demo.py
-
-# Topic-based content filtering
-python demos/topic_filter_demo.py
-
-# Complete tech support scenario
-cd demos/tech_support
-python demo.py
+cd demos
+python conversation_aware_prompt_injection_demo.py
 ```
 
-### **📖 Documentation**
-- [Getting Started Guide](docs/GETTING_STARTED.md) - Complete learning guide
-- [API Reference](docs/API_REFERENCE.md) - Complete API documentation
-- [Configuration Guide](docs/CONFIGURATION.md) - Configuration file format
-
-### **Learning Path**
-1. **Start with examples** (01-09) to learn the basics
-2. **Explore demos** for advanced features and scenarios
-3. **Check documentation** for detailed reference
-4. **Review tests** for edge cases and validation
+### Learning Path
+1. **Start with examples** - Run through the numbered examples in order
+2. **Explore demos** - Try the advanced demonstrations
+3. **Check the tech support scenario** - See a complete real-world implementation
+4. **Review API docs** - Deep dive into the complete API reference
 
 ## 🔧 Development
 
