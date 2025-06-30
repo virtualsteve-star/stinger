@@ -587,7 +587,7 @@ RESPONSE FORMAT (JSON):
             return GuardrailResult(
                 blocked=True,
                 confidence=0.0,
-                reason=f"Prompt injection detection error - blocking for safety: {safe_msg}",
+                reason=f"Blocking for safety: {safe_msg}",
                 details=safe_details,
                 guardrail_name=self.name,
                 guardrail_type=self.guardrail_type
@@ -596,7 +596,7 @@ RESPONSE FORMAT (JSON):
             return GuardrailResult(
                 blocked=False,
                 confidence=0.0,
-                reason=f"Prompt injection detection error - allowing with warning: {safe_msg}",
+                reason=f"Allowing with warning: {safe_msg}",
                 details=safe_details,
                 guardrail_name=self.name,
                 guardrail_type=self.guardrail_type
@@ -605,7 +605,7 @@ RESPONSE FORMAT (JSON):
             return GuardrailResult(
                 blocked=False,
                 confidence=0.0,
-                reason=f"Prompt injection detection error - allowing: {safe_msg}",
+                reason=f"Allowing: {safe_msg}",
                 details=safe_details,
                 guardrail_name=self.name,
                 guardrail_type=self.guardrail_type

@@ -242,7 +242,7 @@ class HealthMonitor:
         except Exception as e:
             from .error_handling import safe_error_message
             safe_msg = safe_error_message(e, "getting pipeline status")
-            self.record_event('error', 'pipeline', f'Failed to get pipeline status: {safe_msg}')
+            self.record_event('error', 'pipeline', f'Failed: {safe_msg}')
             return {'available': False, 'error': safe_msg}
     
     def _get_api_keys_status(self) -> Dict[str, bool]:
@@ -252,7 +252,7 @@ class HealthMonitor:
         except Exception as e:
             from .error_handling import safe_error_message
             safe_msg = safe_error_message(e, "checking API key health")
-            self.record_event('error', 'api_keys', f'Failed to check API key health: {safe_msg}')
+            self.record_event('error', 'api_keys', f'Failed: {safe_msg}')
             return {}
     
     def _get_rate_limiter_status(self) -> Dict[str, Any]:
@@ -275,7 +275,7 @@ class HealthMonitor:
         except Exception as e:
             from .error_handling import safe_error_message
             safe_msg = safe_error_message(e, "getting rate limiter status")
-            self.record_event('error', 'rate_limiter', f'Failed to get rate limiter status: {safe_msg}')
+            self.record_event('error', 'rate_limiter', f'Failed: {safe_msg}')
             return {'available': False, 'error': safe_msg}
     
     def _get_filter_health(self, guardrail) -> FilterHealth:
@@ -311,7 +311,7 @@ class HealthMonitor:
         except Exception as e:
             from .error_handling import safe_error_message
             safe_msg = safe_error_message(e, f"getting health for filter {guardrail.name}")
-            self.record_event('error', 'filter', f'Failed to get health for filter {guardrail.name}: {safe_msg}')
+            self.record_event('error', 'filter', f'Failed: {safe_msg}')
             return FilterHealth(
                 name=guardrail.name,
                 type='unknown',
