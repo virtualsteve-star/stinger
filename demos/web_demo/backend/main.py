@@ -153,48 +153,90 @@ async def lifespan(app: FastAPI):
         logger.warning(f"⚠️ Audit logging initialization failed: {e}")
         app.state.audit_log_file = None
     
-    # Initialize default pipeline
+    # Initialize default pipeline with custom configuration including prompt injection
     try:
-        current_pipeline = GuardrailPipeline.from_preset("customer_service")
-        app.state.current_pipeline = current_pipeline
-        logger.info("✅ Default customer service pipeline loaded")
+        # Create a custom pipeline configuration with prompt injection
+        import yaml
+        from stinger.core.pipeline import GuardrailPipeline
         
-        # Load and apply saved guardrail settings if available
-        saved_settings = load_guardrail_settings()
-        if saved_settings:
-            app.state.current_guardrail_settings = saved_settings
-            logger.info("🔄 Applying saved guardrail settings...")
+        # Create YAML config with prompt injection filter
+        demo_config_yaml = """
+version: "1.0"
+pipeline:
+  input:
+    - name: pii_check
+      type: ai_pii_detection
+      enabled: true
+      risk_threshold: 70
+      block_levels: ["high", "critical"]
+      warn_levels: ["medium"]
+      on_error: "allow"
+    - name: toxicity_check
+      type: simple_toxicity_detection
+      enabled: true
+      risk_threshold: 70
+      block_levels: ["high", "critical"]
+      warn_levels: ["medium"]
+      on_error: "allow"
+    - name: length_check
+      type: length_filter
+      enabled: true
+      max_length: 1000
+      on_error: "allow"
+    - name: prompt_injection_check
+      type: prompt_injection
+      enabled: true
+      risk_threshold: 70
+      block_levels: ["high", "critical"]
+      warn_levels: ["medium"]
+      on_error: "allow"
+  output:
+    - name: pii_check
+      type: ai_pii_detection
+      enabled: true
+      risk_threshold: 70
+      block_levels: ["high", "critical"]
+      warn_levels: ["medium"]
+      on_error: "allow"
+    - name: code_generation_check
+      type: ai_code_generation
+      enabled: true
+      risk_threshold: 70
+      block_levels: ["high", "critical"]
+      warn_levels: ["medium"]
+      on_error: "allow"
+"""
+        
+        try:
+            # Write config to temporary file
+            config_file = Path(tempfile.gettempdir()) / "demo_pipeline.yaml"
+            with open(config_file, 'w') as f:
+                f.write(demo_config_yaml)
             
-            # Apply saved settings to pipeline
-            for guardrail in saved_settings.input_guardrails:
-                if guardrail.enabled:
-                    current_pipeline.enable_guardrail(guardrail.name, pipeline_type='input')
-                else:
-                    current_pipeline.disable_guardrail(guardrail.name, pipeline_type='input')
-            
-            for guardrail in saved_settings.output_guardrails:
-                if guardrail.enabled:
-                    current_pipeline.enable_guardrail(guardrail.name, pipeline_type='output')
-                else:
-                    current_pipeline.disable_guardrail(guardrail.name, pipeline_type='output')
-            
-            logger.info("✅ Saved guardrail settings applied")
-        else:
-            # Initialize with default settings
-            status = current_pipeline.get_guardrail_status()
-            app.state.current_guardrail_settings = GuardrailSettings(
-                input_guardrails=[
-                    GuardrailConfig(name=info["name"], enabled=info["enabled"])
-                    for info in status.get("input_guardrails", [])
-                ],
-                output_guardrails=[
-                    GuardrailConfig(name=info["name"], enabled=info["enabled"])
-                    for info in status.get("output_guardrails", [])
-                ],
-                preset="customer_service",
-                use_conversation_aware_prompt_injection=False
-            )
-            logger.info("✅ Default guardrail settings initialized")
+            current_pipeline = GuardrailPipeline(str(config_file))
+            logger.info("✅ Custom demo pipeline with prompt injection loaded")
+        except Exception as e:
+            logger.warning(f"⚠️ Custom pipeline failed, falling back to preset: {e}")
+            current_pipeline = GuardrailPipeline.from_preset("customer_service")
+            logger.info("✅ Fallback customer service pipeline loaded")
+        
+        app.state.current_pipeline = current_pipeline
+        
+        # Initialize guardrail settings from current pipeline status
+        status = current_pipeline.get_guardrail_status()
+        app.state.current_guardrail_settings = GuardrailSettings(
+            input_guardrails=[
+                GuardrailConfig(name=info["name"], enabled=info["enabled"])
+                for info in status.get("input_guardrails", [])
+            ],
+            output_guardrails=[
+                GuardrailConfig(name=info["name"], enabled=info["enabled"])
+                for info in status.get("output_guardrails", [])
+            ],
+            preset="demo",
+            use_conversation_aware_prompt_injection=False
+        )
+        logger.info("✅ Guardrail settings initialized from pipeline")
             
     except Exception as e:
         logger.error(f"❌ Failed to load default pipeline: {e}")
@@ -261,12 +303,9 @@ async def health_check(
     guardrail_status = pipeline.get_guardrail_status()
     input_guardrails = guardrail_status.get("input_guardrails", [])
     output_guardrails = guardrail_status.get("output_guardrails", [])
-    # Build a dict of all unique guardrails by name, with enabled state
-    all_guardrails = {}
-    for g in input_guardrails + output_guardrails:
-        all_guardrails[g["name"]] = all_guardrails.get(g["name"], False) or g["enabled"]
-    total_guardrails = len(all_guardrails)
-    enabled_guardrails = sum(1 for enabled in all_guardrails.values() if enabled)
+    # Count input and output guardrails separately (they can have the same name)
+    total_guardrails = len(input_guardrails) + len(output_guardrails)
+    enabled_guardrails = sum(1 for g in input_guardrails if g["enabled"]) + sum(1 for g in output_guardrails if g["enabled"])
     
     return SystemStatus(
         status="healthy",
@@ -455,9 +494,6 @@ async def update_guardrail_settings(
         # Update app state
         app.state.current_guardrail_settings = settings
         
-        # Save settings to file
-        save_guardrail_settings(settings)
-        
         logger.info("✅ Guardrail settings updated successfully")
         return {"status": "success", "message": "Guardrail settings updated"}
         
@@ -599,28 +635,6 @@ except Exception as e:
     logger.warning(f"Could not mount frontend: {e}")
 
 
-def save_guardrail_settings(settings: GuardrailSettings) -> None:
-    """Save guardrail settings to file."""
-    try:
-        settings_file = Path(tempfile.gettempdir()) / "stinger_web_demo_settings.json"
-        with open(settings_file, 'w') as f:
-            json.dump(settings.model_dump(), f, indent=2)
-        logger.debug(f"Guardrail settings saved to {settings_file}")
-    except Exception as e:
-        logger.error(f"Failed to save guardrail settings: {e}")
-
-
-def load_guardrail_settings() -> Optional[GuardrailSettings]:
-    """Load guardrail settings from file."""
-    try:
-        settings_file = Path(tempfile.gettempdir()) / "stinger_web_demo_settings.json"
-        if settings_file.exists():
-            with open(settings_file, 'r') as f:
-                data = json.load(f)
-            return GuardrailSettings(**data)
-    except Exception as e:
-        logger.error(f"Failed to load guardrail settings: {e}")
-    return None
 
 
 @app.exception_handler(Exception)

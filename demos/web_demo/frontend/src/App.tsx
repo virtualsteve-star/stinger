@@ -9,8 +9,11 @@ interface ChatMessage {
 
 interface SystemStatus {
   status: string;
-  enabled_guardrails: number;
+  pipeline_loaded: boolean;
+  conversation_active: boolean;
+  audit_enabled: boolean;
   total_guardrails: number;
+  enabled_guardrails: number;
 }
 
 interface GuardrailSettings {
@@ -189,11 +192,14 @@ function App() {
   };
 
   const formatGuardrailName = (name: string) => {
+    if (!name) return 'Unknown Guardrail';
+    
     const nameMap: { [key: string]: string } = {
-      'pii_check': 'PII Detection',
-      'toxicity_check': 'Content Filter', 
-      'length_check': 'Length Validation',
-      'code_generation_check': 'Code Generation Filter'
+      'pii_check': 'PII Detection (AI)',
+      'toxicity_check': 'Toxicity Detection (Local)', 
+      'length_check': 'Length Filter (Local)',
+      'code_generation_check': 'Code Generation (AI)',
+      'prompt_injection_check': 'Prompt Injection (AI)'
     };
     return nameMap[name] || name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
   };
@@ -265,6 +271,22 @@ function App() {
             <button onClick={sendMessage} disabled={loading || !inputMessage.trim()}>
               Send
             </button>
+          </div>
+
+          {/* Status indicators */}
+          <div className="status-bar">
+            <div className="status-item">
+              <span className="status-label">Backend</span>
+              <span className={`status-light ${systemStatus ? 'online' : 'offline'}`}></span>
+            </div>
+            <div className="status-item">
+              <span className="status-label">Guardrails</span>
+              <span className={`status-light ${settings ? 'loaded' : 'loading'}`}></span>
+            </div>
+            <div className="status-item">
+              <span className="status-label">Audit Trail</span>
+              <span className={`status-light ${systemStatus?.audit_enabled ? 'active' : 'inactive'}`}></span>
+            </div>
           </div>
         </div>
 

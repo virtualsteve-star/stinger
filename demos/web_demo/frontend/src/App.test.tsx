@@ -68,7 +68,7 @@ test('has chat input and send button', async () => {
   });
 });
 
-test('shows settings panel when settings button clicked', async () => {
+test('shows guardrails sidebar with toggle controls', async () => {
   // Mock the initial API calls
   mockFetch
     .mockResolvedValueOnce({
@@ -82,21 +82,29 @@ test('shows settings panel when settings button clicked', async () => {
     .mockResolvedValueOnce({
       ok: true,
       json: () => Promise.resolve({
-        input_guardrails: ['pii_filter'],
-        output_guardrails: ['content_filter']
+        input_guardrails: [
+          { name: 'pii_check', enabled: true },
+          { name: 'toxicity_check', enabled: true }
+        ],
+        output_guardrails: [
+          { name: 'code_generation_check', enabled: true }
+        ]
       })
     } as Response);
 
   render(<App />);
   
   await waitFor(() => {
-    const settingsButton = screen.getByText(/Show Settings/i);
-    fireEvent.click(settingsButton);
+    // Check for unique sidebar content instead of ambiguous "Guardrails" text
+    const inputFiltersSection = screen.getByText(/Input Filters/i);
+    expect(inputFiltersSection).toBeInTheDocument();
   });
 
   await waitFor(() => {
-    const settingsPanel = screen.getByText(/Guardrail Settings/i);
-    expect(settingsPanel).toBeInTheDocument();
+    const inputFilters = screen.getByText(/Input Filters/i);
+    const outputFilters = screen.getByText(/Output Filters/i);
+    expect(inputFilters).toBeInTheDocument();
+    expect(outputFilters).toBeInTheDocument();
   });
 });
 

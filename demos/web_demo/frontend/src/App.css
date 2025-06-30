@@ -122,7 +122,7 @@ button:disabled {
   text-align: left;
   background: white;
   padding: 1rem 1rem 1rem 2rem;
-  margin-left: 1rem;
+  margin: 0 1rem;
   border-radius: 4px;
   border-left: 4px solid #007bff;
   list-style-type: disc;
@@ -280,6 +280,72 @@ button:disabled {
   font-style: italic;
 }
 
+/* Status Bar */
+.status-bar {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 0.5rem 1rem;
+  background: #f8f9fa;
+  border-top: 1px solid #e0e0e0;
+  font-size: 0.8rem;
+}
+
+.status-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.status-label {
+  color: #666;
+  font-weight: 500;
+}
+
+.status-light {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.status-light.online {
+  background: #28a745;
+  box-shadow: 0 0 6px rgba(40, 167, 69, 0.6);
+}
+
+.status-light.offline {
+  background: #dc3545;
+  box-shadow: 0 0 6px rgba(220, 53, 69, 0.6);
+}
+
+.status-light.loaded {
+  background: #28a745;
+  box-shadow: 0 0 6px rgba(40, 167, 69, 0.6);
+}
+
+.status-light.loading {
+  background: #ffc107;
+  box-shadow: 0 0 6px rgba(255, 193, 7, 0.6);
+  animation: pulse 2s infinite;
+}
+
+.status-light.active {
+  background: #28a745;
+  box-shadow: 0 0 6px rgba(40, 167, 69, 0.6);
+}
+
+.status-light.inactive {
+  background: #6c757d;
+  box-shadow: 0 0 6px rgba(108, 117, 125, 0.6);
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+
 /* Fixed Guardrails Sidebar - Playground style */
 .guardrails-sidebar {
   width: 320px;
@@ -379,20 +445,10 @@ button:disabled {
   gap: 0.5rem;
 }
 
-.reset-btn {
-  background: #6c757d;
-}
-
-.logs-btn:hover {
+.logs-btn:hover, .reset-btn:hover {
   background: #0056b3;
   transform: translateY(-1px);
   box-shadow: 0 2px 4px rgba(0, 123, 255, 0.3);
-}
-
-.reset-btn:hover {
-  background: #5a6268;
-  transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(108, 117, 125, 0.3);
 }
 
 .guardrail-section {
