@@ -60,6 +60,7 @@ class KeywordListFilter(BaseFilter):
             raise FileNotFoundError(f"Keywords file not found: {resolved_path}")
         
         keywords = []
+        line_num = 0  # Initialize line_num before the loop
         try:
             with open(resolved_path, 'r', encoding='utf-8') as f:
                 for line_num, line in enumerate(f, 1):
