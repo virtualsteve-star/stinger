@@ -234,7 +234,10 @@ class AuditTrail:
                 self._file_handle = open(path, 'a', encoding='utf-8')
             except Exception as e:
                 # Fallback to stdout if file can't be opened
-                print(f"Warning: Could not open audit log file {path}: {e}")
+                from .error_handling import safe_error_message, sanitize_path
+                safe_path = sanitize_path(str(path))
+                safe_msg = safe_error_message(e, f"opening audit log file {safe_path}")
+                print(f"Warning: {safe_msg}")
                 self._file_handle = sys.stdout
             
     def _redact_if_needed(self, text: str) -> str:

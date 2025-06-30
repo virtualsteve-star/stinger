@@ -577,12 +577,18 @@ RESPONSE FORMAT (JSON):
     
     def _handle_error(self, error: Exception) -> GuardrailResult:
         """Handle errors during analysis."""
+        # Import error handling utilities
+        from ..core.error_handling import safe_error_message, sanitize_error_details
+        
+        safe_msg = safe_error_message(error, "Prompt injection detection")
+        safe_details = sanitize_error_details({'error': str(error)})
+        
         if self.on_error == 'block':
             return GuardrailResult(
                 blocked=True,
                 confidence=0.0,
-                reason=f"Prompt injection detection error - blocking for safety: {str(error)}",
-                details={'error': str(error)},
+                reason=f"Prompt injection detection error - blocking for safety: {safe_msg}",
+                details=safe_details,
                 guardrail_name=self.name,
                 guardrail_type=self.guardrail_type
             )
@@ -590,8 +596,8 @@ RESPONSE FORMAT (JSON):
             return GuardrailResult(
                 blocked=False,
                 confidence=0.0,
-                reason=f"Prompt injection detection error - allowing with warning: {str(error)}",
-                details={'error': str(error)},
+                reason=f"Prompt injection detection error - allowing with warning: {safe_msg}",
+                details=safe_details,
                 guardrail_name=self.name,
                 guardrail_type=self.guardrail_type
             )
@@ -599,8 +605,8 @@ RESPONSE FORMAT (JSON):
             return GuardrailResult(
                 blocked=False,
                 confidence=0.0,
-                reason=f"Prompt injection detection error - allowing: {str(error)}",
-                details={'error': str(error)},
+                reason=f"Prompt injection detection error - allowing: {safe_msg}",
+                details=safe_details,
                 guardrail_name=self.name,
                 guardrail_type=self.guardrail_type
             )
