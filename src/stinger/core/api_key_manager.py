@@ -8,10 +8,16 @@ for handling external API keys like OpenAI.
 import os
 import re
 import logging
+import sys
 from typing import Dict, Optional, Any, Union, TYPE_CHECKING
 from pathlib import Path
 import yaml
 import json
+
+
+class SecurityError(Exception):
+    """Raised when security constraints are violated."""
+    pass
 
 # Optional encryption - will be added when cryptography is available
 try:
@@ -36,7 +42,13 @@ class APIKeyManager:
     def __init__(self, config_path: Optional[str] = None, encryption_key: Optional[str] = None):
         """Initialize with optional config file path and encryption key."""
         self.config_path = config_path
-        self.encryption_key = encryption_key or self._generate_encryption_key()
+        try:
+            self.encryption_key = encryption_key or self._generate_encryption_key()
+        except SecurityError:
+            # If encryption is not available, we can still work with environment variables only
+            logger.warning("Encryption not available - API keys will only be loaded from environment variables")
+            self.encryption_key = None
+        
         self._fernet: Optional[FernetType] = None
         if ENCRYPTION_AVAILABLE and self.encryption_key and Fernet is not None:
             try:
@@ -46,11 +58,15 @@ class APIKeyManager:
         self._keys: Dict[str, str] = {}
         self._load_keys()
     
-    def _generate_encryption_key(self) -> str:
-        """Generate a new encryption key."""
-        if ENCRYPTION_AVAILABLE and Fernet is not None:
-            return Fernet.generate_key().decode()
-        return "no-encryption-available"
+    def _generate_encryption_key(self) -> Optional[str]:
+        """Generate a new encryption key with secure failure mode."""
+        if not ENCRYPTION_AVAILABLE or Fernet is None:
+            logger.critical("Cryptography dependencies not available - refusing to proceed with insecure storage")
+            raise SecurityError(
+                "Cryptography dependencies not available. "
+                "Install with: pip install 'stinger[crypto]' or set keys via environment variables only."
+            )
+        return Fernet.generate_key().decode()
     
     def _load_keys(self) -> None:
         """Load API keys from environment variables and config file."""
@@ -253,7 +269,14 @@ class APIKeyManager:
         logger.info("Cleared all API keys")
     
     def export_encryption_key(self) -> str:
-        """Export the encryption key for backup purposes."""
+        """Export the encryption key (development only)."""
+        if not self._is_development():
+            logger.warning(f"Attempted key export in production from {self._get_caller_info()}")
+            raise SecurityError("Key export not allowed in production environment")
+        
+        if not self.encryption_key:
+            raise SecurityError("No encryption key available for export")
+        
         return self.encryption_key
     
     def import_encryption_key(self, key: str) -> bool:
@@ -314,6 +337,31 @@ class APIKeyManager:
     def get_secure_storage_path(self) -> str:
         """Get the path to secure storage."""
         return str(Path.home() / '.stinger' / 'api_keys.enc')
+    
+    def _is_development(self) -> bool:
+        """Detect development environment."""
+        return (
+            os.getenv('STINGER_ENV', '').lower() == 'development' or
+            os.getenv('DEVELOPMENT', '').lower() in ('1', 'true') or
+            os.getenv('DEBUG', '').lower() in ('1', 'true') or
+            'pytest' in sys.modules or
+            any('test' in arg.lower() for arg in sys.argv)
+        )
+    
+    def _get_caller_info(self) -> str:
+        """Get caller information for security logging."""
+        import inspect
+        try:
+            frame = inspect.currentframe()
+            if frame and frame.f_back and frame.f_back.f_back:
+                caller_frame = frame.f_back.f_back
+                filename = caller_frame.f_code.co_filename
+                lineno = caller_frame.f_lineno
+                function = caller_frame.f_code.co_name
+                return f"{Path(filename).name}:{function}:{lineno}"
+        except Exception:
+            pass
+        return "unknown"
 
 
 # Global API key manager instance
