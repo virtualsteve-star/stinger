@@ -366,10 +366,7 @@ async def chat_endpoint(
             )
             response_content = response.choices[0].message.content or "I apologize, but I couldn't generate a response."
             
-            # Add response to conversation
-            conversation.add_response(response_content)
-            
-            # Check output through guardrails
+            # Check output through guardrails (this automatically adds response to conversation)
             output_result = await check_output_async(pipeline, response_content, conversation)
             
             if output_result['blocked']:
@@ -419,9 +416,7 @@ async def chat_endpoint(
 
 For now, this is a mock response demonstrating that guardrails are working correctly."""
         
-        conversation.add_response(mock_response)
-        
-        # Check output through guardrails
+        # Check output through guardrails (this automatically adds response to conversation)
         output_result = await check_output_async(pipeline, mock_response, conversation)
         
         return ChatResponse(

@@ -39,15 +39,13 @@ def test_conversation():
     # Generate response
     response = "I'm a test response"
     
-    # Test output guardrails 
+    # Test output guardrails (this automatically adds response to conversation)
     output_result = pipeline.check_output(response, conversation=conversation)
     print(f"✅ Output guardrails: {output_result}")
     print(f"📊 Conversation turns after output check: {len(conversation.turns)}")
     print(f"📊 Last turn after output check: {conversation.turns[-1] if conversation.turns else 'None'}")
     
-    # Add response to conversation
-    conversation.add_response(response)
-    print("✅ Response added to conversation")
+    print("✅ Response automatically added to conversation by check_output")
     
     print("🎉 All tests passed!")
 

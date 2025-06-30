@@ -101,6 +101,15 @@ ALWAYS use the real current date when documenting completion dates, timestamps, 
 Run 'date' command to get the current date/time before writing dates in documentation
 Never assume or guess dates - always verify with the system date
 
+## Process Testing Rules
+- **NEVER use `command &` with Bash tool** - causes hanging when trying to capture output
+- **For long-running services:** test endpoints directly, don't background processes
+- **If testing startup:** use wrapper scripts that exit quickly or test specific functionality
+- **Examples:**
+  - ❌ `python3 server.py &` (will hang)
+  - ✅ `curl http://localhost:8000/health` (test endpoint)
+  - ✅ Start process, let user interrupt, then verify it worked
+
 ## API Key Environment Variable Handling (Stinger)
 - API keys (e.g., OPENAI_API_KEY) should be set as environment variables, preferably using macOS Keychain for devs using Cursor or similar tools.
 - The recommended workflow is:

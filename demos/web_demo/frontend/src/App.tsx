@@ -122,8 +122,33 @@ function App() {
 
       const data = await response.json();
       
+      let responseContent = data.content;
+      
+      // Handle blocked responses with guardrail information
+      if (data.blocked && (!data.content || data.content.trim() === '')) {
+        responseContent = '🚫 **Content Blocked by Guardrails**\n\n';
+        
+        if (data.reasons && data.reasons.length > 0) {
+          responseContent += '**Reasons:**\n';
+          data.reasons.forEach((reason: string) => {
+            responseContent += `• ${reason}\n`;
+          });
+        }
+        
+        if (data.warnings && data.warnings.length > 0) {
+          responseContent += '\n**Warnings:**\n';
+          data.warnings.forEach((warning: string) => {
+            responseContent += `• ${warning}\n`;
+          });
+        }
+        
+        responseContent += '\n💡 *Please rephrase your message to avoid triggering security filters.*';
+      } else if (!responseContent) {
+        responseContent = 'No response received';
+      }
+      
       const assistantMessage: ChatMessage = {
-        content: data.content || 'No response received',
+        content: responseContent,
         sender: 'assistant',
         timestamp: new Date()
       };
