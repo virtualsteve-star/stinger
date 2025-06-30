@@ -60,7 +60,6 @@ class KeywordListFilter(BaseFilter):
             raise FileNotFoundError(f"Keywords file not found: {resolved_path}")
         
         keywords = []
-        line_num = 0  # Initialize line_num before the loop
         try:
             with open(resolved_path, 'r', encoding='utf-8') as f:
                 for line_num, line in enumerate(f, 1):
@@ -71,7 +70,11 @@ class KeywordListFilter(BaseFilter):
         except Exception as e:
             from ..core.error_handling import safe_error_message, sanitize_path
             safe_path = sanitize_path(str(resolved_path))
-            safe_msg = safe_error_message(e, f"reading keywords file {safe_path} at line {line_num}")
+            # Check if this is a file access error (before any lines processed)
+            if 'line_num' not in locals():
+                safe_msg = safe_error_message(e, f"opening keywords file {safe_path}")
+            else:
+                safe_msg = safe_error_message(e, f"reading keywords file {safe_path} at line {line_num}")
             raise FilterError(f"Failed to read keywords file: {safe_msg}")
         
         return keywords
