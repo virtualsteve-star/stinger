@@ -1,6 +1,7 @@
 import re
 from typing import List, Optional
 from ..core.base_filter import BaseFilter, FilterResult
+from ..core.regex_security import RegexSecurityValidator, SecurityError
 
 class RegexFilter(BaseFilter):
     def __init__(self, config: dict):
@@ -10,15 +11,27 @@ class RegexFilter(BaseFilter):
         self.flags = config.get('flags', 0)
         self.case_sensitive = config.get('case_sensitive', True)
         
-        # Compile patterns for performance
+        # Initialize security validator
+        self.security_validator = RegexSecurityValidator()
+        
+        # Compile patterns with security validation
         self.compiled_patterns = []
         for pattern in self.patterns:
             try:
+                # Validate pattern for security before compiling
+                is_safe, reason = self.security_validator.validate_pattern(pattern)
+                if not is_safe:
+                    raise SecurityError(f"Unsafe regex pattern '{pattern}': {reason}")
+                
                 flags = 0 if self.case_sensitive else re.IGNORECASE
                 flags |= self.flags
-                self.compiled_patterns.append(re.compile(pattern, flags))
-            except re.error as e:
-                raise ValueError(f"Invalid regex pattern '{pattern}': {str(e)}")
+                
+                # Use safe compilation
+                compiled = self.security_validator.safe_compile(pattern, flags)
+                self.compiled_patterns.append(compiled)
+                
+            except (re.error, SecurityError) as e:
+                raise ValueError(f"Invalid or unsafe regex pattern '{pattern}': {str(e)}")
     
     async def run(self, content: str) -> FilterResult:
         if not content or not self.compiled_patterns:
@@ -26,8 +39,16 @@ class RegexFilter(BaseFilter):
         
         matches = []
         for i, pattern in enumerate(self.compiled_patterns):
-            if pattern.search(content):
-                matches.append(self.patterns[i])
+            try:
+                # Use safe search with timeout protection
+                match = self.security_validator.safe_search(pattern, content)
+                if match:
+                    matches.append(self.patterns[i])
+            except SecurityError as e:
+                # Log security error but continue processing other patterns
+                import logging
+                logging.warning(f"Regex security error for pattern '{self.patterns[i]}': {e}")
+                continue
         
         if matches:
             reason = f"matched patterns: {', '.join(matches)}"
