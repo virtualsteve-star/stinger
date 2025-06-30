@@ -10,7 +10,6 @@ import logging
 from typing import Dict, Any, List, Optional, Union, TypedDict
 from pathlib import Path
 from datetime import datetime
-import concurrent.futures
 
 from .guardrail_interface import GuardrailInterface, GuardrailResult, GuardrailRegistry, GuardrailFactory
 from .config import ConfigLoader
@@ -561,18 +560,25 @@ class GuardrailPipeline:
     
     def _run_pipeline(self, pipeline: List[GuardrailInterface], content: str, pipeline_type: str, conversation: Optional[Conversation] = None) -> PipelineResult:
         """
-        Sync wrapper for pipeline execution - runs the async pipeline in a new event loop.
+        Sync wrapper for pipeline execution.
+        
+        This method provides a synchronous interface to the async pipeline execution.
+        It handles the async/sync boundary safely without creating thread safety issues.
         """
         try:
-            # Try to get current event loop
-            current_loop = asyncio.get_running_loop()
-            # If we're in an async context, we need to create a new task
-            with concurrent.futures.ThreadPoolExecutor() as executor:
-                future = executor.submit(asyncio.run, self._run_pipeline_async(pipeline, content, pipeline_type, conversation))
-                return future.result()
+            # Check if we're already in an async context
+            asyncio.get_running_loop()
         except RuntimeError:
-            # No running loop, safe to use asyncio.run
+            # No running loop, safe to create a new event loop
+            # This is the normal case for sync calls
             return asyncio.run(self._run_pipeline_async(pipeline, content, pipeline_type, conversation))
+        else:
+            # We're in an async context, but this is a sync method
+            # This indicates incorrect usage - the caller should use the async version
+            raise RuntimeError(
+                f"Cannot call {pipeline_type} pipeline sync method from async context. "
+                f"Use check_{pipeline_type}_async() instead."
+            )
     
     async def _run_pipeline_async(self, pipeline: List[GuardrailInterface], content: str, pipeline_type: str, conversation: Optional[Conversation] = None) -> PipelineResult:
         """
