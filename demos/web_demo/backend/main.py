@@ -40,6 +40,7 @@ import stinger
 from stinger.core.pipeline import GuardrailPipeline
 from stinger.core.conversation import Conversation
 from stinger.core import audit
+from stinger.core.api_key_manager import get_openai_key
 from stinger.adapters.openai_adapter import OpenAIAdapter
 
 # Pydantic models for request/response
@@ -127,11 +128,17 @@ async def lifespan(app: FastAPI):
     """Lifespan event handler for startup and shutdown."""
     logger.info("Starting Stinger Web Demo backend...")
     
-    # Initialize OpenAI adapter
+    # Initialize OpenAI adapter using centralized API key manager
     try:
-        openai_adapter = OpenAIAdapter(api_key="demo_key")  # Use demo key for testing
-        app.state.openai_adapter = openai_adapter
-        logger.info("✅ OpenAI adapter initialized")
+        api_key = get_openai_key()
+        if api_key:
+            openai_adapter = OpenAIAdapter(api_key=api_key)
+            app.state.openai_adapter = openai_adapter
+            logger.info("✅ OpenAI adapter initialized with API key from centralized manager")
+        else:
+            logger.warning("⚠️ No OpenAI API key found in centralized key manager")
+            logger.info("💡 To configure API key: Set OPENAI_API_KEY environment variable or use Stinger's key manager")
+            app.state.openai_adapter = None
     except Exception as e:
         logger.warning(f"⚠️ OpenAI adapter initialization failed: {e}")
         app.state.openai_adapter = None
@@ -364,8 +371,15 @@ async def chat_endpoint(
                 }
             )
     else:
-        # No OpenAI adapter available - return mock response
-        mock_response = "This is a mock response since OpenAI integration is not configured."
+        # No OpenAI adapter available - return mock response with setup instructions
+        mock_response = """⚠️ OpenAI API not configured. To enable LLM responses:
+
+1. Get an API key from https://platform.openai.com/account/api-keys
+2. Set the environment variable: export OPENAI_API_KEY="your-key-here"
+3. Restart the backend server
+
+For now, this is a mock response demonstrating that guardrails are working correctly."""
+        
         conversation.add_response(mock_response)
         
         # Check output through guardrails
@@ -374,13 +388,14 @@ async def chat_endpoint(
         return ChatResponse(
             content=mock_response,
             blocked=False,
-            warnings=input_result['warnings'] + output_result['warnings'],
+            warnings=input_result['warnings'] + output_result['warnings'] + ["OpenAI API key not configured"],
             reasons=[],
             conversation_id=conversation.conversation_id,
             processing_details={
                 'input': input_result['details'],
                 'output': output_result['details'],
-                'mock_response': True
+                'mock_response': True,
+                'setup_required': 'OPENAI_API_KEY environment variable'
             }
         )
 
@@ -622,27 +637,11 @@ async def global_exception_handler(request, exc):
 if __name__ == "__main__":
     import uvicorn
     
-    # Check if SSL certificates exist
-    cert_file = Path(__file__).parent / "cert.pem"
-    key_file = Path(__file__).parent / "key.pem"
-    
-    if cert_file.exists() and key_file.exists():
-        print("🔒 Starting with HTTPS...")
-        uvicorn.run(
-            "main:app",
-            host="0.0.0.0",
-            port=8000,
-            ssl_keyfile=str(key_file),
-            ssl_certfile=str(cert_file),
-            reload=True,
-            reload_dirs=[str(Path(__file__).parent)]
-        )
-    else:
-        print("🔓 Starting with HTTP...")
-        uvicorn.run(
-            "main:app",
-            host="0.0.0.0",
-            port=8000,
-            reload=True,
-            reload_dirs=[str(Path(__file__).parent)]
-        )
+    print("🚀 Starting backend on HTTP...")
+    uvicorn.run(
+        "main:app",
+        host="127.0.0.1",
+        port=8000,
+        reload=True,
+        reload_dirs=[str(Path(__file__).parent)]
+    )
