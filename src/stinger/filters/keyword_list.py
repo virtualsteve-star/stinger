@@ -33,8 +33,11 @@ class KeywordListFilter(BaseFilter):
                 self.keywords = file_keywords + [kw for kw in inline_keywords if kw not in file_keywords]
             except Exception as e:
                 # If file loading fails, use only inline keywords
+                from ..core.error_handling import safe_error_message, sanitize_path
+                safe_path = sanitize_path(keywords_file)
+                safe_msg = safe_error_message(e, f"loading keywords from file {safe_path}")
                 self.keywords = inline_keywords
-                print(f"⚠️ Warning: Failed to load keywords from file '{keywords_file}': {e}")
+                print(f"⚠️ Warning: {safe_msg}")
                 print(f"   Using fallback keywords: {inline_keywords}")
         else:
             self.keywords = inline_keywords
@@ -57,6 +60,7 @@ class KeywordListFilter(BaseFilter):
             raise FileNotFoundError(f"Keywords file not found: {resolved_path}")
         
         keywords = []
+        line_num = 0  # Initialize line_num before the loop
         try:
             with open(resolved_path, 'r', encoding='utf-8') as f:
                 for line_num, line in enumerate(f, 1):
@@ -65,7 +69,10 @@ class KeywordListFilter(BaseFilter):
                     if line and not line.startswith('#'):
                         keywords.append(line)
         except Exception as e:
-            raise FilterError(f"Failed to read keywords file '{resolved_path}' at line {line_num}: {e}")
+            from ..core.error_handling import safe_error_message, sanitize_path
+            safe_path = sanitize_path(str(resolved_path))
+            safe_msg = safe_error_message(e, f"reading keywords file {safe_path} at line {line_num}")
+            raise FilterError(f"Failed to read keywords file: {safe_msg}")
         
         return keywords
     
