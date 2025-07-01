@@ -1,6 +1,9 @@
 import argparse
+import sys
 from stinger.core.pipeline import GuardrailPipeline
 from stinger.core.health_monitor import HealthMonitor, print_health_status
+from stinger.cli.setup_wizard import run_setup
+from stinger.cli.first_run import check_first_run
 
 def run_demo():
     print("\n[Stinger Demo]\n")
@@ -54,6 +57,12 @@ def show_health(detailed: bool = False):
     return True
 
 def main():
+    # Check for first run experience
+    if len(sys.argv) == 1:  # No command provided
+        first_run_result = check_first_run()
+        if first_run_result is not None:
+            return first_run_result
+    
     parser = argparse.ArgumentParser(description="Stinger CLI - LLM Guardrails")
     subparsers = parser.add_subparsers(dest="command")
 
@@ -68,6 +77,8 @@ def main():
     health_parser = subparsers.add_parser("health", help="Show system health status")
     health_parser.add_argument("--detailed", "-d", action="store_true", 
                               help="Show detailed health information")
+    
+    setup_parser = subparsers.add_parser("setup", help="Run interactive setup wizard")
 
     args = parser.parse_args()
     if args.command == "demo":
@@ -78,6 +89,8 @@ def main():
         check_response(args.response)
     elif args.command == "health":
         show_health(detailed=args.detailed)
+    elif args.command == "setup":
+        return run_setup()
     else:
         parser.print_help()
 
