@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "stinger-guardrails"
+version = "0.0.1"
+description = "Stinger AI Guardrails Framework - Comprehensive LLM safety toolkit (Coming Soon)"
+authors = [
+    { name = "Steve", email = "steve@example.com" }
+]
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.8"
+classifiers = [
+    "Development Status :: 1 - Planning",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Security",
+]
+
+[project.urls]
+Homepage = "https://github.com/virtualsteve-star/stinger"
+Documentation = "https://github.com/virtualsteve-star/stinger#readme"
+Repository = "https://github.com/virtualsteve-star/stinger"
+Issues = "https://github.com/virtualsteve-star/stinger/issues"

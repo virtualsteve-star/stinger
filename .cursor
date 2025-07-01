@@ -242,37 +242,21 @@ GITHUB_REPO=virtualsteve-star/stinger
 # Avoid passing --body with \n escape sequences, as these will render as literal text in GitHub.
 
 # ---
-# GITHUB PR CREATION WORKFLOW (WORKING METHOD)
+# GITHUB ISSUE AND PR CREATION WORKFLOW (RECOMMENDED PRACTICE)
 #
-# When creating PRs from dev to main, use this proven workflow:
+# For all detailed, markdown-rich, or multiline issue/PR bodies, ALWAYS use a file:
+#   - For issues: gh issue create --title "Title" --body-file issue.md
+#   - For PRs:    gh pr create --title "Title" --body "$(cat pr_description.md)" --base main --head dev
 #
-# 1. COMMIT AND PUSH:
-#    git add .
-#    git commit -m "Descriptive commit message"
-#    git push origin dev
+# Avoid using --body with long or complex strings directly, as this may silently fail or truncate content.
 #
-# 2. CREATE PR (SIMPLE METHOD - WORKS):
-#    gh pr create --title "PR Title" --body "Simple description" --base main --head dev
+# LABELS: Only use labels that already exist in the repo. Specifying a non-existent label will cause silent failure.
 #
-# 3. CREATE PR (WITH FILE - FOR COMPLEX DESCRIPTIONS):
-#    echo "Complex PR description with multiple lines" > pr_description.md
-#    gh pr create --title "PR Title" --body "$(cat pr_description.md)" --base main --head dev
+# EXAMPLES:
+#   echo "Full issue or PR body here" > body.md
+#   gh issue create --title "My Issue" --body-file body.md
+#   gh pr create --title "My PR" --body "$(cat body.md)" --base main --head dev
+#   rm body.md
 #
-# 4. CREATE PR (INLINE MULTILINE - WORKS):
-#    gh pr create --title "PR Title" --body "Line 1
-#    Line 2
-#    Line 3" --base main --head dev
-#
-# AVOID: Complex --body with special characters, quotes, or escape sequences
-# PREFER: Simple descriptions or use files for complex content
-#
-# EXAMPLE WORKING COMMAND:
-#   gh pr create --title "Phase 7B.3: OpenAI Adapter Refactor" --body "Refactored OpenAI adapter to separate concerns. Moved prompt injection logic to guardrail. All tests passing." --base main --head dev
-#
-# SIMPLIFIED METHOD THAT ACTUALLY WORKS (USE THIS):
-#   1. Create a file: echo "PR description here" > pr_description.md
-#   2. Use: gh pr create --title "Title" --body "$(cat pr_description.md)" --base main --head dev
-#   3. Clean up: rm pr_description.md
-#
-# This avoids all the quoting and escaping issues with complex PR descriptions.
+# This is the most reliable way to ensure all content is included and formatted correctly.
 # --- 
