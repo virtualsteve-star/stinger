@@ -1,249 +1,221 @@
 """
-Base AI Filter
+Base AI Guardrail (Updated)
 
-This module provides a base class for AI-powered filters with fallback support.
-It consolidates common logic for API key handling, model setup, fallback mechanisms,
-and configuration management across all AI filter implementations.
+This module provides a base class for all AI-powered guardrails, consolidating
+common initialization, API interaction, fallback logic, and configuration management.
 """
 
-import logging
 import json
-from typing import Dict, List, Any, Optional, Type
+import logging
 from abc import abstractmethod
+from typing import Dict, Any, Optional, Type, Tuple
+from dataclasses import dataclass
 
-from ..core.guardrail_interface import GuardrailInterface, GuardrailResult, GuardrailType
-from ..core.api_key_manager import APIKeyManager
+from ..core.guardrail_interface import GuardrailInterface, GuardrailType, GuardrailResult
+from ..core.model_config import ModelFactory, ModelError
 from ..core.conversation import Conversation
-from ..adapters.openai_adapter import ModelFactory
+from ..core.api_key_manager import get_openai_key
 
 logger = logging.getLogger(__name__)
 
 
 class BaseAIGuardrail(GuardrailInterface):
-    """
-    Base class for AI-powered filters with fallback support.
-    
-    This class provides common functionality for all AI filters including:
-    - API key initialization and management
-    - Model provider setup
-    - Fallback logic to simple filters
-    - Configuration handling
-    - Error handling
-    """
+    """Base class for AI-powered guardrails with common functionality."""
     
     def __init__(self, 
                  name: str, 
-                 guardrail_type: GuardrailType,
+                 guardrail_type: GuardrailType, 
                  config: Dict[str, Any],
-                 prompt_template: str,
-                 simple_filter_class: Type[GuardrailInterface],
-                 detected_field_name: str = "detected",
-                 types_field_name: str = "types"):
+                 default_confidence_threshold: float = 0.7,
+                 default_on_error: str = 'allow'):
         """
-        Initialize the base AI filter.
+        Initialize the base AI guardrail.
         
         Args:
-            name: Filter name
-            guardrail_type: Type of guardrail
+            name: Name of the guardrail instance
+            guardrail_type: Type of guardrail (PII, toxicity, etc.)
             config: Configuration dictionary
-            prompt_template: Template for AI prompt
-            simple_filter_class: Fallback simple filter class
-            detected_field_name: JSON field name for detection result
-            types_field_name: JSON field name for detected types
+            default_confidence_threshold: Default confidence threshold for this guardrail type
+            default_on_error: Default error handling behavior
         """
-        enabled = config.get('enabled', True)
-        super().__init__(name, guardrail_type, enabled)
-        
-        self.prompt_template = prompt_template
-        self.simple_filter_class = simple_filter_class
-        self.detected_field_name = detected_field_name
-        self.types_field_name = types_field_name
-        
-        # Get API key from centralized manager
-        api_key_manager = APIKeyManager()
-        self.api_key = api_key_manager.get_api_key()
+        super().__init__(name, guardrail_type, config.get('enabled', True))
         
         # Configuration
-        self.confidence_threshold = config.get('confidence_threshold', 0.7)
-        self.on_error = config.get('on_error', 'allow')
+        self.confidence_threshold = config.get('confidence_threshold', default_confidence_threshold)
+        self.on_error = config.get('on_error', default_on_error)
         
-        # Create model provider
+        # Use centralized API key manager instead of config
+        self.api_key = get_openai_key()
+        
+        # Use centralized model factory
+        self.model_factory = ModelFactory()
         self.model_provider = None
+        
         if self.api_key:
             try:
-                factory = ModelFactory()
-                self.model_provider = factory.get_model_provider('openai', api_key=self.api_key)
-                logger.info(f"Initialized {self.__class__.__name__} '{self.name}' with OpenAI model")
+                detection_type = self._get_detection_type()
+                self.model_provider = self.model_factory.create_model_provider(detection_type, self.api_key)
+                logger.info(f"Initialized AI {detection_type} filter with centralized API key")
             except Exception as e:
-                logger.warning(f"Failed to initialize AI model for {self.__class__.__name__}: {e}")
-                self.model_provider = None
+                logger.error(f"Failed to create model provider for {detection_type}: {e}")
         else:
-            logger.warning(f"{self.__class__.__name__} initialized without API key - will use fallback")
+            logger.warning(f"No OpenAI API key available for AI {detection_type} filter")
     
-    async def analyze(self, content: str, conversation: Optional['Conversation'] = None) -> GuardrailResult:
-        """
-        Analyze content using AI model with fallback support.
-        
-        Args:
-            content: Content to analyze
-            conversation: Optional conversation context
-            
-        Returns:
-            GuardrailResult with analysis results
-        """
-        if not self.enabled:
-            return GuardrailResult(
-                blocked=False,
-                confidence=0.0,
-                reason=f"{self.guardrail_type.value} filter disabled",
-                details={'enabled': False},
-                guardrail_name=self.name,
-                guardrail_type=self.guardrail_type
-            )
-        
-        if not content:
-            return GuardrailResult(
-                blocked=False,
-                confidence=0.0,
-                reason="Empty content",
-                details={'empty_content': True},
-                guardrail_name=self.name,
-                guardrail_type=self.guardrail_type
-            )
-        
-        # Try AI analysis if available
-        if self.model_provider and self.api_key:
-            try:
-                # Generate AI response
-                response = await self.model_provider.generate_response(
-                    prompt=self.prompt_template.format(user_input=content)
-                )
-                
-                # Parse JSON response
-                try:
-                    result_data = json.loads(response)
-                    detected = result_data.get(self.detected_field_name, False)
-                    confidence = result_data.get('confidence', 0.0)
-                    detected_types = result_data.get(self.types_field_name, [])
-                    
-                    # Determine if we should block
-                    should_block = detected and confidence >= self.confidence_threshold
-                    
-                    reason = self._format_reason(detected, detected_types, confidence)
-                    
-                    return GuardrailResult(
-                        blocked=should_block,
-                        confidence=confidence,
-                        reason=reason,
-                        details={
-                            self.detected_field_name: detected,
-                            self.types_field_name: detected_types,
-                            'ai_model': 'gpt-4.1-nano'
-                        },
-                        guardrail_name=self.name,
-                        guardrail_type=self.guardrail_type,
-                        risk_level='high' if should_block else 'low'
-                    )
-                    
-                except json.JSONDecodeError:
-                    logger.error(f"Invalid JSON response from AI model: {response}")
-                    return await self._fallback_result(content, "Invalid AI response format")
-                except KeyError as e:
-                    logger.error(f"Missing required field in AI response: {e}")
-                    return await self._fallback_result(content, f"Missing field: {e}")
-                    
-            except Exception as e:
-                logger.error(f"AI analysis failed: {e}")
-                return await self._fallback_result(content, str(e))
-        else:
-            # No API key or model provider, use fallback
-            return await self._fallback_result(content, "No API key available")
-    
-    async def _fallback_result(self, content: str, error: str) -> GuardrailResult:
-        """
-        Generate result using fallback simple filter.
-        
-        Args:
-            content: Content to analyze
-            error: Error message that triggered fallback
-            
-        Returns:
-            GuardrailResult from fallback filter
-        """
-        logger.info(f"Using fallback simple filter due to: {error}")
-        
-        try:
-            # Create and use simple filter
-            simple_filter = self.simple_filter_class(self.name, {'enabled': True})
-            result = await simple_filter.analyze(content)
-            
-            # Update result to indicate fallback was used
-            result.details['fallback'] = True
-            result.details['fallback_reason'] = error
-            
-            return result
-            
-        except Exception as e:
-            logger.error(f"Fallback filter also failed: {e}")
-            
-            # Determine action based on on_error setting
-            if self.on_error == 'block':
-                return GuardrailResult(
-                    blocked=True,
-                    confidence=1.0,
-                    reason="Analysis failed - blocking by default",
-                    details={'error': str(e), 'fallback_failed': True},
-                    guardrail_name=self.name,
-                    guardrail_type=self.guardrail_type,
-                    risk_level='high'
-                )
-            else:
-                return GuardrailResult(
-                    blocked=False,
-                    confidence=0.0,
-                    reason="Analysis failed - allowing by default",
-                    details={'error': str(e), 'fallback_failed': True},
-                    guardrail_name=self.name,
-                    guardrail_type=self.guardrail_type,
-                    risk_level='low'
-                )
+    def _get_detection_type(self) -> str:
+        """Get the detection type string for model factory."""
+        type_mapping = {
+            GuardrailType.PII_DETECTION: 'pii_detection',
+            GuardrailType.TOXICITY_DETECTION: 'toxicity_detection',
+            GuardrailType.CODE_GENERATION: 'code_generation'
+        }
+        return type_mapping.get(self.guardrail_type, 'general_detection')
     
     @abstractmethod
-    def _format_reason(self, detected: bool, detected_types: List[str], confidence: float) -> str:
+    def get_analysis_prompt(self) -> str:
+        """Get the prompt template for AI analysis. Must be implemented by subclasses."""
+        pass
+    
+    @abstractmethod
+    def parse_ai_response(self, data: Dict[str, Any]) -> Tuple[bool, list, float]:
         """
-        Format the reason message based on detection results.
-        
-        This method must be implemented by subclasses to provide
-        filter-specific reason formatting.
+        Parse the AI response into detected, categories, and confidence.
         
         Args:
-            detected: Whether content was detected
-            detected_types: Types of content detected
-            confidence: Confidence score
+            data: Parsed JSON response from AI
             
         Returns:
-            Formatted reason string
+            Tuple of (detected, categories_list, confidence)
         """
         pass
     
+    @abstractmethod
+    def get_simple_fallback_class(self) -> Type[GuardrailInterface]:
+        """Get the simple fallback guardrail class. Must be implemented by subclasses."""
+        pass
+    
+    @abstractmethod
+    def get_categories_field_name(self) -> str:
+        """Get the name of the categories field for this guardrail type."""
+        pass
+    
+    async def analyze(self, content: str, conversation: Optional['Conversation'] = None) -> GuardrailResult:
+        """Analyze content using AI with centralized model configuration."""
+        if not self.enabled:
+            detection_type = self._get_detection_type().replace('_', ' ')
+            return GuardrailResult(
+                blocked=False,
+                confidence=0.0,
+                reason=f"AI {detection_type} filter disabled",
+                details={'method': 'ai', 'enabled': False},
+                guardrail_name=self.name,
+                guardrail_type=self.guardrail_type
+            )
+        
+        if not self.model_provider:
+            detection_type = self._get_detection_type().replace('_', ' ')
+            return GuardrailResult(
+                blocked=False,
+                confidence=0.0,
+                reason=f"AI {detection_type} unavailable - no API key",
+                details={'error': 'no_api_key', 'method': 'ai', 'model': 'none'},
+                guardrail_name=self.name,
+                guardrail_type=self.guardrail_type
+            )
+        
+        try:
+            # Use centralized model provider
+            prompt = self.get_analysis_prompt()
+            response_content = await self.model_provider.generate_response(
+                prompt.format(content=content)
+            )
+            
+            if response_content:
+                try:
+                    data = json.loads(response_content.strip())
+                    
+                    # Parse response using subclass implementation
+                    detected, categories, confidence = self.parse_ai_response(data)
+                    
+                    blocked = detected and confidence >= self.confidence_threshold
+                    
+                    # Build reason message
+                    detection_type = self._get_detection_type().replace('_', ' ')
+                    categories_str = ', '.join(categories) if categories else 'none'
+                    
+                    return GuardrailResult(
+                        blocked=blocked,
+                        confidence=confidence,
+                        reason=f"{detection_type.replace('_', ' ').title()} detected (AI): {categories_str}" if detected 
+                               else f"No {detection_type.replace('_', ' ')} detected (AI)",
+                        details={
+                            f'detected_{self.get_categories_field_name()}': categories,
+                            'confidence': confidence,
+                            'method': 'ai',
+                            'model': self.model_provider.get_model_name()
+                        },
+                        guardrail_name=self.name,
+                        guardrail_type=self.guardrail_type
+                    )
+                except json.JSONDecodeError as e:
+                    logger.warning(f"Invalid JSON response from AI model: {e}")
+                    return await self._fallback_result(content, "Invalid JSON response")
+            else:
+                return await self._fallback_result(content, "Empty response from AI model")
+            
+        except Exception as e:
+            logger.error(f"AI {self._get_detection_type()} error: {e}")
+            return await self._fallback_result(content, str(e))
+    
+    async def _fallback_result(self, content: str, error: str = "AI analysis failed") -> GuardrailResult:
+        """Fallback to simple regex detection when AI fails."""
+        try:
+            SimpleFallbackClass = self.get_simple_fallback_class()
+            simple_filter = SimpleFallbackClass(
+                self.name, 
+                {
+                    'confidence_threshold': self.confidence_threshold,
+                    'on_error': self.on_error
+                }
+            )
+            result = await simple_filter.analyze(content)
+            # Update the result to indicate it's a fallback
+            result.details['fallback'] = True
+            result.details['fallback_reason'] = error
+            result.reason = f"AI failed ({error}), using regex fallback: {result.reason}"
+            return result
+        except Exception as fallback_error:
+            logger.error(f"Fallback {self._get_detection_type()} also failed: {fallback_error}")
+            blocked = self.on_error == 'block'
+            detection_type = self._get_detection_type().replace('_', ' ')
+            return GuardrailResult(
+                blocked=blocked,
+                confidence=0.0,
+                reason=f"{detection_type.title()} detection failed: {error}, fallback failed: {fallback_error}",
+                details={
+                    'error': error,
+                    'fallback_error': str(fallback_error),
+                    'method': 'ai_fallback_failed'
+                },
+                guardrail_name=self.name,
+                guardrail_type=self.guardrail_type
+            )
+    
     def is_available(self) -> bool:
-        """Check if the filter is available."""
-        return True
+        """Check if this guardrail is available."""
+        return self.enabled and self.model_provider is not None
     
     def get_config(self) -> Dict[str, Any]:
-        """Get filter configuration."""
+        """Get current configuration of this guardrail."""
         return {
-            'name': self.name,
-            'type': self.guardrail_type.value,
             'enabled': self.enabled,
+            'api_key': '***' if self.api_key else None,
             'confidence_threshold': self.confidence_threshold,
             'on_error': self.on_error,
-            'has_api_key': bool(self.api_key),
-            'has_model_provider': bool(self.model_provider)
+            'model': self.model_provider.get_model_name() if self.model_provider else None
         }
     
     def update_config(self, config: Dict[str, Any]) -> bool:
-        """Update filter configuration."""
+        """Update configuration of this guardrail."""
         try:
             if 'enabled' in config:
                 self.enabled = config['enabled']
@@ -253,5 +225,6 @@ class BaseAIGuardrail(GuardrailInterface):
                 self.on_error = config['on_error']
             return True
         except Exception as e:
-            logger.error(f"Failed to update configuration: {e}")
+            detection_type = self._get_detection_type().replace('_', ' ')
+            logger.error(f"Failed to update AI {detection_type} filter config: {e}")
             return False
