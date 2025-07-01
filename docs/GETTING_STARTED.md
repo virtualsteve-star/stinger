@@ -8,7 +8,7 @@
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/Stinger.git
+git clone https://github.com/virtualsteve-star/stinger.git
 cd Stinger
 
 # Install dependencies

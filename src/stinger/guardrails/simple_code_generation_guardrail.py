@@ -7,8 +7,9 @@ various types of code and programming content without requiring AI.
 
 import re
 import logging
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 from ..core.guardrail_interface import GuardrailInterface, GuardrailType, GuardrailResult
+from ..core.config_validator import ValidationRule, COMMON_GUARDRAIL_RULES
 from ..core.conversation import Conversation
 
 logger = logging.getLogger(__name__)
@@ -18,7 +19,7 @@ class SimpleCodeGenerationGuardrail(GuardrailInterface):
     """Regex-based code generation detection filter."""
     
     def __init__(self, name: str, config: Dict[str, Any]):
-        super().__init__(name, GuardrailType.CODE_GENERATION, config.get('enabled', True))
+        super().__init__(name, GuardrailType.CODE_GENERATION, config)
         
         self.code_patterns = {
             'code_blocks': [
@@ -66,6 +67,10 @@ class SimpleCodeGenerationGuardrail(GuardrailInterface):
                 logger.warning(f"Unknown code generation category '{category}' in filter '{name}'")
         
         self.enabled_categories = valid_categories
+    
+    def get_validation_rules(self) -> List[ValidationRule]:
+        """Get validation rules for simple code generation guardrail."""
+        return COMMON_GUARDRAIL_RULES
     
     async def analyze(self, content: str, conversation: Optional['Conversation'] = None) -> GuardrailResult:
         """Analyze content for code generation patterns using regex."""

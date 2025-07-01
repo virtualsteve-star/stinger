@@ -50,6 +50,6 @@ guardrails:
 # Configuration Strategy:
 # 1. Simple filters run first for speed and reliability
 # 2. AI filters run second for higher accuracy and context understanding
-# 3. AI filters automatically fallback to simple detection if unavailable
+# 3. No automatic fallback - AI filters fail clearly based on on_error setting
 # 4. Different error handling policies for different filter types
 # 5. All AI filters use centralized model configuration (gpt-4.1-nano) 

@@ -216,7 +216,7 @@ Stinger provides a comprehensive set of guardrails to protect AI applications fr
 - OpenAI moderation API integration
 - Multiple content categories
 - Confidence thresholds
-- Automatic fallback handling
+- Configurable error handling (block/warn/allow)
 
 **Use Cases**:
 - General content safety
@@ -298,19 +298,18 @@ Stinger provides a comprehensive set of guardrails to protect AI applications fr
 - name: advanced_pii_check
   type: ai_pii_detection
   enabled: true
-  on_error: allow
+  on_error: warn  # block/warn/allow - controls behavior when AI unavailable
   config:
     risk_threshold: 70
     block_levels: ["high", "critical"]
     warn_levels: ["medium"]
-    fallback_to_simple: true
 ```
 
 **Features**:
 - Contextual PII analysis
 - AI-powered detection
-- Fallback to simple detection
 - High accuracy detection
+- Clear failure handling (no silent degradation)
 
 **Use Cases**:
 - Comprehensive PII protection
@@ -553,10 +552,9 @@ pipeline:
     - name: comprehensive_pii
       type: ai_pii_detection
       enabled: true
-      on_error: warn
+      on_error: warn  # Consider using both AI and non-AI for defense-in-depth
       config:
         risk_threshold: 70
-        fallback_to_simple: true
 ```
 
 ## Testing and Validation

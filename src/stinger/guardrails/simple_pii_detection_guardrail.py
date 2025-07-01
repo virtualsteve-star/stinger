@@ -7,8 +7,9 @@ various types of personally identifiable information without requiring AI.
 
 import re
 import logging
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 from ..core.guardrail_interface import GuardrailInterface, GuardrailType, GuardrailResult
+from ..core.config_validator import ValidationRule, COMMON_GUARDRAIL_RULES
 from ..core.conversation import Conversation
 
 logger = logging.getLogger(__name__)
@@ -18,7 +19,7 @@ class SimplePIIDetectionGuardrail(GuardrailInterface):
     """Regex-based PII detection filter."""
     
     def __init__(self, name: str, config: Dict[str, Any]):
-        super().__init__(name, GuardrailType.PII_DETECTION, config.get('enabled', True))
+        super().__init__(name, GuardrailType.PII_DETECTION, config)
         
         self.pii_patterns = {
             'ssn': r'\b\d{3}-?\d{2}-?\d{4}\b',
@@ -44,6 +45,10 @@ class SimplePIIDetectionGuardrail(GuardrailInterface):
                 logger.warning(f"Unknown PII pattern '{pattern}' in filter '{name}'")
         
         self.enabled_patterns = valid_patterns
+    
+    def get_validation_rules(self) -> List[ValidationRule]:
+        """Get validation rules for simple PII detection guardrail."""
+        return COMMON_GUARDRAIL_RULES
     
     async def analyze(self, content: str, conversation: Optional['Conversation'] = None) -> GuardrailResult:
         """Analyze content for PII patterns using regex."""

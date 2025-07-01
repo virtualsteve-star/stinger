@@ -7,8 +7,9 @@ various types of toxic content without requiring AI.
 
 import re
 import logging
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 from ..core.guardrail_interface import GuardrailInterface, GuardrailType, GuardrailResult
+from ..core.config_validator import ValidationRule, COMMON_GUARDRAIL_RULES
 from ..core.conversation import Conversation
 
 logger = logging.getLogger(__name__)
@@ -18,7 +19,7 @@ class SimpleToxicityDetectionGuardrail(GuardrailInterface):
     """Regex-based toxicity detection filter."""
     
     def __init__(self, name: str, config: Dict[str, Any]):
-        super().__init__(name, GuardrailType.TOXICITY_DETECTION, config.get('enabled', True))
+        super().__init__(name, GuardrailType.TOXICITY_DETECTION, config)
         
         self.toxicity_patterns = {
             'hate_speech': [
@@ -61,6 +62,10 @@ class SimpleToxicityDetectionGuardrail(GuardrailInterface):
                 logger.warning(f"Unknown toxicity category '{category}' in filter '{name}'")
         
         self.enabled_categories = valid_categories
+    
+    def get_validation_rules(self) -> List[ValidationRule]:
+        """Get validation rules for simple toxicity detection guardrail."""
+        return COMMON_GUARDRAIL_RULES
     
     async def analyze(self, content: str, conversation: Optional['Conversation'] = None) -> GuardrailResult:
         """Analyze content for toxicity patterns using regex."""

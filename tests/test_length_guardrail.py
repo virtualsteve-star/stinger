@@ -206,31 +206,25 @@ class TestLengthFilter:
         for config in valid_configs:
             config['on_error'] = 'allow'  # Add required field
             guardrail_instance = LengthGuardrail(config)
-            assert guardrail_instance.validate_config() == True
+            # If we get here without exception, validation passed
+            assert guardrail_instance.min_length == config.get('min_length', 0)
+            assert guardrail_instance.max_length == config.get('max_length', None)
 
     def test_config_validation_failure(self):
         """Test configuration validation failures."""
-        # Test validation method directly since __init__ may raise exceptions
-        invalid_configs = [
-            {'min_length': 10, 'max_length': 5, 'action': 'invalid'},
-        ]
+        # Test cross-field validation
+        with pytest.raises(ValueError, match="min_length cannot be greater than max_length"):
+            LengthGuardrail({'min_length': 10, 'max_length': 5, 'on_error': 'allow'})
         
-        for config in invalid_configs:
-            config['on_error'] = 'allow'
-            # Create a valid filter first, then test invalid configs via validate_config
-            valid_config = {'min_length': 5, 'max_length': 10, 'action': 'block', 'on_error': 'allow'}
-            guardrail_instance = LengthGuardrail(valid_config)
+        # Test invalid action
+        with pytest.raises(ValueError, match="action must be one of"):
+            LengthGuardrail({'min_length': 5, 'action': 'invalid', 'on_error': 'allow'})
             
-            # Manually set invalid config to test validation
-            guardrail_instance.config.update(config)
-            guardrail_instance.action = config.get('action', 'block')
-            assert guardrail_instance.validate_config() == False
-            
-        # Test that string values cause TypeError during initialization
-        with pytest.raises(TypeError):
+        # Test that string values cause ValueError during initialization (standardized validation)
+        with pytest.raises(ValueError, match="min_length must be of type int or float"):
             LengthGuardrail({'min_length': 'not_a_number', 'on_error': 'allow'})
             
-        with pytest.raises(TypeError):
+        with pytest.raises(ValueError, match="max_length must be of type int or float"):
             LengthGuardrail({'max_length': 'not_a_number', 'on_error': 'allow'})
 
     def test_initialization_validation(self):

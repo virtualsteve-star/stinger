@@ -2,15 +2,14 @@
 AI-Based Code Generation Filter
 
 This module provides an AI-based code generation detection filter using the BaseAIGuardrail
-with centralized model configuration and fallback to simple regex detection.
+with centralized model configuration.
 """
 
 import logging
-from typing import Dict, Any, Type, Tuple
+from typing import Dict, Any, Tuple
 
 from .base_ai_guardrail import BaseAIGuardrail
-from ..core.guardrail_interface import GuardrailInterface, GuardrailType
-from .simple_code_generation_guardrail import SimpleCodeGenerationGuardrail
+from ..core.guardrail_interface import GuardrailType
 
 logger = logging.getLogger(__name__)
 
@@ -59,10 +58,6 @@ Text to analyze: {content}
         code_types = data.get("code_types", [])
         confidence = data.get("confidence", 0.0)
         return detected, code_types, confidence
-    
-    def get_simple_fallback_class(self) -> Type[GuardrailInterface]:
-        """Get the simple code generation detection fallback class."""
-        return SimpleCodeGenerationGuardrail
     
     def get_categories_field_name(self) -> str:
         """Get the field name for code categories."""

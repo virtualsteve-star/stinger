@@ -1,9 +1,7 @@
-from typing import Optional
+from typing import Optional, List
 from ..core.guardrail_interface import GuardrailInterface, GuardrailResult, GuardrailType
+from ..core.config_validator import ValidationRule, COMMON_GUARDRAIL_RULES
 from ..core.conversation import Conversation
-
-# Need to recreate FilterResult for backward compatibility
-from dataclasses import dataclass
 
 class PassThroughGuardrail(GuardrailInterface):
     """Pass-through filter that allows all content."""
@@ -11,8 +9,11 @@ class PassThroughGuardrail(GuardrailInterface):
     def __init__(self, config: dict):
         """Initialize pass-through filter."""
         name = config.get('name', 'pass_through')
-        enabled = config.get('enabled', True)
-        super().__init__(name, GuardrailType.PASS_THROUGH, enabled)
+        super().__init__(name, GuardrailType.PASS_THROUGH, config)
+    
+    def get_validation_rules(self) -> List[ValidationRule]:
+        """Get validation rules for pass-through guardrail."""
+        return COMMON_GUARDRAIL_RULES  # Only needs common rules
     
     async def analyze(self, content: str, conversation: Optional['Conversation'] = None) -> GuardrailResult:
         """Analyze content (pass-through - always allows)."""

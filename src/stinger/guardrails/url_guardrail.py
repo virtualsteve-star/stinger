@@ -2,17 +2,14 @@ import re
 from urllib.parse import urlparse
 from typing import List, Optional
 from ..core.guardrail_interface import GuardrailInterface, GuardrailResult, GuardrailType
+from ..core.config_validator import ValidationRule, URL_GUARDRAIL_RULES
 from ..core.conversation import Conversation
-
-# Need to recreate FilterResult for backward compatibility
-from dataclasses import dataclass
 
 class URLGuardrail(GuardrailInterface):
     def __init__(self, config: dict):
         """Initialize URL filter."""
         name = config.get('name', 'url_filter')
-        enabled = config.get('enabled', True)
-        super().__init__(name, GuardrailType.URL_FILTER, enabled)
+        super().__init__(name, GuardrailType.URL_FILTER, config)
         
         self.blocked_domains = config.get('blocked_domains', [])
         self.allowed_domains = config.get('allowed_domains', [])
@@ -23,6 +20,10 @@ class URLGuardrail(GuardrailInterface):
             r'https?://[^\s<>"{}|\\^`\[\]]+',
             re.IGNORECASE
         )
+    
+    def get_validation_rules(self) -> List[ValidationRule]:
+        """Get validation rules for URL guardrail."""
+        return URL_GUARDRAIL_RULES
     
 
     async def analyze(self, content: str, conversation: Optional['Conversation'] = None) -> GuardrailResult:

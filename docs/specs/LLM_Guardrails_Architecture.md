@@ -37,20 +37,20 @@
  +----------------------+
 ```
 
-*Both guardrail pipelines share the same **Filter Plugin** mechanism and **Audit Logging** system.*
+*Both guardrail pipelines share the same **Guardrail Plugin** mechanism and **Audit Logging** system.*
 
 ## 2 Core Modules
 
 | Module | Responsibility |
 |--------|----------------|
 | **Config Loader** | Parse YAML/JSON configs, validate schema, expose runtime settings. |
-| **FilterPipeline** | Orchestrate filter execution, enforce order, aggregate results. |
+| **GuardrailPipeline** | Orchestrate guardrail execution, enforce order, aggregate results. |
 | **Conversation Management** | Handle multi-turn conversations, context tracking, rate limiting. |
-| **BaseGuardrail** | Abstract class implementing `run(content) → FilterResult`. |
-| **Rule‑Based Filters** | Regex, blacklist, language, length, URL/file‑type blocking. |
-| **Keyword List Filter** | Load keywords from files or inline configs with case sensitivity options. |
-| **Compound Scoring Filter** | Multi-rule weighted scoring with configurable thresholds. |
-| **Classifier Filters** | Wrap external or local AI services (PII, toxicity, jailbreak). |
+| **GuardrailInterface** | Abstract interface implementing `analyze(content, conversation) → GuardrailResult`. |
+| **Rule‑Based Guardrails** | Regex, blacklist, language, length, URL/file‑type blocking. |
+| **Keyword List Guardrail** | Load keywords from files or inline configs with case sensitivity options. |
+| **Compound Scoring Guardrail** | Multi-rule weighted scoring with configurable thresholds. |
+| **AI-Based Guardrails** | Wrap external or local AI services (PII, toxicity, jailbreak) via BaseAIGuardrail. |
 | **Result Handler** | Apply actions (`block`, `warn`, `modify`, etc.) and assemble response. |
 | **Audit Logging** | Structured logging for compliance and security audit trails. |
 | **Unified CLI** | Single entry point for running scenarios, tests, and debugging. |
@@ -319,9 +319,9 @@ python3 stinger.py --scenario customer_service --config custom.yaml --test-data 
 
 ## 11 Extensibility Points
 
-1. **Filter Plugins** – Drop‑in Python modules under `filters/`.  
-2. **Compound Filter Rules** – Extensible rule types (regex, keyword, combination, AI).
-3. **Classifier Adapters** – Abstract provider interface (`provider=openai|google|custom`).  
+1. **Guardrail Plugins** – Drop‑in Python modules under `guardrails/`.  
+2. **Compound Guardrail Rules** – Extensible rule types (regex, keyword, combination, AI).
+3. **AI Provider Adapters** – Abstract provider interface (`provider=openai|google|custom`).  
 4. **Action Hooks** – Custom logic on `block` or `warn` (e.g., revive request, notify Slack).  
 
 ## 12 Security Considerations
@@ -331,9 +331,9 @@ python3 stinger.py --scenario customer_service --config custom.yaml --test-data 
 * No raw prompts logged; redact PII in logs.
 * Schema validation prevents malicious config injection.
 
-## Compound Filter Additive Certainty System
+## Compound Guardrail Additive Certainty System
 
-- Each rule in a compound filter has a certainty value (0-100).
+- Each rule in a compound guardrail has a certainty value (0-100).
 - When content matches a rule, its certainty is added to the total certainty (capped at 100).
 - Thresholds (allow/warn/block) are based on the total certainty.
 - This replaces the previous weighted/normalized scoring system.

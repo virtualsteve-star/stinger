@@ -5,8 +5,9 @@ This filter uses OpenAI's content moderation API to detect and block inappropria
 """
 
 import logging
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 from ..core.guardrail_interface import GuardrailInterface, GuardrailType, GuardrailResult
+from ..core.config_validator import ValidationRule, AI_GUARDRAIL_RULES
 from ..core.api_key_manager import APIKeyManager
 from ..core.conversation import Conversation
 from ..adapters.openai_adapter import OpenAIAdapter, ModerationResult
@@ -19,7 +20,7 @@ class ContentModerationGuardrail(GuardrailInterface):
     
     def __init__(self, name: str, config: Dict[str, Any]):
         """Initialize the content moderation filter."""
-        super().__init__(name, GuardrailType.CONTENT_MODERATION, config.get('enabled', True))
+        super().__init__(name, GuardrailType.CONTENT_MODERATION, config)
         
         # Configuration
         self.confidence_threshold = config.get('confidence_threshold', 0.7)
@@ -33,6 +34,10 @@ class ContentModerationGuardrail(GuardrailInterface):
         self.api_key_manager = APIKeyManager()
         self.openai_adapter: Optional[OpenAIAdapter] = None
         self._initialize_adapter()
+    
+    def get_validation_rules(self) -> List[ValidationRule]:
+        """Get validation rules for content moderation guardrail."""
+        return AI_GUARDRAIL_RULES
     
     def _initialize_adapter(self) -> None:
         """Initialize the OpenAI adapter."""

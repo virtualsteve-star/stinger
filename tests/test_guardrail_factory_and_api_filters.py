@@ -74,7 +74,7 @@ class TestGuardrailFactory:
             'name': 'test_filter',
             'type': 'keyword_block',
             'enabled': True,
-            'keywords': ['test']
+            'keyword': 'test'
         }
         
         guardrail = factory.create_from_config(config)

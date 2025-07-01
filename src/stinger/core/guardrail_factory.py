@@ -8,7 +8,7 @@ and registers them with the guardrail registry.
 import logging
 from typing import Dict, Any, Optional
 from .guardrail_interface import GuardrailInterface, GuardrailType, GuardrailRegistry, GuardrailFactory
-from ..utils.exceptions import FilterInitializationError
+from ..utils.exceptions import GuardrailInitializationError
 
 # Legacy filter adapters removed - all filters now use GuardrailInterface directly
 
@@ -38,7 +38,7 @@ def create_keyword_block_filter(name: str, config: Dict[str, Any]) -> GuardrailI
         return KeywordBlockGuardrail(config)
     except Exception as e:
         logger.error(f"Failed to create keyword block filter '{name}': {e}")
-        raise FilterInitializationError(
+        raise GuardrailInitializationError(
             f"Failed to create keyword block filter '{name}': {str(e)}", 
             guardrail_name=name, 
             config=config
@@ -53,7 +53,7 @@ def create_regex_filter(name: str, config: Dict[str, Any]) -> GuardrailInterface
         return RegexGuardrail(config)
     except Exception as e:
         logger.error(f"Failed to create regex filter '{name}': {e}")
-        raise FilterInitializationError(
+        raise GuardrailInitializationError(
             f"Failed to create regex filter '{name}': {str(e)}", 
             guardrail_name=name, 
             config=config
@@ -64,11 +64,11 @@ def create_length_filter(name: str, config: Dict[str, Any]) -> GuardrailInterfac
     """Create a length filter."""
     try:
         # Import the direct implementation for new GuardrailInterface
-        from ..guardrails.length_filter import LengthGuardrail
+        from ..guardrails.length_guardrail import LengthGuardrail
         return LengthGuardrail(config)
     except Exception as e:
         logger.error(f"Failed to create length filter '{name}': {e}")
-        raise FilterInitializationError(
+        raise GuardrailInitializationError(
             f"Failed to create length filter '{name}': {str(e)}", 
             guardrail_name=name, 
             config=config
@@ -83,7 +83,7 @@ def create_url_filter(name: str, config: Dict[str, Any]) -> GuardrailInterface:
         return URLGuardrail(config)
     except Exception as e:
         logger.error(f"Failed to create URL filter '{name}': {e}")
-        raise FilterInitializationError(
+        raise GuardrailInitializationError(
             f"Failed to create URL filter '{name}': {str(e)}", 
             guardrail_name=name, 
             config=config
@@ -98,7 +98,7 @@ def create_pass_through_filter(name: str, config: Dict[str, Any]) -> GuardrailIn
         return PassThroughGuardrail(config)
     except Exception as e:
         logger.error(f"Failed to create pass-through filter '{name}': {e}")
-        raise FilterInitializationError(
+        raise GuardrailInitializationError(
             f"Failed to create pass-through filter '{name}': {str(e)}", 
             guardrail_name=name, 
             config=config
@@ -111,7 +111,7 @@ def create_content_moderation_filter(name: str, config: Dict[str, Any]) -> Guard
         return ContentModerationGuardrail(name, config)
     except Exception as e:
         logger.error(f"Failed to create content moderation filter '{name}': {e}")
-        raise FilterInitializationError(
+        raise GuardrailInitializationError(
             f"Failed to create content moderation filter '{name}': {str(e)}", 
             guardrail_name=name, 
             config=config
@@ -124,7 +124,7 @@ def create_prompt_injection_filter(name: str, config: Dict[str, Any]) -> Guardra
         return PromptInjectionGuardrail(name, config)
     except Exception as e:
         logger.error(f"Failed to create prompt injection filter '{name}': {e}")
-        raise FilterInitializationError(
+        raise GuardrailInitializationError(
             f"Failed to create prompt injection filter '{name}': {str(e)}", 
             guardrail_name=name, 
             config=config
@@ -137,7 +137,7 @@ def create_simple_pii_detection_filter(name: str, config: Dict[str, Any]) -> Gua
         return SimplePIIDetectionGuardrail(name, config)
     except Exception as e:
         logger.error(f"Failed to create simple PII detection filter '{name}': {e}")
-        raise FilterInitializationError(
+        raise GuardrailInitializationError(
             f"Failed to create simple PII detection filter '{name}': {str(e)}", 
             guardrail_name=name, 
             config=config
@@ -150,7 +150,7 @@ def create_ai_pii_detection_filter(name: str, config: Dict[str, Any]) -> Guardra
         return AIPIIDetectionGuardrail(name, config)
     except Exception as e:
         logger.error(f"Failed to create AI PII detection filter '{name}': {e}")
-        raise FilterInitializationError(
+        raise GuardrailInitializationError(
             f"Failed to create AI PII detection filter '{name}': {str(e)}", 
             guardrail_name=name, 
             config=config
@@ -163,7 +163,7 @@ def create_simple_toxicity_detection_filter(name: str, config: Dict[str, Any]) -
         return SimpleToxicityDetectionGuardrail(name, config)
     except Exception as e:
         logger.error(f"Failed to create simple toxicity detection filter '{name}': {e}")
-        raise FilterInitializationError(
+        raise GuardrailInitializationError(
             f"Failed to create simple toxicity detection filter '{name}': {str(e)}", 
             guardrail_name=name, 
             config=config
@@ -176,7 +176,7 @@ def create_ai_toxicity_detection_filter(name: str, config: Dict[str, Any]) -> Gu
         return AIToxicityDetectionGuardrail(name, config)
     except Exception as e:
         logger.error(f"Failed to create AI toxicity detection filter '{name}': {e}")
-        raise FilterInitializationError(
+        raise GuardrailInitializationError(
             f"Failed to create AI toxicity detection filter '{name}': {str(e)}", 
             guardrail_name=name, 
             config=config
@@ -189,7 +189,7 @@ def create_simple_code_generation_filter(name: str, config: Dict[str, Any]) -> G
         return SimpleCodeGenerationGuardrail(name, config)
     except Exception as e:
         logger.error(f"Failed to create simple code generation filter '{name}': {e}")
-        raise FilterInitializationError(
+        raise GuardrailInitializationError(
             f"Failed to create simple code generation filter '{name}': {str(e)}", 
             guardrail_name=name, 
             config=config
@@ -202,7 +202,7 @@ def create_ai_code_generation_filter(name: str, config: Dict[str, Any]) -> Guard
         return AICodeGenerationGuardrail(name, config)
     except Exception as e:
         logger.error(f"Failed to create AI code generation filter '{name}': {e}")
-        raise FilterInitializationError(
+        raise GuardrailInitializationError(
             f"Failed to create AI code generation filter '{name}': {str(e)}", 
             guardrail_name=name, 
             config=config
@@ -215,7 +215,7 @@ def create_topic_filter(name: str, config: Dict[str, Any]) -> GuardrailInterface
         return TopicGuardrail(config)
     except Exception as e:
         logger.error(f"Failed to create topic filter '{name}': {e}")
-        raise FilterInitializationError(
+        raise GuardrailInitializationError(
             f"Failed to create topic filter '{name}': {str(e)}", 
             guardrail_name=name, 
             config=config
@@ -229,7 +229,7 @@ def create_keyword_list_filter(name: str, config: Dict[str, Any]) -> GuardrailIn
         return KeywordListGuardrail(config)
     except Exception as e:
         logger.error(f"Failed to create keyword list filter '{name}': {e}")
-        raise FilterInitializationError(
+        raise GuardrailInitializationError(
             f"Failed to create keyword list filter '{name}': {str(e)}", 
             guardrail_name=name, 
             config=config

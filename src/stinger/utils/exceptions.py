@@ -38,8 +38,8 @@ class ConfigurationError(GuardrailsError):
         super().__init__(message, "CONFIG_ERROR", context)
 
 
-class FilterError(GuardrailsError):
-    """Raised when a filter encounters an error."""
+class GuardrailError(GuardrailsError):
+    """Raised when a guardrail encounters an error."""
     
     def __init__(self, message: str, guardrail_name: Optional[str] = None, guardrail_type: Optional[str] = None):
         context = {}
@@ -47,7 +47,7 @@ class FilterError(GuardrailsError):
             context["guardrail_name"] = guardrail_name
         if guardrail_type:
             context["guardrail_type"] = guardrail_type
-        super().__init__(message, "FILTER_ERROR", context)
+        super().__init__(message, "GUARDRAIL_ERROR", context)
 
 
 class PipelineError(GuardrailsError):
@@ -94,14 +94,14 @@ class ConfigurationValidationError(GuardrailsError):
         super().__init__(message, "CONFIG_VALIDATION_ERROR", context)
 
 
-class FilterInitializationError(GuardrailsError):
-    """Raised when a filter fails to initialize."""
+class GuardrailInitializationError(GuardrailsError):
+    """Raised when a guardrail fails to initialize."""
     
     def __init__(self, message: str, guardrail_name: str, config: Optional[Dict[str, Any]] = None):
         context = {"guardrail_name": guardrail_name}
         if config:
             context["config"] = str(config)
-        super().__init__(message, "FILTER_INIT_ERROR", context)
+        super().__init__(message, "GUARDRAIL_INIT_ERROR", context)
 
 
 class PipelineInitializationError(GuardrailsError):
@@ -132,12 +132,14 @@ class InputValidationError(GuardrailsError):
 ERROR_CODES = {
     "GENERAL_ERROR": "General framework error",
     "CONFIG_ERROR": "Configuration error",
-    "FILTER_ERROR": "Filter processing error", 
+    "GUARDRAIL_ERROR": "Guardrail processing error", 
     "PIPELINE_ERROR": "Pipeline processing error",
     "GUARDRAIL_NOT_FOUND": "Requested guardrail not found",
     "INVALID_GUARDRAIL_TYPE": "Invalid guardrail type specified",
     "CONFIG_VALIDATION_ERROR": "Configuration validation failed",
-    "FILTER_INIT_ERROR": "Filter initialization failed",
+    "GUARDRAIL_INIT_ERROR": "Guardrail initialization failed",
     "PIPELINE_INIT_ERROR": "Pipeline initialization failed",
     "INPUT_VALIDATION_ERROR": "Input validation failed"
-} 
+}
+
+ 
