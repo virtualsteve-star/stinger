@@ -106,8 +106,10 @@ class ModelFactory:
     
     def create_model_provider(self, guardrail_type: str, api_key: str) -> ModelProvider:
         """Create a model provider for a specific filter type."""
-        model_name = self.config['filters'].get(guardrail_type, self.config['default'])
-        settings = self.config['settings']
+        # Check both 'guardrails' and 'filters' for backward compatibility
+        guardrails_config = self.config.get('guardrails', self.config.get('filters', {}))
+        model_name = guardrails_config.get(guardrail_type, self.config['default'])
+        settings = self.config.get('settings', {})
         
         return OpenAIModelProvider(
             model_name=model_name,
@@ -117,7 +119,9 @@ class ModelFactory:
     
     def get_model_name(self, guardrail_type: str) -> str:
         """Get the model name for a specific filter type."""
-        return self.config['filters'].get(guardrail_type, self.config['default'])
+        # Check both 'guardrails' and 'filters' for backward compatibility
+        guardrails_config = self.config.get('guardrails', self.config.get('filters', {}))
+        return guardrails_config.get(guardrail_type, self.config['default'])
     
     def get_settings(self) -> Dict[str, Any]:
         """Get the global model settings."""

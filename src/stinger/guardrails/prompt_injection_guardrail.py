@@ -187,21 +187,27 @@ Text to analyze: {content}
                 )
             except json.JSONDecodeError:
                 logger.warning(f"Failed to parse injection detection response: {response_text}")
-                return self._fallback_injection_result(content)
-                
-        except Exception as e:
-            logger.error(f"OpenAI prompt injection detection failed: {e}")
-            # If it's an API error, return a special result indicating unavailability
-            if "unavailable" in str(e).lower() or "api" in str(e).lower():
+                # Don't silently fallback - return error result
                 return InjectionResult(
                     detected=False,
                     risk_percent=0,
-                    level="unknown",
+                    level="error",
                     indicators=[],
-                    comment=f"API unavailable: {str(e)}",
+                    comment=f"AI response parsing failed: invalid JSON",
                     confidence=0.0
                 )
-            return self._fallback_injection_result(content)
+                
+        except Exception as e:
+            logger.error(f"OpenAI prompt injection detection failed: {e}")
+            # Return error result - let the main analyze method handle based on on_error
+            return InjectionResult(
+                detected=False,
+                risk_percent=0,
+                level="error",
+                indicators=[],
+                comment=f"AI detection failed: {str(e)}",
+                confidence=0.0
+            )
     
     def _fallback_injection_result(self, content: str) -> InjectionResult:
         """Fallback result when injection detection fails."""
@@ -273,6 +279,59 @@ Text to analyze: {content}
         
         injection_result = await self._detect_prompt_injection(content)
         
+        # Check if AI detection failed
+        if injection_result.level == "error":
+            # Handle based on on_error configuration
+            if self.on_error == 'block':
+                return GuardrailResult(
+                    blocked=True,
+                    confidence=0.0,
+                    reason=f"⚠️ AI prompt injection detection unavailable - blocking for safety: {injection_result.comment}",
+                    details={
+                        'error': injection_result.comment,
+                        'method': 'ai_failed',
+                        'on_error': 'block'
+                    },
+                    guardrail_name=self.name,
+                    guardrail_type=self.guardrail_type
+                )
+            elif self.on_error == 'warn':
+                # Use fallback with clear warning
+                fallback_result = self._fallback_injection_result(content)
+                return GuardrailResult(
+                    blocked=fallback_result.detected and fallback_result.risk_percent >= self.risk_threshold,
+                    confidence=fallback_result.confidence,
+                    reason=f"⚠️ WARNING: AI detection failed ({injection_result.comment}) - using FALLBACK keyword detection ⚠️\n{fallback_result.comment}",
+                    details={
+                        'ai_failed': True,
+                        'fallback_used': True,
+                        'original_error': injection_result.comment,
+                        'method': 'keyword_fallback',
+                        'injection_result': {
+                            'detected': fallback_result.detected,
+                            'risk_percent': fallback_result.risk_percent,
+                            'level': fallback_result.level,
+                            'indicators': fallback_result.indicators
+                        }
+                    },
+                    guardrail_name=self.name,
+                    guardrail_type=self.guardrail_type
+                )
+            else:  # allow
+                return GuardrailResult(
+                    blocked=False,
+                    confidence=0.0,
+                    reason=f"AI prompt injection detection unavailable (allowing due to configuration): {injection_result.comment}",
+                    details={
+                        'error': injection_result.comment,
+                        'method': 'ai_failed',
+                        'on_error': 'allow'
+                    },
+                    guardrail_name=self.name,
+                    guardrail_type=self.guardrail_type
+                )
+        
+        # Normal flow - AI detection succeeded
         # Determine action based on risk level and threshold
         should_block = (
             injection_result.detected and 
@@ -325,6 +384,11 @@ Text to analyze: {content}
         
         # Use OpenAI for analysis with enhanced prompt
         injection_result = await self._detect_prompt_injection(enhanced_prompt)
+        
+        # Check if AI detection failed
+        if injection_result.level == "error":
+            # Reuse single-turn error handling logic
+            return await self._analyze_single_turn(content)
         
         # Parse multi-turn analysis from the result
         multi_turn_analysis = self._parse_multi_turn_analysis(injection_result)

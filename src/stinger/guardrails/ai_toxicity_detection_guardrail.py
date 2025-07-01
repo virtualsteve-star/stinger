@@ -6,11 +6,10 @@ with centralized model configuration and fallback to simple regex detection.
 """
 
 import logging
-from typing import Dict, Any, Type, Tuple
+from typing import Dict, Any, Tuple
 
 from .base_ai_guardrail import BaseAIGuardrail
-from ..core.guardrail_interface import GuardrailInterface, GuardrailType
-from .simple_toxicity_detection_guardrail import SimpleToxicityDetectionGuardrail
+from ..core.guardrail_interface import GuardrailType
 
 logger = logging.getLogger(__name__)
 
@@ -58,10 +57,6 @@ Text to analyze: {content}
         toxicity_types = data.get("toxicity_types", [])
         confidence = data.get("confidence", 0.0)
         return detected, toxicity_types, confidence
-    
-    def get_simple_fallback_class(self) -> Type[GuardrailInterface]:
-        """Get the simple toxicity detection fallback class."""
-        return SimpleToxicityDetectionGuardrail
     
     def get_categories_field_name(self) -> str:
         """Get the field name for toxicity categories."""
