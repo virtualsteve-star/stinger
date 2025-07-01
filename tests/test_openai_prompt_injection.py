@@ -5,7 +5,7 @@ from pathlib import Path
 # Add src to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent / 'src'))
 
-from src.filters.prompt_injection_filter import PromptInjectionFilter
+from src.stinger.filters.prompt_injection_filter import PromptInjectionFilter
 
 async def test():
     filter = PromptInjectionFilter('test', {

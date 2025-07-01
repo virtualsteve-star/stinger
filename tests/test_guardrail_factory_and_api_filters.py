@@ -7,14 +7,14 @@ Tests for the extensible guardrail/filter system, including legacy adapters and 
 import pytest
 import asyncio
 from unittest.mock import Mock, patch, AsyncMock, MagicMock
-from src.core.guardrail_interface import GuardrailType, GuardrailRegistry, GuardrailFactory
-from src.core.guardrail_factory import register_all_factories
-from src.core.api_key_manager import APIKeyManager
+from src.stinger.core.guardrail_interface import GuardrailType, GuardrailRegistry, GuardrailFactory
+from src.stinger.core.guardrail_factory import register_all_factories
+from src.stinger.core.api_key_manager import APIKeyManager
 
 
 def register_all_factories(registry: GuardrailRegistry):
     """Register all available guardrail factories."""
-    from src.filters.legacy_adapters import (
+    from src.stinger.filters.legacy_adapters import (
         KeywordBlockAdapter, RegexFilterAdapter, LengthFilterAdapter,
         URLFilterAdapter, PassThroughFilterAdapter
     )
@@ -99,20 +99,22 @@ class TestGuardrailFactory:
         register_all_factories(registry)
         factory = GuardrailFactory(registry)
         
-        # Test missing name
+        # Test missing name - should raise ConfigurationError
+        from src.stinger.utils.exceptions import ConfigurationError
         config = {'type': 'keyword_block'}
-        guardrail = factory.create_from_config(config)
-        assert guardrail is None
+        with pytest.raises(ConfigurationError):
+            factory.create_from_config(config)
         
-        # Test missing type
+        # Test missing type - should raise ConfigurationError
         config = {'name': 'test'}
-        guardrail = factory.create_from_config(config)
-        assert guardrail is None
+        with pytest.raises(ConfigurationError):
+            factory.create_from_config(config)
         
-        # Test invalid type
+        # Test invalid type - should raise InvalidGuardrailTypeError
+        from src.stinger.utils.exceptions import InvalidGuardrailTypeError
         config = {'name': 'test', 'type': 'invalid_type'}
-        guardrail = factory.create_from_config(config)
-        assert guardrail is None
+        with pytest.raises(InvalidGuardrailTypeError):
+            factory.create_from_config(config)
 
 
 class TestAPIKeyManager:
@@ -160,7 +162,7 @@ class TestLegacyFilterAdapters:
     @pytest.mark.asyncio
     async def test_keyword_block_adapter(self):
         """Test keyword block filter adapter."""
-        from src.filters.legacy_adapters import KeywordBlockAdapter
+        from src.stinger.filters.legacy_adapters import KeywordBlockAdapter
         
         config = {
             'name': 'test_keyword',
@@ -183,7 +185,7 @@ class TestLegacyFilterAdapters:
     @pytest.mark.asyncio
     async def test_regex_filter_adapter(self):
         """Test regex filter adapter."""
-        from src.filters.legacy_adapters import RegexFilterAdapter
+        from src.stinger.filters.legacy_adapters import RegexFilterAdapter
         
         config = {
             'name': 'test_regex',
@@ -211,7 +213,7 @@ class TestGuardrailFactoryAndAPIFilters:
     async def test_content_moderation_filter_unavailable(self):
         """Test content moderation filter when OpenAI is unavailable."""
         try:
-            from src.filters.content_moderation_filter import ContentModerationFilter
+            from src.stinger.filters.content_moderation_filter import ContentModerationFilter
             
             config = {
                 'name': 'test_moderation',
@@ -222,7 +224,7 @@ class TestGuardrailFactoryAndAPIFilters:
             }
             
             # Mock the OpenAI adapter to simulate unavailability
-            with patch('src.filters.content_moderation_filter.OpenAIAdapter') as mock_adapter_class:
+            with patch('src.stinger.filters.content_moderation_filter.OpenAIAdapter') as mock_adapter_class:
                 mock_adapter = MagicMock()
                 mock_adapter.moderate_content = AsyncMock(side_effect=Exception("API unavailable"))
                 mock_adapter_class.return_value = mock_adapter
@@ -242,8 +244,8 @@ class TestGuardrailFactoryAndAPIFilters:
     async def test_content_moderation_filter_available(self):
         """Test content moderation filter when OpenAI is available."""
         try:
-            from src.filters.content_moderation_filter import ContentModerationFilter
-            from src.adapters.openai_adapter import ModerationResult
+            from src.stinger.filters.content_moderation_filter import ContentModerationFilter
+            from src.stinger.adapters.openai_adapter import ModerationResult
             
             config = {
                 'name': 'test_moderation',
@@ -254,7 +256,7 @@ class TestGuardrailFactoryAndAPIFilters:
             }
             
             # Mock the OpenAI adapter to simulate successful response
-            with patch('src.filters.content_moderation_filter.OpenAIAdapter') as mock_adapter_class:
+            with patch('src.stinger.filters.content_moderation_filter.OpenAIAdapter') as mock_adapter_class:
                 mock_adapter = MagicMock()
                 mock_result = ModerationResult(
                     flagged=False,
@@ -281,7 +283,7 @@ class TestGuardrailFactoryAndAPIFilters:
     async def test_prompt_injection_filter_unavailable(self):
         """Test prompt injection filter when OpenAI is unavailable."""
         try:
-            from src.filters.prompt_injection_filter import PromptInjectionFilter
+            from src.stinger.filters.prompt_injection_filter import PromptInjectionFilter
             
             config = {
                 'name': 'test_injection',
@@ -292,7 +294,7 @@ class TestGuardrailFactoryAndAPIFilters:
             }
             
             # Mock the OpenAI adapter to simulate unavailability
-            with patch('src.filters.prompt_injection_filter.OpenAIAdapter') as mock_adapter_class:
+            with patch('src.stinger.filters.prompt_injection_filter.OpenAIAdapter') as mock_adapter_class:
                 mock_adapter = MagicMock()
                 mock_adapter.detect_prompt_injection = AsyncMock(side_effect=Exception("API unavailable"))
                 mock_adapter_class.return_value = mock_adapter
@@ -312,8 +314,8 @@ class TestGuardrailFactoryAndAPIFilters:
     async def test_prompt_injection_filter_available(self):
         """Test prompt injection filter when OpenAI is available."""
         try:
-            from src.filters.prompt_injection_filter import PromptInjectionFilter
-            from src.adapters.openai_adapter import InjectionResult
+            from src.stinger.filters.prompt_injection_filter import PromptInjectionFilter
+            from src.stinger.adapters.openai_adapter import InjectionResult
             
             config = {
                 'name': 'test_injection',
@@ -324,7 +326,7 @@ class TestGuardrailFactoryAndAPIFilters:
             }
             
             # Mock the OpenAI adapter to simulate successful response
-            with patch('src.filters.prompt_injection_filter.OpenAIAdapter') as mock_adapter_class:
+            with patch('src.stinger.filters.prompt_injection_filter.OpenAIAdapter') as mock_adapter_class:
                 mock_adapter = MagicMock()
                 mock_result = InjectionResult(
                     detected=False,

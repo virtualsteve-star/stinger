@@ -19,6 +19,13 @@ from .conversation import Conversation, Turn
 from ..utils.exceptions import PipelineError, ConfigurationError
 from .rate_limiter import get_global_rate_limiter
 from . import audit
+from .input_validation import (
+    validate_input_content, 
+    validate_pipeline_configuration, 
+    validate_system_resources,
+    ValidationError, 
+    ResourceExhaustionError
+)
 
 logger = logging.getLogger(__name__)
 
@@ -404,6 +411,22 @@ class GuardrailPipeline:
         if content is None:
             raise ValueError("Content cannot be None")
         
+        # Validate input content and system resources
+        try:
+            validate_input_content(content, "input")
+            validate_system_resources()
+        except (ValidationError, ResourceExhaustionError) as e:
+            from .error_handling import safe_error_message
+            safe_msg = safe_error_message(e, "input validation")
+            return PipelineResult(
+                blocked=True,
+                warnings=[safe_msg],
+                reasons=[safe_msg],
+                details={'validation_error': safe_msg},
+                pipeline_type='input',
+                conversation_id=conversation.id if conversation else None
+            )
+        
         # Check global rate limits if API key provided
         if api_key:
             global_rate_result = self.global_rate_limiter.check_rate_limit(api_key, role=role)
@@ -475,6 +498,22 @@ class GuardrailPipeline:
         """
         if content is None:
             raise ValueError("Content cannot be None")
+        
+        # Validate output content and system resources
+        try:
+            validate_input_content(content, "output")
+            validate_system_resources()
+        except (ValidationError, ResourceExhaustionError) as e:
+            from .error_handling import safe_error_message
+            safe_msg = safe_error_message(e, "output validation")
+            return PipelineResult(
+                blocked=True,
+                warnings=[safe_msg],
+                reasons=[safe_msg],
+                details={'validation_error': safe_msg},
+                pipeline_type='output',
+                conversation_id=conversation.id if conversation else None
+            )
         
         # Check global rate limits if API key provided
         if api_key:

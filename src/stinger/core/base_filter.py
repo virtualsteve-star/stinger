@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Optional
 from ..utils.exceptions import FilterError
+from .input_validation import validate_input_content, ValidationError
 
 @dataclass
 class FilterResult:
@@ -30,16 +31,33 @@ class BaseFilter(ABC):
         return True
     
     async def run_safe(self, content: str) -> FilterResult:
-        """Run filter with error handling and enhanced error context."""
+        """Run filter with error handling, validation, and enhanced error context."""
         try:
+            # Validate input content before processing
+            validate_input_content(content, "filter_input")
+            
             result = await self.run(content)
             result.filter_name = self.name
             result.filter_type = self.type
             return result
+        except ValidationError as e:
+            # Handle validation errors specifically
+            from .error_handling import safe_error_message
+            safe_msg = safe_error_message(e, f"input validation in {self.name}")
+            error_result = FilterResult(
+                action='block',  # Always block on validation errors
+                reason=f"Input validation failed: {safe_msg}",
+                filter_name=self.name,
+                filter_type=self.type
+            )
+            return error_result
         except Exception as e:
+            # Handle other errors with safe error handling
+            from .error_handling import safe_error_message
+            safe_msg = safe_error_message(e, f"filter execution in {self.name}")
             error_result = FilterResult(
                 action='block' if self.on_error == 'block' else 'allow',
-                reason=f"Filter error in '{self.name}' ({self.type}): {str(e)}",
+                reason=f"Filter error: {safe_msg}",
                 filter_name=self.name,
                 filter_type=self.type
             )

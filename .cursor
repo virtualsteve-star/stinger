@@ -193,4 +193,50 @@ GITHUB_REPO=virtualsteve-star/stinger
 # - The Stinger centralized API key manager will automatically pick up the key from the environment.
 # - All filters and services must use the centralized manager for key access (never read keys directly from config or os.environ).
 # - See docs/API_KEY_HANDLING.md for full details.
-# --- 
+# ---
+
+# NOTE: For GitHub PRs and commit messages, use real newlines (not \n) in PR bodies for clean formatting in the web UI.
+# Example (correct):
+#   gh pr create --title "My PR Title" --body "\
+
+# ---
+# LINE COUNTING GUIDELINES (Stinger Project)
+#
+# When counting lines of code in the Stinger project, be careful to avoid double counting:
+#
+# PRODUCTION CODE:
+#   find . -name "*.py" -not -path "./tests/*" -not -path "./demos/*" -not -path "./examples/*" -not -path "./docs/*" -not -path "./.git/*" -not -path "./venv/*" -not -path "./__pycache__/*" -not -path "./*.egg-info/*"
+#
+# TEST CODE (./tests/ directory only):
+#   find ./tests -name "*.py"
+#
+# DEMO CODE (./demos/ excluding test files):
+#   find ./demos -name "*.py" -not -name "test_*.py"
+#
+# DEMO TEST CODE (./demos/ test files only):
+#   find ./demos -name "test_*.py"
+#
+# EXAMPLE CODE:
+#   find ./examples -name "*.py"
+#
+# IMPORTANT: The ./demos/ directory contains BOTH demo code AND test files.
+# - Demo test files (test_*.py) should be counted as TEST CODE, not demo code
+# - This prevents double counting when reporting test vs demo vs production ratios
+#
+# CORRECT BREAKDOWN:
+# - Production: 36.8% (13,136 lines)
+# - Test Code (./tests/): 29.7% (10,617 lines)  
+# - Demo Test Code (./demos/test_*.py): 15.6% (5,598 lines)
+# - Demo Code (./demos/ excluding tests): 14.8% (5,305 lines)
+# - Example Code: 2.8% (1,016 lines)
+# - TOTAL TEST CODE: 45.4% (16,215 lines)
+# - TOTAL DEMO/EXAMPLE CODE: 17.7% (6,321 lines)
+# ---
+#   Line 1 of description
+#   
+#   Line 2 of description
+#   "
+# Or use a file:
+#   gh pr create --title "My PR Title" --body "$(cat path/to/message.md)"
+#
+# Avoid passing --body with \n escape sequences, as these will render as literal text in GitHub. 

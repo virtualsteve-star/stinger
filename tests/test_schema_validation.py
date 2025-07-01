@@ -1,8 +1,8 @@
 import pytest
 import tempfile
 import os
-from src.core.config import ConfigLoader
-from src.utils.exceptions import ConfigurationError
+from src.stinger.core.config import ConfigLoader
+from src.stinger.utils.exceptions import ConfigurationError
 
 
 class TestSchemaValidation:

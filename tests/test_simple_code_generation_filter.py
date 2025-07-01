@@ -7,8 +7,8 @@ for the regex-based code generation detection filter.
 
 import pytest
 import asyncio
-from src.filters.simple_code_generation_filter import SimpleCodeGenerationFilter
-from src.core.guardrail_interface import GuardrailType
+from src.stinger.filters.simple_code_generation_filter import SimpleCodeGenerationFilter
+from src.stinger.core.guardrail_interface import GuardrailType
 
 
 class TestSimpleCodeGenerationFilter:

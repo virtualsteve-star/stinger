@@ -4,7 +4,7 @@ import os
 import pytest
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-from src.filters.regex_filter import RegexFilter
+from src.stinger.filters.regex_filter import RegexFilter
 
 @pytest.mark.asyncio
 async def test_regex_filter():

@@ -140,10 +140,10 @@ def test_zero_blocking_validation():
         pipeline = stinger.create_pipeline()
         conversation = Conversation("test_user", "assistant", conversation_id="blocking_test")
         
-        # Test without audit trail (baseline)
+        # Test without audit trail (baseline) - limit to 49 turns to stay under 50-turn security limit
         print("   Measuring baseline performance (no audit)...")
         baseline_times = []
-        for i in range(100):
+        for i in range(49):
             start = time.time()
             input_result = pipeline.check_input(f"Test message {i}", conversation=conversation)
             output_result = pipeline.check_output(f"Test response {i}", conversation=conversation)
@@ -153,15 +153,16 @@ def test_zero_blocking_validation():
         baseline_avg = sum(baseline_times) / len(baseline_times)
         print(f"   Baseline average: {baseline_avg * 1000:.2f}ms per request")
         
-        # Test with audit trail enabled
+        # Test with audit trail enabled - use new conversation to avoid turn limit
         print("   Measuring performance with async audit trail...")
         audit.enable(audit_file, buffer_size=1000, flush_interval=5.0)
+        audit_conversation = Conversation("test_user", "assistant", conversation_id="audit_test")
         
         audit_times = []
-        for i in range(100):
+        for i in range(49):
             start = time.time()
-            input_result = pipeline.check_input(f"Test message with audit {i}", conversation=conversation)
-            output_result = pipeline.check_output(f"Test response with audit {i}", conversation=conversation)
+            input_result = pipeline.check_input(f"Test message with audit {i}", conversation=audit_conversation)
+            output_result = pipeline.check_output(f"Test response with audit {i}", conversation=audit_conversation)
             end = time.time()
             audit_times.append(end - start)
         

@@ -4,13 +4,13 @@ import sys
 import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-from src.core.config import ConfigLoader
-from src.core.pipeline import FilterPipeline
-from src.filters.pass_through import PassThroughFilter
-from src.filters.keyword_block import KeywordBlockFilter
-from src.filters.regex_filter import RegexFilter
-from src.filters.length_filter import LengthFilter
-from src.filters.url_filter import URLFilter
+from src.stinger.core.config import ConfigLoader
+from src.stinger.core.pipeline import GuardrailPipeline
+from src.stinger.filters.pass_through import PassThroughFilter
+from src.stinger.filters.keyword_block import KeywordBlockFilter
+from src.stinger.filters.regex_filter import RegexFilter
+from src.stinger.filters.length_filter import LengthFilter
+from src.stinger.filters.url_filter import URLFilter
 
 def load_jsonl(path):
     with open(path, 'r') as f:
@@ -46,7 +46,7 @@ async def run_smoke_test():
     print(f"✅ {len(filters)} filters created")
     
     # Create pipeline
-    pipeline = FilterPipeline(filters)
+    pipeline = GuardrailPipeline(filters)
     print("✅ Pipeline created")
     
     # Load test cases from JSONL

@@ -364,8 +364,9 @@ class TestConversationEdgeCases:
         
         conv = Conversation.human_ai("test_user", "gpt-4", conversation_id="long_test")
         
-        # Create very long content
-        long_content = "A" * 10000
+        # Create long content with multiple lines to avoid line length limits (10KB line limit)
+        sentences = [f"This is sentence number {i} with various words and content." for i in range(100)]
+        long_content = "\n".join(sentences)  # Use newlines to break into multiple lines
         
         result = pipeline.check_input(long_content, conversation=conv)
         assert result['conversation_id'] == "long_test"

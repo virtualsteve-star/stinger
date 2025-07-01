@@ -12,6 +12,7 @@ import threading
 from dataclasses import dataclass, field
 from typing import Dict, Any, List, Optional, Union
 from datetime import datetime, timedelta
+from .input_validation import validate_conversation_limits, validate_input_content, ValidationError
 
 logger = logging.getLogger(__name__)
 
@@ -273,8 +274,36 @@ class Conversation:
             
         Returns:
             The created Turn object
+            
+        Raises:
+            ValidationError: If conversation limits or content validation fails
         """
+        # Validate prompt content
+        try:
+            validate_input_content(prompt, "prompt")
+            if response:
+                validate_input_content(response, "response")
+        except ValidationError as e:
+            from .error_handling import safe_error_message
+            safe_msg = safe_error_message(e, "conversation content validation")
+            logger.warning(f"Content validation failed for conversation {self.conversation_id}: {safe_msg}")
+            raise
+        
         with self._lock:
+            # Validate conversation limits before adding turn
+            conversation_data = {
+                'turn_count': len(self.turns) + 1,  # +1 for the turn we're about to add
+                'memory_usage_mb': self._estimate_memory_usage(),
+                'created_time': self.created_at.timestamp()
+            }
+            
+            try:
+                validate_conversation_limits(conversation_data)
+            except ValidationError as e:
+                from .error_handling import safe_error_message
+                safe_msg = safe_error_message(e, "conversation limits validation")
+                logger.warning(f"Conversation limits exceeded for {self.conversation_id}: {safe_msg}")
+                raise
             turn = Turn(
                 timestamp=datetime.now(),
                 prompt=prompt,
@@ -417,6 +446,35 @@ class Conversation:
                 logger.info(message)
         
         return exceeded
+    
+    def _estimate_memory_usage(self) -> float:
+        """
+        Estimate memory usage of this conversation in MB.
+        
+        Returns:
+            Estimated memory usage in megabytes
+        """
+        total_chars = 0
+        
+        # Count characters in all turns
+        for turn in self.turns:
+            total_chars += len(turn.prompt)
+            if turn.response:
+                total_chars += len(turn.response)
+            # Add metadata size (rough estimate)
+            total_chars += len(str(turn.metadata))
+        
+        # Add metadata and other fields
+        total_chars += len(str(self.metadata))
+        total_chars += len(self.conversation_id)
+        total_chars += len(self.initiator) + len(self.responder)
+        
+        # Rough conversion: 1 character ≈ 1 byte, plus object overhead
+        # Add 50% overhead for Python objects, Unicode, etc.
+        estimated_bytes = total_chars * 1.5
+        
+        # Convert to MB
+        return estimated_bytes / (1024 * 1024)
     
     def set_rate_limit(self, rate_limit: Dict[str, int]) -> None:
         """
