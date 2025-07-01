@@ -7,8 +7,8 @@ for the regex-based toxicity detection filter.
 
 import pytest
 import asyncio
-from src.filters.simple_toxicity_detection_filter import SimpleToxicityDetectionFilter
-from src.core.guardrail_interface import GuardrailType
+from src.stinger.filters.simple_toxicity_detection_filter import SimpleToxicityDetectionFilter
+from src.stinger.core.guardrail_interface import GuardrailType
 
 
 class TestSimpleToxicityDetectionFilter:

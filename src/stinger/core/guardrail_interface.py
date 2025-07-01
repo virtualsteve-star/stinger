@@ -10,6 +10,7 @@ from typing import Dict, Any, List, Optional, Callable
 from dataclasses import dataclass
 from enum import Enum
 import logging
+from .input_validation import validate_input_content, ValidationError
 
 
 class GuardrailType(Enum):
@@ -58,6 +59,44 @@ class GuardrailInterface(ABC):
     async def analyze(self, content: str) -> GuardrailResult:
         """Analyze content and return standardized result."""
         pass
+    
+    async def analyze_safe(self, content: str) -> GuardrailResult:
+        """Analyze content with input validation and error handling."""
+        try:
+            # Validate input content before processing
+            validate_input_content(content, "guardrail_input")
+            
+            # Proceed with analysis if validation passes
+            return await self.analyze(content)
+            
+        except ValidationError as e:
+            # Handle validation errors
+            from .error_handling import safe_error_message
+            safe_msg = safe_error_message(e, f"input validation in {self.name}")
+            
+            return GuardrailResult(
+                blocked=True,  # Always block on validation errors
+                confidence=1.0,
+                reason=f"Input validation failed: {safe_msg}",
+                details={'validation_error': str(e)},
+                guardrail_name=self.name,
+                guardrail_type=self.guardrail_type,
+                risk_level="high"
+            )
+        except Exception as e:
+            # Handle other unexpected errors
+            from .error_handling import safe_error_message
+            safe_msg = safe_error_message(e, f"guardrail execution in {self.name}")
+            
+            return GuardrailResult(
+                blocked=True,  # Conservative approach - block on errors
+                confidence=0.0,
+                reason=f"Guardrail error: {safe_msg}",
+                details={'execution_error': str(e)},
+                guardrail_name=self.name,
+                guardrail_type=self.guardrail_type,
+                risk_level="medium"
+            )
     
     def get_name(self) -> str:
         """Return the name/identifier of this guardrail."""

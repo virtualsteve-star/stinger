@@ -6,13 +6,13 @@ from collections import defaultdict
 from typing import Dict, List, Optional
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-from src.core.config import ConfigLoader
-from src.core.pipeline import FilterPipeline
-from src.filters.pass_through import PassThroughFilter
-from src.filters.keyword_block import KeywordBlockFilter
-from src.filters.regex_filter import RegexFilter
-from src.filters.length_filter import LengthFilter
-from src.filters.url_filter import URLFilter
+from src.stinger.core.config import ConfigLoader
+from src.stinger.core.pipeline import GuardrailPipeline
+from src.stinger.filters.pass_through import PassThroughFilter
+from src.stinger.filters.keyword_block import KeywordBlockFilter
+from src.stinger.filters.regex_filter import RegexFilter
+from src.stinger.filters.length_filter import LengthFilter
+from src.stinger.filters.url_filter import URLFilter
 
 def load_jsonl(path):
     """Load test cases from JSONL file."""
@@ -39,7 +39,7 @@ class ConversationSimulator:
         self.config = self.config_loader.load(config_path)
         self.pipeline = self._create_pipeline()
         
-    def _create_pipeline(self) -> FilterPipeline:
+    def _create_pipeline(self) -> GuardrailPipeline:
         """Create filter pipeline from configuration."""
         filter_configs = self.config_loader.get_pipeline_config('input')
         filters = []
@@ -55,7 +55,7 @@ class ConversationSimulator:
             else:
                 print(f"⚠️ Unknown filter type: {filter_type}")
         
-        return FilterPipeline(filters)
+        return GuardrailPipeline(filters)
     
     async def simulate_conversation(self, test_cases: List[dict], show_conversation: bool = True) -> Dict:
         """Simulate a conversation and return results."""

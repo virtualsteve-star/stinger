@@ -8,8 +8,8 @@ import pytest
 import tempfile
 import os
 from pathlib import Path
-from src.filters.keyword_list import KeywordListFilter
-from src.utils.exceptions import FilterError
+from src.stinger.filters.keyword_list import KeywordListFilter
+from src.stinger.utils.exceptions import FilterError
 
 @pytest.mark.asyncio
 async def test_inline_keywords_basic():

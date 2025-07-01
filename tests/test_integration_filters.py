@@ -7,11 +7,11 @@ factory registration, and pipeline integration.
 
 import pytest
 import asyncio
-from src.core.guardrail_interface import GuardrailRegistry, GuardrailType
-from src.core.guardrail_factory import register_all_factories, create_guardrail_from_config
-from src.filters.simple_pii_detection_filter import SimplePIIDetectionFilter
-from src.filters.simple_toxicity_detection_filter import SimpleToxicityDetectionFilter
-from src.filters.simple_code_generation_filter import SimpleCodeGenerationFilter
+from src.stinger.core.guardrail_interface import GuardrailRegistry, GuardrailType
+from src.stinger.core.guardrail_factory import register_all_factories, create_guardrail_from_config
+from src.stinger.filters.simple_pii_detection_filter import SimplePIIDetectionFilter
+from src.stinger.filters.simple_toxicity_detection_filter import SimpleToxicityDetectionFilter
+from src.stinger.filters.simple_code_generation_filter import SimpleCodeGenerationFilter
 
 
 class TestPhase5aIntegration:
@@ -254,16 +254,18 @@ class TestPhase5aIntegration:
             'type': 'invalid_type',
             'enabled': True
         }
-        invalid_filter = create_guardrail_from_config(invalid_config, registry)
-        assert invalid_filter is None
+        from src.stinger.utils.exceptions import InvalidGuardrailTypeError
+        with pytest.raises(InvalidGuardrailTypeError):
+            create_guardrail_from_config(invalid_config, registry)
         
         # Test missing required fields
         incomplete_config = {
             'name': 'incomplete_filter'
             # Missing 'type' field
         }
-        incomplete_filter = create_guardrail_from_config(incomplete_config, registry)
-        assert incomplete_filter is None
+        from src.stinger.utils.exceptions import ConfigurationError
+        with pytest.raises(ConfigurationError):
+            create_guardrail_from_config(incomplete_config, registry)
         
         # Test valid configuration with unknown patterns/categories
         valid_config = {
