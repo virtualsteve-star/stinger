@@ -95,10 +95,10 @@ def validate_api_key_config() -> Dict[str, bool]:
 
 #### 2.1 Update AI Filters to Use Centralized Manager
 **Files to Update:**
-- `src/stinger/filters/ai_code_generation_filter.py`
-- `src/stinger/filters/ai_pii_detection_filter.py`
-- `src/stinger/filters/ai_toxicity_detection_filter.py`
-- `src/stinger/filters/content_moderation_filter.py`
+- `src/stinger/guardrails/ai_code_generation_filter.py`
+- `src/stinger/guardrails/ai_pii_detection_filter.py`
+- `src/stinger/guardrails/ai_toxicity_detection_filter.py`
+- `src/stinger/guardrails/content_moderation_filter.py`
 
 **Action:**
 - Replace direct `config.get('api_key')` access with centralized manager

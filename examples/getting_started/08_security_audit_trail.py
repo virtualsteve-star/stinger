@@ -45,7 +45,7 @@ def main():
     )
     
     stinger.audit.log_guardrail_decision(
-        filter_name="content_moderation",
+        guardrail_name="content_moderation",
         decision="allow",
         reason="Content is safe",
         user_id="user_123",

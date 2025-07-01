@@ -114,7 +114,7 @@ def test_comprehensive_security_audit_trail():
         
         # Validate guardrail decision format
         for decision in decision_events:
-            assert "filter_name" in decision
+            assert "guardrail_name" in decision
             assert "decision" in decision
             assert decision["decision"] in ["block", "allow", "warn", "error"]
             assert "reason" in decision

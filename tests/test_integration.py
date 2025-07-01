@@ -8,11 +8,11 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 from src.stinger.core.config import ConfigLoader
 from src.stinger.core.pipeline import GuardrailPipeline
-from src.stinger.filters.pass_through import PassThroughFilter
-from src.stinger.filters.keyword_block import KeywordBlockFilter
-from src.stinger.filters.regex_filter import RegexFilter
-from src.stinger.filters.length_filter import LengthFilter
-from src.stinger.filters.url_filter import URLFilter
+from src.stinger.guardrails.pass_through import PassThroughGuardrail
+from src.stinger.guardrails.keyword_block import KeywordBlockGuardrail
+from src.stinger.guardrails.regex_guardrail import RegexGuardrail
+from src.stinger.guardrails.length_guardrail import LengthGuardrail
+from src.stinger.guardrails.url_guardrail import URLGuardrail
 
 def load_jsonl(path):
     """Load test cases from JSONL file."""
@@ -23,12 +23,12 @@ def load_jsonl(path):
         print(f"⚠️ Test corpus not found: {path}")
         return []
 
-FILTER_REGISTRY = {
-    'pass_through': PassThroughFilter,
-    'keyword_block': KeywordBlockFilter,
-    'regex_filter': RegexFilter,
-    'length_filter': LengthFilter,
-    'url_filter': URLFilter,
+GUARDRAIL_REGISTRY = {
+    'pass_through': PassThroughGuardrail,
+    'keyword_block': KeywordBlockGuardrail,
+    'regex_filter': RegexGuardrail,
+    'length_filter': LengthGuardrail,
+    'url_filter': URLGuardrail,
 }
 
 class ConversationSimulator:
@@ -37,26 +37,8 @@ class ConversationSimulator:
     def __init__(self, config_path: str):
         self.config_loader = ConfigLoader()
         self.config = self.config_loader.load(config_path)
-        self.pipeline = self._create_pipeline()
+        self.pipeline = GuardrailPipeline(config_path)
         
-    def _create_pipeline(self) -> GuardrailPipeline:
-        """Create filter pipeline from configuration."""
-        filter_configs = self.config_loader.get_pipeline_config('input')
-        filters = []
-        
-        for fc in filter_configs:
-            filter_type = fc.get('type')
-            filter_cls = FILTER_REGISTRY.get(filter_type)
-            if filter_cls:
-                try:
-                    filters.append(filter_cls(fc))
-                except Exception as e:
-                    print(f"❌ Failed to create filter {fc.get('name')}: {str(e)}")
-            else:
-                print(f"⚠️ Unknown filter type: {filter_type}")
-        
-        return GuardrailPipeline(filters)
-    
     async def simulate_conversation(self, test_cases: List[dict], show_conversation: bool = True) -> Dict:
         """Simulate a conversation and return results."""
         conversations = defaultdict(list)
@@ -96,9 +78,15 @@ class ConversationSimulator:
                 
                 # Process through pipeline
                 try:
-                    result = await self.pipeline.process(test_input)
-                    action = result.blocked
-                    reason = result.reason
+                    result = await self.pipeline.check_input_async(test_input)
+                    # Convert PipelineResult to action string
+                    if result['blocked']:
+                        action = 'block'
+                    elif result['warnings']:
+                        action = 'warn'
+                    else:
+                        action = 'allow'
+                    reason = '; '.join(result['reasons']) if result['reasons'] else 'no match'
                 except Exception as e:
                     action = "error"
                     reason = f"Error: {str(e)}"
@@ -199,8 +187,14 @@ class ConversationSimulator:
                 expected = case.get('expected')
                 # Run moderation
                 try:
-                    result = await self.pipeline.process(test_input)
-                    action = result.blocked
+                    result = await self.pipeline.check_input_async(test_input)
+                    # Convert PipelineResult to action string
+                    if result['blocked']:
+                        action = 'block'
+                    elif result['warnings']:
+                        action = 'warn'
+                    else:
+                        action = 'allow'
                 except Exception as e:
                     action = "error"
                 tag = {

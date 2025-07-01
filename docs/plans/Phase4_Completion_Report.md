@@ -18,7 +18,7 @@ Transform the LLM Guardrails Framework from a complex, hard-to-debug system into
 
 #### 1. **Keyword List Filter (High Priority)**
 - **Problem Solved**: Reduced configuration complexity by 80% through multi-keyword support
-- **Implementation**: `KeywordListFilter` with inline keywords, file loading, fallback support, and phrase matching
+- **Implementation**: `KeywordListGuardrail` with inline keywords, file loading, fallback support, and phrase matching
 - **Configuration Reduction**: Customer service config reduced from 10+ blocks to 2 blocks
 - **File Support**: External keyword files with comment support and relative path resolution
 - **Starter Files**: Created 5 keyword files for common use cases (toxic language, profanity, harassment, spam, medical terms)
@@ -64,13 +64,13 @@ Transform the LLM Guardrails Framework from a complex, hard-to-debug system into
 ```
 src/
 ├── filters/
-│   ├── __init__.py              # Filter registry with FILTER_REGISTRY
-│   ├── keyword_list.py          # KeywordListFilter implementation
-│   ├── pass_through.py          # PassThroughFilter
-│   ├── keyword_block.py         # KeywordBlockFilter
-│   ├── regex_filter.py          # RegexFilter
-│   ├── length_filter.py         # LengthFilter
-│   └── url_filter.py            # URLFilter
+│   ├── __init__.py              # Filter registry with GUARDRAIL_REGISTRY
+│   ├── keyword_list.py          # KeywordListGuardrail implementation
+│   ├── pass_through.py          # PassThroughGuardrail
+│   ├── keyword_block.py         # KeywordBlockGuardrail
+│   ├── regex_filter.py          # RegexGuardrail
+│   ├── length_filter.py         # LengthGuardrail
+│   └── url_filter.py            # URLGuardrail
 ├── core/
 │   ├── config.py                # ConfigLoader with schema validation
 │   ├── hot_reload.py            # Hot reload manager and CLI

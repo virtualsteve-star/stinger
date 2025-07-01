@@ -186,17 +186,17 @@ class InputValidator:
             ValidationError: If pipeline configuration violates limits
         """
         # Check number of filters
-        filters = pipeline_config.get('filters', [])
-        if len(filters) > self.limits.MAX_FILTERS_PER_PIPELINE:
+        guardrails = pipeline_config.get('guardrails', [])
+        if len(guardrails) > self.limits.MAX_FILTERS_PER_PIPELINE:
             raise ValidationError(
-                f"Too many filters: {len(filters)} > {self.limits.MAX_FILTERS_PER_PIPELINE}"
+                f"Too many guardrails: {len(guardrails)} > {self.limits.MAX_FILTERS_PER_PIPELINE}"
             )
         
         # Check for regex pattern limits
         regex_count = 0
-        for filter_config in filters:
-            if filter_config.get('type') == 'regex':
-                patterns = filter_config.get('patterns', [])
+        for guardrail_config in guardrails:
+            if guardrail_config.get('type') == 'regex':
+                patterns = guardrail_config.get('patterns', [])
                 regex_count += len(patterns)
         
         if regex_count > self.limits.MAX_REGEX_PATTERNS:

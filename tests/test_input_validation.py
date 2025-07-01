@@ -232,7 +232,7 @@ class TestPipelineConfigurationValidation:
         validator = InputValidator()
         
         config = {
-            'filters': [
+            "guardrails": [
                 {'type': 'keyword', 'patterns': ['test']},
                 {'type': 'length', 'max_length': 1000},
                 {'type': 'regex', 'patterns': [r'hello.*world']}
@@ -247,10 +247,10 @@ class TestPipelineConfigurationValidation:
         validator = InputValidator(limits)
         
         config = {
-            'filters': [{'type': f'filter{i}'} for i in range(10)]
+            "guardrails": [{'type': f'filter{i}'} for i in range(10)]
         }
         
-        with pytest.raises(ValidationError, match="Too many filters"):
+        with pytest.raises(ValidationError, match="Too many guardrails"):
             validator.validate_pipeline_configuration(config)
     
     def test_too_many_regex_patterns(self):
@@ -259,7 +259,7 @@ class TestPipelineConfigurationValidation:
         validator = InputValidator(limits)
         
         config = {
-            'filters': [
+            "guardrails": [
                 {'type': 'regex', 'patterns': [f'pattern{i}' for i in range(10)]}
             ]
         }
@@ -402,7 +402,7 @@ class TestConvenienceFunctions:
     
     def test_validate_pipeline_configuration_function(self):
         """Test convenience function for pipeline validation."""
-        config = {'filters': [{'type': 'test'}]}
+        config = {"guardrails": [{'type': 'test'}]}
         validate_pipeline_configuration(config)
 
 

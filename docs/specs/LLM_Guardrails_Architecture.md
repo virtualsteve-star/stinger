@@ -46,7 +46,7 @@
 | **Config Loader** | Parse YAML/JSON configs, validate schema, expose runtime settings. |
 | **FilterPipeline** | Orchestrate filter execution, enforce order, aggregate results. |
 | **Conversation Management** | Handle multi-turn conversations, context tracking, rate limiting. |
-| **BaseFilter** | Abstract class implementing `run(content) → FilterResult`. |
+| **BaseGuardrail** | Abstract class implementing `run(content) → FilterResult`. |
 | **Rule‑Based Filters** | Regex, blacklist, language, length, URL/file‑type blocking. |
 | **Keyword List Filter** | Load keywords from files or inline configs with case sensitivity options. |
 | **Compound Scoring Filter** | Multi-rule weighted scoring with configurable thresholds. |

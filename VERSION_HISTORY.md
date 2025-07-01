@@ -216,15 +216,15 @@ Major feature expansion with comprehensive rule-based filtering capabilities, en
 ### ✨ Features Added
 
 #### New Filter Implementations
-- **RegexFilter**: Pattern matching for credit card numbers and email addresses
+- **RegexGuardrail**: Pattern matching for credit card numbers and email addresses
   - Configurable regex patterns with case-insensitive matching
   - Support for multiple patterns with individual actions
   - Warn action for sensitive data detection
-- **LengthFilter**: Content length validation with min/max thresholds
+- **LengthGuardrail**: Content length validation with min/max thresholds
   - Configurable minimum and maximum length limits
   - Graceful handling of empty/null content
   - Performance-optimized length checking
-- **URLFilter**: Domain-based URL blocking and validation
+- **URLGuardrail**: Domain-based URL blocking and validation
   - Block/allow lists for specific domains
   - Support for HTTP/HTTPS protocols
   - Subdomain and path-aware URL parsing
@@ -327,15 +327,15 @@ Initial release with basic scaffolding, configuration system, and test framework
 ### ✨ Features Added
 
 #### Core Framework
-- **BaseFilter**: Abstract base class for all filters with error handling
+- **BaseGuardrail**: Abstract base class for all filters with error handling
 - **FilterPipeline**: Sequential processing pipeline with graceful degradation
 - **ConfigLoader**: YAML configuration loader with validation
 - **FilterResult**: Standardized result dataclass for filter outputs
 - **PipelineResult**: Pipeline-level result aggregation
 
 #### Filter Implementations
-- **PassThroughFilter**: Simple filter that allows all content (for testing)
-- **KeywordBlockFilter**: Blocks content containing specified keywords (case-insensitive)
+- **PassThroughGuardrail**: Simple filter that allows all content (for testing)
+- **KeywordBlockGuardrail**: Blocks content containing specified keywords (case-insensitive)
 
 #### Configuration System
 - YAML-based configuration with schema validation

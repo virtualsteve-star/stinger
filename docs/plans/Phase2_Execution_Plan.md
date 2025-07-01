@@ -20,19 +20,19 @@
 ## ✅ Phase 2 Completion Summary
 
 **Completed Features:**
-- ✅ RegexFilter - Pattern matching for credit cards and emails
-- ✅ LengthFilter - Min/max length validation  
-- ✅ URLFilter - Domain-based URL blocking
+- ✅ RegexGuardrail - Pattern matching for credit cards and emails
+- ✅ LengthGuardrail - Min/max length validation  
+- ✅ URLGuardrail - Domain-based URL blocking
 - ✅ Enhanced configuration with comprehensive.yaml
 - ✅ Expanded test framework with 58 test cases
 - ✅ All tests passing (100% success rate)
 
 **Implemented Filters:**
-1. **RegexFilter** - Detects credit card numbers and email addresses with configurable patterns
-2. **LengthFilter** - Validates content length against min/max thresholds
-3. **URLFilter** - Blocks specific domains while allowing others
-4. **KeywordBlockFilter** - Blocks specific keywords (from Phase 1)
-5. **PassThroughFilter** - Always allows content (from Phase 1)
+1. **RegexGuardrail** - Detects credit card numbers and email addresses with configurable patterns
+2. **LengthGuardrail** - Validates content length against min/max thresholds
+3. **URLGuardrail** - Blocks specific domains while allowing others
+4. **KeywordBlockGuardrail** - Blocks specific keywords (from Phase 1)
+5. **PassThroughGuardrail** - Always allows content (from Phase 1)
 
 **Test Coverage:**
 - Smoke Test: 12/12 tests passed
@@ -84,9 +84,9 @@ stinger/
 
 ## 2. New Filter Implementations
 
-### 2.1 RegexFilter
+### 2.1 RegexGuardrail
 ```python
-class RegexFilter(BaseFilter):
+class RegexGuardrail(BaseGuardrail):
     async def run(self, content: str) -> FilterResult:
         patterns = self.config.get('patterns', [])
         flags = self.config.get('flags', 0)
@@ -94,9 +94,9 @@ class RegexFilter(BaseFilter):
         # Return block/allow based on matches
 ```
 
-### 2.2 LengthFilter
+### 2.2 LengthGuardrail
 ```python
-class LengthFilter(BaseFilter):
+class LengthGuardrail(BaseGuardrail):
     async def run(self, content: str) -> FilterResult:
         min_length = self.config.get('min_length', 0)
         max_length = self.config.get('max_length', None)
@@ -106,16 +106,16 @@ class LengthFilter(BaseFilter):
 
 ### 2.3 LanguageFilter
 ```python
-class LanguageFilter(BaseFilter):
+class LanguageFilter(BaseGuardrail):
     async def run(self, content: str) -> FilterResult:
         allowed_languages = self.config.get('allowed_languages', ['en'])
         # Detect language using langdetect or similar
         # Return block/allow based on language
 ```
 
-### 2.4 URLFilter
+### 2.4 URLGuardrail
 ```python
-class URLFilter(BaseFilter):
+class URLGuardrail(BaseGuardrail):
     async def run(self, content: str) -> FilterResult:
         blocked_domains = self.config.get('blocked_domains', [])
         allowed_domains = self.config.get('allowed_domains', [])
@@ -125,7 +125,7 @@ class URLFilter(BaseFilter):
 
 ### 2.5 FileTypeFilter
 ```python
-class FileTypeFilter(BaseFilter):
+class FileTypeFilter(BaseGuardrail):
     async def run(self, content: str) -> FilterResult:
         blocked_extensions = self.config.get('blocked_extensions', [])
         allowed_extensions = self.config.get('allowed_extensions', [])
@@ -179,7 +179,7 @@ pipeline:
 ### 3.2 Configuration Validation
 ```python
 # Enhanced validation in ConfigLoader
-def validate_filter_config(self, filter_config: dict) -> bool:
+def validate_filter_config(self, guardrail_config: dict) -> bool:
     # Validate required fields
     # Check data types
     # Validate regex patterns
@@ -213,13 +213,13 @@ async def run_test_suite(suite_name: str):
 ## 5. Implementation Steps
 
 ### Step 1: Core Filter Development (3 hours)
-- Implement RegexFilter with pattern matching
-- Implement LengthFilter with min/max validation
+- Implement RegexGuardrail with pattern matching
+- Implement LengthGuardrail with min/max validation
 - Implement LanguageFilter with language detection
 - Add filter registry updates
 
 ### Step 2: URL & File Type Filters (2 hours)
-- Implement URLFilter with domain validation
+- Implement URLGuardrail with domain validation
 - Implement FileTypeFilter with extension checking
 - Add URL parsing utilities
 - Test with various URL formats

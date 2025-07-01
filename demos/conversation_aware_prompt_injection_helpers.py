@@ -8,7 +8,7 @@ in the main demo files.
 
 from typing import List, Tuple, Dict, Any, Callable
 from stinger.core.conversation import Conversation
-from stinger.filters.prompt_injection_filter import PromptInjectionFilter
+from stinger.guardrails.prompt_injection_filter import PromptInjectionGuardrail
 
 
 def create_trust_building_conversation() -> Tuple[Conversation, str]:
@@ -106,14 +106,14 @@ def print_conversation_summary(conversation: Conversation, prompt: str, scenario
     print(f"Injection: {prompt[:60]}{'...' if len(prompt) > 60 else ''}")
 
 
-def test_context_strategies(filter_instance: PromptInjectionFilter, conversation: Conversation) -> Dict[str, int]:
+def test_context_strategies(guardrail_instance: PromptInjectionGuardrail, conversation: Conversation) -> Dict[str, int]:
     """Test different context strategies and return turn counts."""
     strategies = ["recent", "suspicious", "mixed"]
     results = {}
     
     for strategy in strategies:
-        filter_instance.context_strategy = strategy
-        relevant_turns = filter_instance._get_relevant_context(conversation)
+        guardrail_instance.context_strategy = strategy
+        relevant_turns = guardrail_instance._get_relevant_context(conversation)
         results[strategy] = len(relevant_turns)
     
     return results

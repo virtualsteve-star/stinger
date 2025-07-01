@@ -1,7 +1,7 @@
 # Phase 5a: Comprehensive Filter Configuration
 # This configuration combines simple and AI-based filters for maximum coverage and reliability
 
-filters:
+guardrails:
   # Simple filters for speed and reliability (first line of defense)
   - name: "simple_pii_detection"
     type: "pii_detection"

@@ -24,7 +24,7 @@
 
 ### ✅ Fully Implemented (100% Complete)
 - **Enhanced rate limiting**: Global rate limiting with per-API-key/user limits, role-based overrides, memory backend
-- **Topic allow/deny lists**: Complete TopicFilter implementation with allow/deny/both modes, regex support
+- **Topic allow/deny lists**: Complete TopicGuardrail implementation with allow/deny/both modes, regex support
 - **Role-based overrides**: Configurable role limits, exempt roles, pipeline integration
 - **Health status methods**: `get_config()` methods on all filters
 - **Configuration validation**: YAML schema validation with error messages
@@ -50,7 +50,7 @@
 ### ✅ 2. Topic Allow/Deny Lists (COMPLETE)
 **Status**: ✅ 100% Complete - All tests passing
 **Implementation**:
-- TopicFilter class with multiple modes
+- TopicGuardrail class with multiple modes
 - Regex pattern support
 - Confidence scoring
 - Health monitoring integration

@@ -53,7 +53,7 @@ The framework must block or transform unwanted content (e.g., PII, prompt‑inje
 | ID | Requirement |
 |----|-------------|
 | FR‑1 | Support chained input and output filter pipelines. |
-| FR‑2 | Provide built‑in rule‑based filters: regex blacklist, language check, length limit, URL/file‑type block. |
+| FR‑2 | Provide built‑in rule‑based guardrails: regex blacklist, language check, length limit, URL/file‑type block. |
 | FR‑3 | Provide pluggable classifier filters (OpenAI Moderation, Perspective API, Google Prompt Armor, Anthropic, local models). |
 | FR‑4 | YAML/JSON configuration with per‑filter parameters and action (`allow`, `block`, `warn`, `modify`, `log_only`). |
 | FR‑5 | Test framework that loads labeled examples, runs filters, and produces JSON results with pass/fail and metrics. |

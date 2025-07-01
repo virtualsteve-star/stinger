@@ -94,7 +94,7 @@ def test_key_export_production_block():
 ### **7A.2: Implement Regex Pattern Security**
 
 #### **Current Vulnerability Analysis:**
-- **File:** `src/stinger/filters/regex_filter.py`
+- **File:** `src/stinger/guardrails/regex_filter.py`
 - **Lines:** 16-21
 - **Current Dangerous Code:**
 ```python
@@ -199,8 +199,8 @@ class RegexSecurityValidator:
             if execution_time_ms > cls.MAX_EXECUTION_TIME_MS:
                 raise ValueError(f"Regex execution too slow with test input: {execution_time_ms:.1f}ms")
 
-# Updated RegexFilter class
-class RegexFilter(GuardrailInterface):
+# Updated RegexGuardrail class
+class RegexGuardrail(GuardrailInterface):
     def __init__(self, config: Dict[str, Any]):
         super().__init__(config)
         self.patterns = config.get('patterns', [])
@@ -238,20 +238,20 @@ class TestRegexSecurity:
         
         for pattern in dangerous_patterns:
             with pytest.raises(ValueError, match="dangerous"):
-                RegexFilter({'patterns': [pattern]})
+                RegexGuardrail({'patterns': [pattern]})
     
     def test_pattern_length_limits(self):
         """Test pattern length protection."""
         long_pattern = 'a' * 2000
         with pytest.raises(ValueError, match="too long"):
-            RegexFilter({'patterns': [long_pattern]})
+            RegexGuardrail({'patterns': [long_pattern]})
     
     def test_compilation_time_limits(self):
         """Test compilation time protection."""
         # Complex pattern that takes time to compile
         complex_pattern = '(' + '|'.join([f'pattern{i}' for i in range(1000)]) + ')'
         with pytest.raises(ValueError, match="compilation too slow"):
-            RegexFilter({'patterns': [complex_pattern]})
+            RegexGuardrail({'patterns': [complex_pattern]})
 ```
 
 ### **7A.3: Sanitize Error Messages**
@@ -261,7 +261,7 @@ Multiple locations leak sensitive information in error messages:
 
 **Locations with Issues:**
 1. `src/stinger/core/audit.py` line 237: `print(f"Warning: Could not open audit log file {path}: {e}")`
-2. `src/stinger/filters/prompt_injection_filter.py` lines 584, 593, 602: Detailed error info
+2. `src/stinger/guardrails/prompt_injection_filter.py` lines 584, 593, 602: Detailed error info
 3. `src/stinger/core/pipeline.py`: Configuration file paths in errors
 4. Various filter implementations: Stack traces and internal state
 
@@ -371,7 +371,7 @@ def _ensure_log_file_exists(self, path: str) -> bool:
         self.logger.error(safe_message)
         return False
 
-# src/stinger/filters/prompt_injection_filter.py - Fix lines 584, 593, 602
+# src/stinger/guardrails/prompt_injection_filter.py - Fix lines 584, 593, 602
 async def _handle_api_error(self, error: Exception, content: str) -> GuardrailResult:
     """Handle API errors with secure messaging."""
     safe_message = error_handler.safe_error_message(
@@ -501,10 +501,10 @@ class InputValidator:
         
         for stage in ['input', 'output']:
             if stage in pipeline_data:
-                filters = pipeline_data[stage]
+                guardrails = pipeline_data[stage]
                 if isinstance(filters, list) and len(filters) > self.limits.MAX_FILTERS_PER_PIPELINE:
                     raise ValueError(
-                        f"Too many {stage} filters: {len(filters)} "
+                        f"Too many {stage} guardrails: {len(filters)} "
                         f"(max: {self.limits.MAX_FILTERS_PER_PIPELINE})"
                     )
 
@@ -514,7 +514,7 @@ input_validator = InputValidator()
 # Update all filter base classes to include validation:
 
 # src/stinger/core/base_filter.py
-class BaseFilter:
+class BaseGuardrail:
     def __init__(self, config: Dict[str, Any]):
         self.config = config
         input_validator.validate_pipeline_config({'pipeline': {'input': [config]}})
@@ -598,19 +598,19 @@ The architecture analysis revealed **two competing inheritance patterns** runnin
 #### **Current Duplication Analysis:**
 **Exact Duplicate Files Identified (MD5 checksums):**
 ```
-src/filters/keyword_block.py == src/stinger/filters/keyword_block.py
-src/filters/length_filter.py == src/stinger/filters/length_filter.py
-src/filters/regex_filter.py == src/stinger/filters/regex_filter.py
-src/filters/url_filter.py == src/stinger/filters/url_filter.py
-src/filters/content_moderation_filter.py == src/stinger/filters/content_moderation_filter.py
-src/filters/simple_pii_detection_filter.py == src/stinger/filters/simple_pii_detection_filter.py
-src/filters/simple_toxicity_detection_filter.py == src/stinger/filters/simple_toxicity_detection_filter.py
-src/filters/simple_code_generation_filter.py == src/stinger/filters/simple_code_generation_filter.py
+src/filters/keyword_block.py == src/stinger/guardrails/keyword_block.py
+src/filters/length_filter.py == src/stinger/guardrails/length_filter.py
+src/filters/regex_filter.py == src/stinger/guardrails/regex_filter.py
+src/filters/url_filter.py == src/stinger/guardrails/url_filter.py
+src/filters/content_moderation_filter.py == src/stinger/guardrails/content_moderation_filter.py
+src/filters/simple_pii_detection_filter.py == src/stinger/guardrails/simple_pii_detection_filter.py
+src/filters/simple_toxicity_detection_filter.py == src/stinger/guardrails/simple_toxicity_detection_filter.py
+src/filters/simple_code_generation_filter.py == src/stinger/guardrails/simple_code_generation_filter.py
 ```
 
 **Configuration Duplication:**
 ```
-src/filters/configs/ai_pii_detection.yaml == src/stinger/filters/configs/ai_pii_detection.yaml
+src/filters/configs/ai_pii_detection.yaml == src/stinger/guardrails/configs/ai_pii_detection.yaml
 src/core/configs/models.yaml == src/stinger/core/configs/models.yaml
 ```
 
@@ -717,13 +717,13 @@ stinger = "stinger.cli:main"  # Ensure correct path
 
 #### **Current Inheritance Chaos Analysis:**
 
-**BaseFilter Pattern (Lines of Code: 1,247):**
+**BaseGuardrail Pattern (Lines of Code: 1,247):**
 ```python
-# Files using BaseFilter:
-- src/stinger/filters/length_filter.py (119 lines)
-- src/stinger/filters/regex_filter.py (472 lines) 
-- src/stinger/filters/url_filter.py (377 lines)
-- src/stinger/filters/keyword_block.py (272 lines)
+# Files using BaseGuardrail:
+- src/stinger/guardrails/length_filter.py (119 lines)
+- src/stinger/guardrails/regex_filter.py (472 lines) 
+- src/stinger/guardrails/url_filter.py (377 lines)
+- src/stinger/guardrails/keyword_block.py (272 lines)
 
 # Interface:
 async def run(self, content: str) -> FilterResult
@@ -733,22 +733,22 @@ async def run(self, content: str) -> FilterResult
 **GuardrailInterface Pattern (Lines of Code: 2,891):**
 ```python
 # Files using GuardrailInterface:
-- src/stinger/filters/content_moderation_filter.py (184 lines)
-- src/stinger/filters/ai_pii_detection_filter.py (184 lines)
-- src/stinger/filters/ai_toxicity_detection_filter.py (181 lines)
-- src/stinger/filters/ai_code_generation_filter.py (182 lines)
-- src/stinger/filters/simple_pii_detection_filter.py (293 lines)
-- src/stinger/filters/simple_toxicity_detection_filter.py (289 lines)
-- src/stinger/filters/simple_code_generation_filter.py (290 lines)
+- src/stinger/guardrails/content_moderation_filter.py (184 lines)
+- src/stinger/guardrails/ai_pii_detection_filter.py (184 lines)
+- src/stinger/guardrails/ai_toxicity_detection_filter.py (181 lines)
+- src/stinger/guardrails/ai_code_generation_filter.py (182 lines)
+- src/stinger/guardrails/simple_pii_detection_filter.py (293 lines)
+- src/stinger/guardrails/simple_toxicity_detection_filter.py (289 lines)
+- src/stinger/guardrails/simple_code_generation_filter.py (290 lines)
 
 # Interface:
 async def analyze(self, content: str) -> GuardrailResult  
 # Returns: GuardrailResult with blocked (bool)
 ```
 
-**TopicFilter - The Problematic Dual Inheritance:**
+**TopicGuardrail - The Problematic Dual Inheritance:**
 ```python
-# Line 17: class TopicFilter(BaseFilter):
+# Line 17: class TopicGuardrail(BaseGuardrail):
 # Line 175: async def run(self, content: str) -> FilterResult:
 # Line 354: def analyze(self, content: str) -> Dict[str, Any]:
 # This creates ambiguity and maintenance nightmares
@@ -772,11 +772,11 @@ from typing import Dict, Any, Optional
 from .guardrail_interface import GuardrailInterface, GuardrailResult
 
 class MigratedFilter(GuardrailInterface):
-    """Base class for filters migrated from BaseFilter to GuardrailInterface."""
+    """Base class for filters migrated from BaseGuardrail to GuardrailInterface."""
     
     def __init__(self, config: Dict[str, Any]):
         super().__init__(config)
-        self.action = config.get('action', 'block')  # Preserve BaseFilter behavior
+        self.action = config.get('action', 'block')  # Preserve BaseGuardrail behavior
         self.on_error = config.get('on_error', 'block')
     
     async def analyze(self, content: str) -> GuardrailResult:
@@ -826,14 +826,14 @@ class MigratedFilter(GuardrailInterface):
 
 **Example: Length Filter Migration**
 ```python
-# Before (BaseFilter pattern):
-class LengthFilter(BaseFilter):
+# Before (BaseGuardrail pattern):
+class LengthGuardrail(BaseGuardrail):
     async def run(self, content: str) -> FilterResult:
         # ... existing logic
         return FilterResult(action='allow', confidence=1.0, reason='...')
 
 # After (GuardrailInterface pattern):
-class LengthFilter(MigratedFilter):
+class LengthGuardrail(MigratedFilter):
     async def run(self, content: str) -> FilterResult:
         # Keep existing logic unchanged for now
         # ... existing logic  
@@ -842,10 +842,10 @@ class LengthFilter(MigratedFilter):
     # analyze() method automatically provided by MigratedFilter
 ```
 
-**Phase 3: Update TopicFilter**
+**Phase 3: Update TopicGuardrail**
 ```python
-# Current problematic TopicFilter fix:
-class TopicFilter(GuardrailInterface):  # Single inheritance only
+# Current problematic TopicGuardrail fix:
+class TopicGuardrail(GuardrailInterface):  # Single inheritance only
     def __init__(self, config: Dict[str, Any]):
         super().__init__(config)
         # Consolidate initialization logic
@@ -879,7 +879,7 @@ class TopicFilter(GuardrailInterface):  # Single inheritance only
 
 **1. API Key Initialization (100% identical):**
 ```python
-# Found in all 3 AI filters:
+# Found in all 3 AI guardrails:
 try:
     self.api_key = get_openai_key()
     if not self.api_key:
@@ -895,7 +895,7 @@ except Exception as e:
 
 **2. Model Factory Setup (100% identical):**
 ```python
-# Found in all 3 AI filters:
+# Found in all 3 AI guardrails:
 try:
     self.model_factory = ModelFactory()
     self.openai_adapter = self.model_factory.get_adapter('openai', self.api_key)
@@ -922,7 +922,7 @@ async def _fallback_result(self, content: str, error: str = "AI analysis failed"
 
 **New Base AI Filter Architecture:**
 ```python
-# src/stinger/filters/base_ai_filter.py
+# src/stinger/guardrails/base_ai_filter.py
 from abc import ABC, abstractmethod
 from typing import Dict, Any, Optional, Type, List
 from enum import Enum
@@ -940,7 +940,7 @@ class AIFilterType(Enum):
     CONTENT_MODERATION = "content_moderation"
     PROMPT_INJECTION = "prompt_injection"
 
-class BaseAIFilter(GuardrailInterface, ABC):
+class BaseAIGuardrail(GuardrailInterface, ABC):
     """Consolidated base class for all AI-powered filters."""
     
     def __init__(self, name: str, guardrail_type: GuardrailType, 
@@ -1090,15 +1090,15 @@ class BaseAIFilter(GuardrailInterface, ABC):
 
 # Specific filter implementations now become much smaller:
 
-class AIPIIDetectionFilter(BaseAIFilter):
+class AIPIIDetectionGuardrail(BaseAIGuardrail):
     """AI-powered PII detection filter - consolidated implementation."""
     
     def __init__(self, name: str, config: Dict[str, Any]):
         super().__init__(name, GuardrailType.PII_DETECTION, AIFilterType.PII_DETECTION, config)
     
     def _get_fallback_filter_class(self) -> Optional[Type]:
-        from .simple_pii_detection_filter import SimplePIIDetectionFilter
-        return SimplePIIDetectionFilter
+        from .simple_pii_detection_filter import SimplePIIDetectionGuardrail
+        return SimplePIIDetectionGuardrail
     
     def _load_ai_prompts(self) -> None:
         """Load PII detection prompts."""
@@ -1145,7 +1145,7 @@ Response format: {{"detected": boolean, "confidence": float, "types": ["types"],
             # Fall back to simple detection
             raise Exception(f"AI response parsing failed: {e}")
 
-# Similarly implement AIToxicityDetectionFilter and AICodeGenerationFilter
+# Similarly implement AIToxicityDetectionGuardrail and AICodeGenerationGuardrail
 # Each becomes ~50 lines instead of 180+ lines
 ```
 
@@ -1269,7 +1269,7 @@ REGEX_FILTER_RULES = COMMON_FILTER_RULES + [
 
 # Updated base classes with standardized validation:
 
-class ValidatedFilter(ABC):
+class ValidatedGuardrail(ABC):
     """Base class with standardized validation."""
     
     def __init__(self, config: Dict[str, Any]):
@@ -1293,7 +1293,7 @@ class ValidatedFilter(ABC):
 
 # Example updated filter implementation:
 
-class LengthFilter(ValidatedFilter, MigratedFilter):
+class LengthGuardrail(ValidatedGuardrail, MigratedFilter):
     """Length filter with standardized validation."""
     
     def get_validation_rules(self) -> List[ValidationRule]:

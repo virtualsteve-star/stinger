@@ -23,7 +23,7 @@ Phase 5g has been successfully completed, delivering enhanced prompt injection d
 - **Backward Compatibility**: 100% backward compatibility maintained - existing filters unchanged
 
 ### 2. Technical Implementation
-- **Enhanced PromptInjectionFilter**: Extended existing filter with conversation context support
+- **Enhanced PromptInjectionGuardrail**: Extended existing filter with conversation context support
 - **Context Preparation Strategies**: Implemented recent, suspicious, and mixed context selection strategies
 - **Long Conversation Management**: Token limits and intelligent truncation for long conversations
 - **Performance Optimization**: <5ms additional latency for conversation context processing
@@ -42,7 +42,7 @@ Phase 5g has been successfully completed, delivering enhanced prompt injection d
 ## Deliverables Completed
 
 ### Core Implementation
-- ✅ Enhanced `PromptInjectionFilter` with conversation context support
+- ✅ Enhanced `PromptInjectionGuardrail` with conversation context support
 - ✅ Multi-turn pattern detection algorithms
 - ✅ Context preparation with configurable strategies
 - ✅ Long conversation management with token limits

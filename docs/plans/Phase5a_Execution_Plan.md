@@ -29,7 +29,7 @@ Before implementing the individual filters, we'll create a centralized model con
 models:
   default: "gpt-4.1-nano"  # Always use gpt-4.1-nano, NOT gpt-4o-mini
   
-  filters:
+  guardrails:
     content_moderation: "gpt-4.1-nano"
     prompt_injection: "gpt-4.1-nano"
     pii_detection: "gpt-4.1-nano"
@@ -109,7 +109,7 @@ class ModelFactory:
             # Fallback to default configuration
             return {
                 'default': 'gpt-4.1-nano',
-                'filters': {
+                "guardrails": {
                     'content_moderation': 'gpt-4.1-nano',
                     'prompt_injection': 'gpt-4.1-nano',
                     'pii_detection': 'gpt-4.1-nano',
@@ -123,9 +123,9 @@ class ModelFactory:
                 }
             }
     
-    def create_model_provider(self, filter_type: str, api_key: str) -> ModelProvider:
+    def create_model_provider(self, guardrail_type: str, api_key: str) -> ModelProvider:
         """Create a model provider for a specific filter type."""
-        model_name = self.config['filters'].get(filter_type, self.config['default'])
+        model_name = self.config['filters'].get(guardrail_type, self.config['default'])
         settings = self.config['settings']
         
         return OpenAIModelProvider(
@@ -134,9 +134,9 @@ class ModelFactory:
             **settings
         )
     
-    def get_model_name(self, filter_type: str) -> str:
+    def get_model_name(self, guardrail_type: str) -> str:
         """Get the model name for a specific filter type."""
-        return self.config['filters'].get(filter_type, self.config['default'])
+        return self.config['filters'].get(guardrail_type, self.config['default'])
 
 ### Filter Implementation Strategy
 
@@ -158,7 +158,7 @@ Each filter category will have two implementations:
 
 #### Simple PII Detection Filter
 ```python
-class SimplePIIDetectionFilter(GuardrailInterface):
+class SimplePIIDetectionGuardrail(GuardrailInterface):
     """Regex-based PII detection filter."""
     
     def __init__(self, name: str, config: Dict[str, Any]):
@@ -214,7 +214,7 @@ class SimplePIIDetectionFilter(GuardrailInterface):
 
 #### AI-Based PII Detection Filter
 ```python
-class AIPIIDetectionFilter(GuardrailInterface):
+class AIPIIDetectionGuardrail(GuardrailInterface):
     """AI-based PII detection filter using centralized model configuration."""
     
     def __init__(self, name: str, config: Dict[str, Any]):
@@ -298,7 +298,7 @@ Text to analyze: {content}
     
     def _fallback_result(self, content: str, error: str = "AI analysis failed") -> GuardrailResult:
         """Fallback to simple regex detection when AI fails."""
-        simple_filter = SimplePIIDetectionFilter(self.name, {'confidence_threshold': self.confidence_threshold})
+        simple_filter = SimplePIIDetectionGuardrail(self.name, {'confidence_threshold': self.confidence_threshold})
         return await simple_filter.analyze(content)
 ```
 
@@ -306,7 +306,7 @@ Text to analyze: {content}
 
 #### Simple Toxicity Detection Filter
 ```python
-class SimpleToxicityDetectionFilter(GuardrailInterface):
+class SimpleToxicityDetectionGuardrail(GuardrailInterface):
     """Regex-based toxicity detection filter."""
     
     def __init__(self, name: str, config: Dict[str, Any]):
@@ -376,7 +376,7 @@ class SimpleToxicityDetectionFilter(GuardrailInterface):
 
 #### AI-Based Toxicity Detection Filter
 ```python
-class AIToxicityDetectionFilter(GuardrailInterface):
+class AIToxicityDetectionGuardrail(GuardrailInterface):
     """AI-based toxicity detection filter using centralized model configuration."""
     
     def __init__(self, name: str, config: Dict[str, Any]):
@@ -457,7 +457,7 @@ Text to analyze: {content}
     
     def _fallback_result(self, content: str, error: str = "AI analysis failed") -> GuardrailResult:
         """Fallback to simple regex detection when AI fails."""
-        simple_filter = SimpleToxicityDetectionFilter(self.name, {'confidence_threshold': self.confidence_threshold})
+        simple_filter = SimpleToxicityDetectionGuardrail(self.name, {'confidence_threshold': self.confidence_threshold})
         return await simple_filter.analyze(content)
 ```
 
@@ -465,7 +465,7 @@ Text to analyze: {content}
 
 #### Simple Code Generation Filter
 ```python
-class SimpleCodeGenerationFilter(GuardrailInterface):
+class SimpleCodeGenerationGuardrail(GuardrailInterface):
     """Regex-based code generation detection filter."""
     
     def __init__(self, name: str, config: Dict[str, Any]):
@@ -545,7 +545,7 @@ class SimpleCodeGenerationFilter(GuardrailInterface):
 
 #### AI-Based Code Generation Filter
 ```python
-class AICodeGenerationFilter(GuardrailInterface):
+class AICodeGenerationGuardrail(GuardrailInterface):
     """AI-based code generation detection filter using centralized model configuration."""
     
     def __init__(self, name: str, config: Dict[str, Any]):
@@ -627,7 +627,7 @@ Text to analyze: {content}
     
     def _fallback_result(self, content: str, error: str = "AI analysis failed") -> GuardrailResult:
         """Fallback to simple regex detection when AI fails."""
-        simple_filter = SimpleCodeGenerationFilter(self.name, {'confidence_threshold': self.confidence_threshold})
+        simple_filter = SimpleCodeGenerationGuardrail(self.name, {'confidence_threshold': self.confidence_threshold})
         return await simple_filter.analyze(content)
 ```
 
@@ -727,7 +727,7 @@ Text to analyze: {content}
 models:
   default: "gpt-4.1-nano"  # Always use gpt-4.1-nano, NOT gpt-4o-mini
   
-  filters:
+  guardrails:
     content_moderation: "gpt-4.1-nano"
     prompt_injection: "gpt-4.1-nano"
     pii_detection: "gpt-4.1-nano"
@@ -742,7 +742,7 @@ models:
 
 ### Simple PII Detection Configuration
 ```yaml
-filters:
+guardrails:
   - name: "simple_pii_detection"
     type: "simple_pii_detection"
     enabled: true
@@ -753,7 +753,7 @@ filters:
 
 ### AI-Based PII Detection Configuration
 ```yaml
-filters:
+guardrails:
   - name: "ai_pii_detection"
     type: "ai_pii_detection"
     enabled: true
@@ -765,7 +765,7 @@ filters:
 
 ### Simple Toxicity Detection Configuration
 ```yaml
-filters:
+guardrails:
   - name: "simple_toxicity_detection"
     type: "simple_toxicity_detection"
     enabled: true
@@ -776,7 +776,7 @@ filters:
 
 ### AI-Based Toxicity Detection Configuration
 ```yaml
-filters:
+guardrails:
   - name: "ai_toxicity_detection"
     type: "ai_toxicity_detection"
     enabled: true
@@ -788,7 +788,7 @@ filters:
 
 ### Simple Code Generation Configuration
 ```yaml
-filters:
+guardrails:
   - name: "simple_code_generation"
     type: "simple_code_generation"
     enabled: true
@@ -800,7 +800,7 @@ filters:
 
 ### AI-Based Code Generation Configuration
 ```yaml
-filters:
+guardrails:
   - name: "ai_code_generation"
     type: "ai_code_generation"
     enabled: true
@@ -812,7 +812,7 @@ filters:
 
 ### Comprehensive Configuration (Both Simple and AI)
 ```yaml
-filters:
+guardrails:
   # Simple filters for speed and reliability
   - name: "simple_pii_detection"
     type: "simple_pii_detection"

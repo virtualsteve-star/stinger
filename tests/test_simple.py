@@ -4,11 +4,11 @@ import os
 import pytest
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-from src.stinger.filters.regex_filter import RegexFilter
+from src.stinger.guardrails.regex_guardrail import RegexGuardrail
 
 @pytest.mark.asyncio
 async def test_regex_filter():
-    print("🧪 Testing RegexFilter...")
+    print("🧪 Testing RegexGuardrail...")
     
     # Test configuration
     config = {
@@ -20,7 +20,7 @@ async def test_regex_filter():
         'case_sensitive': False
     }
     
-    filter_obj = RegexFilter(config)
+    guardrail_obj = RegexGuardrail(config)
     
     # Test cases
     test_cases = [
@@ -32,15 +32,16 @@ async def test_regex_filter():
     
     for i, (input_text, expected) in enumerate(test_cases, 1):
         try:
-            result = await filter_obj.analyze(input_text)
-            if result.blocked == expected:
+            result = await guardrail_obj.analyze(input_text)
+            action = result.get_action(config)
+            if action == expected:
                 print(f"✅ Test {i}: PASS - '{input_text[:30]}...'")
             else:
-                print(f"❌ Test {i}: FAIL - '{input_text[:30]}...' -> {result.blocked} (expected {expected})")
+                print(f"❌ Test {i}: FAIL - '{input_text[:30]}...' -> {action} (expected {expected})")
         except Exception as e:
             print(f"💥 Test {i}: ERROR - {str(e)}")
     
-    print("✅ RegexFilter test completed!")
+    print("✅ RegexGuardrail test completed!")
 
 if __name__ == "__main__":
     asyncio.run(test_regex_filter()) 

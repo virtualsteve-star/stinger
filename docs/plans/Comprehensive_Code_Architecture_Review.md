@@ -17,7 +17,7 @@ The Stinger framework demonstrates **strong architectural foundations** and **so
 - **Missing input validation limits** across filters
 
 ### 2. **ARCHITECTURAL INCONSISTENCIES (HIGH PRIORITY)**
-- **Dual inheritance patterns** (BaseFilter vs GuardrailInterface)
+- **Dual inheritance patterns** (BaseGuardrail vs GuardrailInterface)
 - **Competing return types** (FilterResult vs GuardrailResult)
 - **Inconsistent configuration validation** across components
 
@@ -150,7 +150,7 @@ The Stinger framework has **excellent potential** and addresses a **critical nee
 - **Fix:** Remove plaintext fallback, restrict key export to development only
 
 **Regex Injection Vulnerability** (MEDIUM-HIGH RISK)
-- **Location:** `src/stinger/filters/regex_filter.py` (Lines 16-21)
+- **Location:** `src/stinger/guardrails/regex_filter.py` (Lines 16-21)
 - **Issue:** User-controlled regex patterns compiled without sanitization
 - **Risk:** ReDoS attacks, resource exhaustion
 - **Fix:** Add pattern complexity limits, ReDoS detection
@@ -172,15 +172,15 @@ The Stinger framework has **excellent potential** and addresses a **critical nee
 #### **Critical Architectural Issues**
 
 **Dual Inheritance Architecture Problem**
-- **Issue:** Filters use two incompatible base classes (BaseFilter vs GuardrailInterface)
-- **Examples:** TopicFilter inherits from BOTH, creating confusion
+- **Issue:** Filters use two incompatible base classes (BaseGuardrail vs GuardrailInterface)
+- **Examples:** TopicGuardrail inherits from BOTH, creating confusion
 - **Impact:** Inconsistent interfaces, integration complexity
 - **Fix:** Standardize on GuardrailInterface, migrate all filters
 
 **Massive AI Filter Duplication**
 - **Files:** `ai_pii_detection_filter.py`, `ai_toxicity_detection_filter.py`, `ai_code_generation_filter.py`
 - **Issue:** Nearly identical implementations with 70% duplicate code
-- **Fix:** Create BaseAIFilter with template system
+- **Fix:** Create BaseAIGuardrail with template system
 
 **Configuration Validation Inconsistencies**
 - **Pattern Variations:** Some filters validate in `__init__`, others don't validate at all

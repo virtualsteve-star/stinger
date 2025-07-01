@@ -871,11 +871,11 @@ prompt_injection_filter:
 
 #### Example (Python)
 ```python
-from stinger.filters.prompt_injection_filter import PromptInjectionFilter
+from stinger.guardrails.prompt_injection_filter import PromptInjectionGuardrail
 from stinger.core.conversation import Conversation
 
 config = {...}  # See above
-filter = PromptInjectionFilter("my_filter", config)
+filter = PromptInjectionGuardrail("my_filter", config)
 
 # Create a conversation
 conv = Conversation.human_ai("user_123", "gpt-4")

@@ -251,18 +251,18 @@ class ConfigLoader:
         else:
             self.config = config  # Ensure get_pipeline_config works
         
-        from ..filters import FILTER_REGISTRY
+        from ..guardrails import GUARDRAIL_REGISTRY
         
-        filters = []
+        guardrails = []
         pipeline_config = self.get_pipeline_config('input')
         
-        for filter_config in pipeline_config:
-            filter_type = filter_config.get('type')
-            if filter_type not in FILTER_REGISTRY:
-                raise ConfigurationError(f"Unknown filter type: {filter_type}")
+        for guardrail_config in pipeline_config:
+            guardrail_type = guardrail_config.get('type')
+            if guardrail_type not in GUARDRAIL_REGISTRY:
+                raise ConfigurationError(f"Unknown filter type: {guardrail_type}")
             
-            filter_class = FILTER_REGISTRY[filter_type]
-            filter_instance = filter_class(config=filter_config)
-            filters.append(filter_instance)
+            filter_class = GUARDRAIL_REGISTRY[guardrail_type]
+            guardrail_instance = filter_class(config=guardrail_config)
+            filters.append(guardrail_instance)
         
         return filters 

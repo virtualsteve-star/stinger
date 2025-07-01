@@ -174,7 +174,7 @@ class HealthMonitor:
         if not self.pipeline:
             return []
         
-        filters = []
+        guardrails = []
         
         # Get input guardrails
         for guardrail in self.pipeline.input_pipeline:
@@ -290,7 +290,7 @@ class HealthMonitor:
             
             with self.lock:
                 for event in self.events:
-                    if event.source == 'filter' and event.details and event.details.get('filter_name') == guardrail.name:
+                    if event.source == 'filter' and event.details and event.details.get('guardrail_name') == guardrail.name:
                         if event.event_type == 'error':
                             error_count += 1
                         elif event.event_type == 'warning':

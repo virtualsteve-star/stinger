@@ -13,7 +13,7 @@ This demo showcases the topic filtering capabilities including:
 import asyncio
 import yaml
 from pathlib import Path
-from stinger.filters.topic_filter import TopicFilter
+from stinger.guardrails.topic_filter import TopicGuardrail
 from stinger.core.pipeline import GuardrailPipeline
 
 
@@ -94,23 +94,23 @@ class TopicFilterDemo:
         print(f"{'='*60}")
         
         # Create filter
-        filter_obj = TopicFilter(config)
-        print(f"Filter: {filter_obj.name}")
-        print(f"Mode: {filter_obj.mode}")
-        print(f"Allow topics: {len(filter_obj.allow_topics)}")
-        print(f"Deny topics: {len(filter_obj.deny_topics)}")
-        print(f"Confidence threshold: {filter_obj.confidence_threshold}")
-        print(f"Case sensitive: {filter_obj.case_sensitive}")
-        print(f"Use regex: {filter_obj.use_regex}")
+        guardrail_obj = TopicGuardrail(config)
+        print(f"Filter: {guardrail_obj.name}")
+        print(f"Mode: {guardrail_obj.mode}")
+        print(f"Allow topics: {len(guardrail_obj.allow_topics)}")
+        print(f"Deny topics: {len(guardrail_obj.deny_topics)}")
+        print(f"Confidence threshold: {guardrail_obj.confidence_threshold}")
+        print(f"Case sensitive: {guardrail_obj.case_sensitive}")
+        print(f"Use regex: {guardrail_obj.use_regex}")
         
         # Test content
         print(f"\nTesting {len(self.test_content)} content samples:")
         print("-" * 40)
         
         for i, content in enumerate(self.test_content, 1):
-            result = await filter_obj.analyze(content)
+            result = await guardrail_obj.analyze(content)
             
-            status = "🚫 BLOCKED" if result.blocked == True else "✅ ALLOWED"
+            status = "🚫 BLOCKED" if result.blocked else "✅ ALLOWED"
             print(f"{i:2d}. {status} | {content[:50]}{'...' if len(content) > 50 else ''}")
             print(f"    Reason: {result.reason}")
             print(f"    Confidence: {result.confidence:.2f}")
@@ -169,7 +169,7 @@ class TopicFilterDemo:
                 "Can you help me with support issues?"
             ]
             
-            print("Testing pipeline with multiple filters:")
+            print("Testing pipeline with multiple guardrails:")
             print("-" * 40)
             
             for i, content in enumerate(test_content, 1):
@@ -206,7 +206,7 @@ class TopicFilterDemo:
             'confidence_threshold': 0.0  # Show all matches
         }
         
-        filter_obj = TopicFilter(config)
+        guardrail_obj = TopicGuardrail(config)
         
         # Test content
         analysis_content = [
@@ -223,7 +223,7 @@ class TopicFilterDemo:
             print(f"\n{i}. Content: {content}")
             
             # Analyze content
-            analysis = filter_obj.analyze(content)
+            analysis = guardrail_obj.analyze(content)
             
             print(f"   Confidence: {analysis['confidence']:.2f}")
             print(f"   Allow matches: {analysis['matches']['allow']}")
@@ -248,7 +248,7 @@ class TopicFilterDemo:
             'confidence_threshold': 0.5
         }
         
-        filter_obj = TopicFilter(config)
+        guardrail_obj = TopicGuardrail(config)
         
         # Performance test
         import time
@@ -266,7 +266,7 @@ class TopicFilterDemo:
         start_time = time.time()
         
         for i, content in enumerate(test_content, 1):
-            result = await filter_obj.analyze(content)
+            result = await guardrail_obj.analyze(content)
             
             print(f"{i}. Content: {content[:40]}...")
             print(f"   Action: {result.blocked}")

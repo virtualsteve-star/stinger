@@ -682,7 +682,7 @@ class GuardrailPipeline:
                     decision = "allow"
                 
                 audit.log_guardrail_decision(
-                    filter_name=guardrail.name,
+                    guardrail_name=guardrail.name,
                     decision=decision,
                     reason=result.reason,
                     user_id=user_id or "",
@@ -716,7 +716,7 @@ class GuardrailPipeline:
                 user_id = getattr(conversation, 'initiator', None) if conversation else None
                 
                 audit.log_guardrail_decision(
-                    filter_name=guardrail.name,
+                    guardrail_name=guardrail.name,
                     decision="error",
                     reason=f"Error: {str(e)}",
                     user_id=user_id or "",
