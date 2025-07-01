@@ -9,12 +9,8 @@ This is NOT developer debug logging - this tracks security decisions for audit p
 """
 
 import os
-import sys
 import json
 import tempfile
-
-# Add src to path for running example
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'src'))
 
 import stinger
 

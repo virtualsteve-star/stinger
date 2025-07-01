@@ -11,14 +11,14 @@ from collections import defaultdict
 from typing import Dict, List, Optional
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 
-from src.core.config import ConfigLoader
-from src.core.pipeline import FilterPipeline
-from src.filters.pass_through import PassThroughGuardrail
-from src.filters.keyword_block import KeywordBlockGuardrail
-from src.filters.keyword_list import KeywordListGuardrail
-from src.filters.regex_filter import RegexGuardrail
-from src.filters.length_filter import LengthGuardrail
-from src.filters.url_filter import URLGuardrail
+from src.stinger.core.config import ConfigLoader
+from src.stinger.core.pipeline import GuardrailPipeline
+from src.stinger.guardrails.pass_through import PassThroughGuardrail
+from src.stinger.guardrails.keyword_block import KeywordBlockGuardrail
+from src.stinger.guardrails.keyword_list import KeywordListGuardrail
+from src.stinger.guardrails.regex_filter import RegexGuardrail
+from src.stinger.guardrails.length_guardrail import LengthGuardrail
+from src.stinger.guardrails.url_filter import URLGuardrail
 
 def load_jsonl(path):
     """Load test cases from JSONL file."""
@@ -47,8 +47,8 @@ class BaseConversationSimulator:
         self.debug = debug
         self.pipeline = self._create_pipeline()
         
-    def _create_pipeline(self) -> FilterPipeline:
-        """Create filter pipeline from configuration."""
+    def _create_pipeline(self) -> GuardrailPipeline:
+        """Create guardrail pipeline from configuration."""
         filter_configs = self.config_loader.get_pipeline_config('input')
         guardrails = []
         
@@ -57,13 +57,13 @@ class BaseConversationSimulator:
             filter_cls = GUARDRAIL_REGISTRY.get(guardrail_type)
             if filter_cls:
                 try:
-                    filters.append(filter_cls(fc))
+                    guardrails.append(filter_cls(fc))
                 except Exception as e:
-                    print(f"❌ Failed to create filter {fc.get('name')}: {str(e)}")
+                    print(f"❌ Failed to create guardrail {fc.get('name')}: {str(e)}")
             else:
-                print(f"⚠️ Unknown filter type: {guardrail_type}")
+                print(f"⚠️ Unknown guardrail type: {guardrail_type}")
         
-        return FilterPipeline(filters, debug=self.debug)
+        return GuardrailPipeline(guardrails, debug=self.debug)
     
     async def simulate_conversation(self, test_cases: List[dict], show_conversation: bool = True, debug: bool = False) -> Dict:
         """Simulate a conversation and return results."""

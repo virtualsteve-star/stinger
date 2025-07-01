@@ -56,11 +56,11 @@ class BaseAIGuardrail(GuardrailInterface):
         if self.api_key:
             try:
                 self.model_provider = self.model_factory.create_model_provider(detection_type, self.api_key)
-                logger.info(f"Initialized AI {detection_type} filter with centralized API key")
+                logger.info(f"Initialized AI {detection_type} guardrail with centralized API key")
             except Exception as e:
                 logger.error(f"Failed to create model provider for {detection_type}: {e}")
         else:
-            logger.warning(f"No OpenAI API key available for AI {detection_type} filter")
+            logger.warning(f"No OpenAI API key available for AI {detection_type} guardrail")
     
     def _get_detection_type(self) -> str:
         """Get the detection type string for model factory."""
@@ -105,7 +105,7 @@ class BaseAIGuardrail(GuardrailInterface):
             return GuardrailResult(
                 blocked=False,
                 confidence=0.0,
-                reason=f"AI {detection_type} filter disabled",
+                reason=f"AI {detection_type} guardrail disabled",
                 details={'method': 'ai', 'enabled': False},
                 guardrail_name=self.name,
                 guardrail_type=self.guardrail_type
@@ -240,5 +240,5 @@ class BaseAIGuardrail(GuardrailInterface):
             return True
         except Exception as e:
             detection_type = self._get_detection_type().replace('_', ' ')
-            logger.error(f"Failed to update AI {detection_type} filter config: {e}")
+            logger.error(f"Failed to update AI {detection_type} guardrail config: {e}")
             return False

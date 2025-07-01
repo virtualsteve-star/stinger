@@ -24,7 +24,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent / "src"))
 
 from stinger.core.conversation import Conversation
 from stinger.core.pipeline import GuardrailPipeline
-from stinger.utils.exceptions import FilterInitializationError, ConfigurationError
+from stinger.utils.exceptions import GuardrailInitializationError, ConfigurationError
 
 
 class TestConversationThreadSafety:

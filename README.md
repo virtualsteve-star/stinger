@@ -302,7 +302,7 @@ python conversation_aware_prompt_injection_demo.py
 ### Installation from Source
 
 ```bash
-git clone https://github.com/your-org/stinger.git
+git clone https://github.com/virtualsteve-star/stinger.git
 cd stinger
 pip install -e .
 ```
@@ -339,8 +339,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 🆘 Support
 
 - 📖 [Documentation](docs/)
-- 🐛 [Issues](https://github.com/your-org/stinger/issues)
-- 💬 [Discussions](https://github.com/your-org/stinger/discussions)
+- 🐛 [Issues](https://github.com/virtualsteve-star/stinger/issues)
 
 ---
 

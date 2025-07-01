@@ -9,7 +9,7 @@ import tempfile
 import os
 from pathlib import Path
 from src.stinger.guardrails.keyword_list import KeywordListGuardrail
-from src.stinger.utils.exceptions import FilterError
+from src.stinger.utils.exceptions import GuardrailError
 
 @pytest.mark.asyncio
 async def test_inline_keywords_basic():

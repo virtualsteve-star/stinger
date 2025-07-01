@@ -1,10 +1,13 @@
 import os
+import logging
 from pathlib import Path
 from typing import List, Optional
 from ..core.guardrail_interface import GuardrailInterface, GuardrailResult, GuardrailType
 from ..core.config_validator import ValidationRule, KEYWORD_GUARDRAIL_RULES, ConfigValidator
 from ..core.conversation import Conversation
-from ..utils.exceptions import FilterError
+from ..utils.exceptions import GuardrailError
+
+logger = logging.getLogger(__name__)
 
 class KeywordListGuardrail(GuardrailInterface):
     """
@@ -64,14 +67,14 @@ class KeywordListGuardrail(GuardrailInterface):
                 safe_path = sanitize_path(keywords_file)
                 safe_msg = safe_error_message(e, f"loading keywords from file {safe_path}")
                 self.keywords = inline_keywords
-                print(f"⚠️ Warning: {safe_msg}")
-                print(f"   Using fallback keywords: {inline_keywords}")
+                logger.warning(f"{safe_msg}")
+                logger.warning(f"Using fallback keywords: {inline_keywords}")
         else:
             self.keywords = inline_keywords
         
         # Validate keywords
         if not self.keywords:
-            raise FilterError("No keywords provided for KeywordListGuardrail")
+            raise GuardrailError("No keywords provided for KeywordListGuardrail")
         
         # Convert to lowercase for case-insensitive matching
         if not self.case_sensitive:

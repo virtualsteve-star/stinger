@@ -1,7 +1,7 @@
 """
 Centralized Model Configuration System
 
-This module provides a unified abstraction for AI models across all filters,
+This module provides a unified abstraction for AI models across all guardrails,
 ensuring consistent model usage and configuration management.
 """
 
@@ -105,7 +105,7 @@ class ModelFactory:
             }
     
     def create_model_provider(self, guardrail_type: str, api_key: str) -> ModelProvider:
-        """Create a model provider for a specific filter type."""
+        """Create a model provider for a specific guardrail type."""
         # Check both 'guardrails' and 'filters' for backward compatibility
         guardrails_config = self.config.get('guardrails', self.config.get('filters', {}))
         model_name = guardrails_config.get(guardrail_type, self.config['default'])
@@ -118,7 +118,7 @@ class ModelFactory:
         )
     
     def get_model_name(self, guardrail_type: str) -> str:
-        """Get the model name for a specific filter type."""
+        """Get the model name for a specific guardrail type."""
         # Check both 'guardrails' and 'filters' for backward compatibility
         guardrails_config = self.config.get('guardrails', self.config.get('filters', {}))
         return guardrails_config.get(guardrail_type, self.config['default'])

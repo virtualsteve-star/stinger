@@ -43,12 +43,18 @@ def main():
         print(f"   Disabled: {status.get('total_disabled', 'N/A')}")
         
         # Show individual guardrail status
-        guardrails = pipeline.get_guardrail_configs()
         print(f"\n   Individual guardrails:")
-        for name, config in guardrails.items():
-            enabled = config.get('enabled', False)
-            status_icon = "✅" if enabled else "❌"
-            print(f"      {status_icon} {name}: {'Enabled' if enabled else 'Disabled'}")
+        # Get guardrail names from status
+        input_guardrails = status.get('input', [])
+        output_guardrails = status.get('output', [])
+        all_guardrail_names = input_guardrails + output_guardrails
+        
+        for name in all_guardrail_names:
+            config = pipeline.get_guardrail_config(name)
+            if config:
+                enabled = config.get('enabled', False)
+                status_icon = "✅" if enabled else "❌"
+                print(f"      {status_icon} {name}: {'Enabled' if enabled else 'Disabled'}")
             
     except Exception as e:
         print(f"   ❌ Pipeline error: {e}")
