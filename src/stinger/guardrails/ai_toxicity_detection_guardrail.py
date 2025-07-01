@@ -2,7 +2,7 @@
 AI-Based Toxicity Detection Filter
 
 This module provides an AI-based toxicity detection filter using the BaseAIGuardrail
-with centralized model configuration and fallback to simple regex detection.
+with centralized model configuration.
 """
 
 import logging

@@ -2,7 +2,7 @@
 AI-Based PII Detection Filter
 
 This module provides an AI-based PII detection filter using the BaseAIGuardrail
-with centralized model configuration and fallback to simple regex detection.
+with centralized model configuration.
 """
 
 import logging

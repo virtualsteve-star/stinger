@@ -130,7 +130,7 @@ Analyze the text and respond with a JSON object containing:
 Text to analyze: {content}
 """
     
-    # Fallback injection keywords
+    # Keywords for simple detection (used only when on_error='warn')
     INJECTION_KEYWORDS = [
         "ignore previous", "system:", "you are now", "act as if",
         "let's play a game", "hypothetically", "dan", "jailbreak",
@@ -210,7 +210,7 @@ Text to analyze: {content}
             )
     
     def _fallback_injection_result(self, content: str) -> InjectionResult:
-        """Fallback result when injection detection fails."""
+        """Simple keyword-based detection (used only when on_error='warn')."""
         content_lower = content.lower()
         found_indicators = [kw for kw in self.INJECTION_KEYWORDS if kw in content_lower]
         
@@ -220,7 +220,7 @@ Text to analyze: {content}
                 risk_percent=60,
                 level="medium",
                 indicators=found_indicators,
-                comment="Fallback detection based on keywords",
+                comment="Simple keyword detection (not AI)",
                 confidence=0.6
             )
         else:

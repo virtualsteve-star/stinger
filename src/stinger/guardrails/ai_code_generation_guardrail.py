@@ -2,7 +2,7 @@
 AI-Based Code Generation Filter
 
 This module provides an AI-based code generation detection filter using the BaseAIGuardrail
-with centralized model configuration and fallback to simple regex detection.
+with centralized model configuration.
 """
 
 import logging
