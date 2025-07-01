@@ -155,7 +155,7 @@ class TestGuardrailFactoryAndAPIFilters:
     async def test_content_moderation_filter_unavailable(self):
         """Test content moderation filter when OpenAI is unavailable."""
         try:
-            from src.stinger.filters.content_moderation_filter import ContentModerationFilter
+            from src.stinger.guardrails.content_moderation_guardrail import ContentModerationGuardrail
             
             config = {
                 'name': 'test_moderation',
@@ -166,16 +166,16 @@ class TestGuardrailFactoryAndAPIFilters:
             }
             
             # Mock the OpenAI adapter to simulate unavailability
-            with patch('src.stinger.filters.content_moderation_filter.OpenAIAdapter') as mock_adapter_class:
+            with patch('src.stinger.guardrails.content_moderation_guardrail.OpenAIAdapter') as mock_adapter_class:
                 mock_adapter = MagicMock()
                 mock_adapter.moderate_content = AsyncMock(side_effect=Exception("API unavailable"))
                 mock_adapter_class.return_value = mock_adapter
                 
                 # Recreate the filter with mocked adapter
-                filter_instance = ContentModerationFilter('test_moderation', config)
+                guardrail_instance = ContentModerationGuardrail('test_moderation', config)
                 
                 # Test when API is unavailable
-                result = await filter_instance.analyze("test content")
+                result = await guardrail_instance.analyze("test content")
                 assert result.blocked is False  # Should allow when unavailable
                 assert "unavailable" in result.reason.lower() or "error" in result.reason.lower()
             
@@ -186,7 +186,7 @@ class TestGuardrailFactoryAndAPIFilters:
     async def test_content_moderation_filter_available(self):
         """Test content moderation filter when OpenAI is available."""
         try:
-            from src.stinger.filters.content_moderation_filter import ContentModerationFilter
+            from src.stinger.guardrails.content_moderation_guardrail import ContentModerationGuardrail
             from src.stinger.adapters.openai_adapter import ModerationResult
             
             config = {
@@ -198,7 +198,7 @@ class TestGuardrailFactoryAndAPIFilters:
             }
             
             # Mock the OpenAI adapter to simulate successful response
-            with patch('src.stinger.filters.content_moderation_filter.OpenAIAdapter') as mock_adapter_class:
+            with patch('src.stinger.guardrails.content_moderation_guardrail.OpenAIAdapter') as mock_adapter_class:
                 mock_adapter = MagicMock()
                 mock_result = ModerationResult(
                     flagged=False,
@@ -211,10 +211,10 @@ class TestGuardrailFactoryAndAPIFilters:
                 mock_adapter_class.return_value = mock_adapter
                 
                 # Recreate the filter with mocked adapter
-                filter_instance = ContentModerationFilter('test_moderation', config)
+                guardrail_instance = ContentModerationGuardrail('test_moderation', config)
                 
                 # Test when API is available
-                result = await filter_instance.analyze("test content")
+                result = await guardrail_instance.analyze("test content")
                 assert result.blocked is False  # Should allow safe content
                 assert "passed" in result.reason.lower() or "safe" in result.reason.lower()
             
@@ -225,7 +225,7 @@ class TestGuardrailFactoryAndAPIFilters:
     async def test_prompt_injection_filter_unavailable(self):
         """Test prompt injection filter when OpenAI is unavailable."""
         try:
-            from src.stinger.filters.prompt_injection_filter import PromptInjectionFilter
+            from src.stinger.guardrails.prompt_injection_guardrail import PromptInjectionGuardrail
             
             config = {
                 'name': 'test_injection',
@@ -236,16 +236,16 @@ class TestGuardrailFactoryAndAPIFilters:
             }
             
             # Mock the OpenAI adapter to simulate unavailability
-            with patch('src.stinger.filters.prompt_injection_filter.OpenAIAdapter') as mock_adapter_class:
+            with patch('src.stinger.guardrails.prompt_injection_guardrail.OpenAIAdapter') as mock_adapter_class:
                 mock_adapter = MagicMock()
-                mock_adapter.detect_prompt_injection = AsyncMock(side_effect=Exception("API unavailable"))
+                mock_adapter.complete = AsyncMock(side_effect=Exception("API unavailable"))
                 mock_adapter_class.return_value = mock_adapter
                 
                 # Recreate the filter with mocked adapter
-                filter_instance = PromptInjectionFilter('test_injection', config)
+                guardrail_instance = PromptInjectionGuardrail('test_injection', config)
                 
                 # Test when API is unavailable
-                result = await filter_instance.analyze("test content")
+                result = await guardrail_instance.analyze("test content")
                 assert result.blocked is False  # Should allow when unavailable
                 assert "unavailable" in result.reason.lower() or "error" in result.reason.lower()
             
@@ -256,8 +256,7 @@ class TestGuardrailFactoryAndAPIFilters:
     async def test_prompt_injection_filter_available(self):
         """Test prompt injection filter when OpenAI is available."""
         try:
-            from src.stinger.filters.prompt_injection_filter import PromptInjectionFilter
-            from src.stinger.adapters.openai_adapter import InjectionResult
+            from src.stinger.guardrails.prompt_injection_guardrail import PromptInjectionGuardrail, InjectionResult
             
             config = {
                 'name': 'test_injection',
@@ -268,25 +267,24 @@ class TestGuardrailFactoryAndAPIFilters:
             }
             
             # Mock the OpenAI adapter to simulate successful response
-            with patch('src.stinger.filters.prompt_injection_filter.OpenAIAdapter') as mock_adapter_class:
+            with patch('src.stinger.guardrails.prompt_injection_guardrail.OpenAIAdapter') as mock_adapter_class:
+                from src.stinger.adapters.openai_adapter import CompletionResult
                 mock_adapter = MagicMock()
-                mock_result = InjectionResult(
-                    detected=False,
-                    risk_percent=10,
-                    level="low",
-                    indicators=[],
-                    comment="No injection detected",
-                    confidence=0.1
+                mock_completion = CompletionResult(
+                    content='{"detected": false, "risk_percent": 10, "level": "low", "indicators": [], "comment": "No injection detected"}',
+                    model="gpt-4o-mini",
+                    usage={},
+                    finish_reason="stop"
                 )
                 # Make the method async
-                mock_adapter.detect_prompt_injection = AsyncMock(return_value=mock_result)
+                mock_adapter.complete = AsyncMock(return_value=mock_completion)
                 mock_adapter_class.return_value = mock_adapter
                 
                 # Recreate the filter with mocked adapter
-                filter_instance = PromptInjectionFilter('test_injection', config)
+                guardrail_instance = PromptInjectionGuardrail('test_injection', config)
                 
                 # Test when API is available
-                result = await filter_instance.analyze("test content")
+                result = await guardrail_instance.analyze("test content")
                 assert result.blocked is False  # Should allow safe content
                 assert "no prompt injection" in result.reason.lower() or "safe" in result.reason.lower()
             

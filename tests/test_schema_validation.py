@@ -238,11 +238,11 @@ class TestSchemaValidation:
             assert len(config['pipeline']['input']) == 4
             
             # Check that all filters have required fields
-            for filter_config in config['pipeline']['input']:
-                assert 'type' in filter_config
-                assert 'name' in filter_config
-                assert 'enabled' in filter_config
-                assert 'on_error' in filter_config
+            for guardrail_config in config['pipeline']['input']:
+                assert 'type' in guardrail_config
+                assert 'name' in guardrail_config
+                assert 'enabled' in guardrail_config
+                assert 'on_error' in guardrail_config
             
         finally:
             os.unlink(config_path) 

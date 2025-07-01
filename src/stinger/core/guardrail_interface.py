@@ -46,6 +46,25 @@ class GuardrailResult:
     guardrail_type: GuardrailType
     risk_level: Optional[str] = None  # "low", "medium", "high", "critical"
     indicators: Optional[List[str]] = None  # Array of evidence strings
+    
+    def get_action(self, config: Optional[Dict[str, Any]] = None) -> str:
+        """Convert boolean blocked result to action string.
+        
+        Args:
+            config: Optional configuration dict containing 'action' field
+            
+        Returns:
+            Action string: 'block', 'warn', 'allow', etc.
+        """
+        if not self.blocked:
+            return 'allow'
+        
+        # If blocked, use configured action or default to 'block'
+        if config and 'action' in config:
+            return config['action']
+        
+        # Default action for blocked content
+        return 'block'
 
 
 class GuardrailInterface(ABC):

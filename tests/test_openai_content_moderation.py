@@ -5,10 +5,10 @@ from pathlib import Path
 # Add src to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent / 'src'))
 
-from src.stinger.filters.content_moderation_filter import ContentModerationFilter
+from src.stinger.guardrails.content_moderation_guardrail import ContentModerationGuardrail
 
 async def test():
-    filter = ContentModerationFilter('test', {
+    filter = ContentModerationGuardrail('test', {
         'confidence_threshold': 0.7,
         'block_categories': ['hate', 'harassment', 'violence'],
         'on_error': 'allow'

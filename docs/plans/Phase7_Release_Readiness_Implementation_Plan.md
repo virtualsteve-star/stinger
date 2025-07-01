@@ -40,7 +40,7 @@ Transform Stinger from "good foundations with critical issues" to "production-re
 - **Timeline:** 2 days
 
 #### **7A.2: Implement Regex Pattern Security**
-- **File:** `src/stinger/filters/regex_filter.py`
+- **File:** `src/stinger/guardrails/regex_filter.py`
 - **Issue:** ReDoS vulnerability from user-controlled patterns
 - **Actions:**
   ```python
@@ -115,8 +115,8 @@ Transform Stinger from "good foundations with critical issues" to "production-re
 - **Issue:** Dual inheritance patterns causing confusion
 - **Actions:**
   1. **Choose Standard:** Migrate all filters to `GuardrailInterface`
-  2. **Update BaseFilter:** Deprecate or adapt to new pattern
-  3. **Fix TopicFilter:** Remove dual inheritance
+  2. **Update BaseGuardrail:** Deprecate or adapt to new pattern
+  3. **Fix TopicGuardrail:** Remove dual inheritance
   4. **Standardize Return Types:** Use `GuardrailResult` consistently
 - **Testing:** Update all filter tests for new interface
 - **Timeline:** 4 days
@@ -125,7 +125,7 @@ Transform Stinger from "good foundations with critical issues" to "production-re
 - **Issue:** 70% duplicate code across AI filters
 - **Actions:**
   ```python
-  class BaseAIFilter(GuardrailInterface):
+  class BaseAIGuardrail(GuardrailInterface):
       def __init__(self, name: str, guardrail_type: GuardrailType, 
                    config: Dict[str, Any], prompt_template: str, 
                    fallback_filter_class: type):

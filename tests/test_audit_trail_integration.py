@@ -88,7 +88,7 @@ class TestAuditTrailIntegration:
             
             # Check guardrail decision format
             for decision in guardrail_decisions:
-                assert "filter_name" in decision
+                assert "guardrail_name" in decision
                 assert "decision" in decision
                 assert "reason" in decision
                 assert decision["decision"] in ["block", "allow", "warn", "error"]
@@ -168,7 +168,7 @@ class TestAuditTrailIntegration:
             
             # Check decision structure
             for decision in guardrail_decisions:
-                assert "filter_name" in decision
+                assert "guardrail_name" in decision
                 assert "decision" in decision
                 assert "reason" in decision
                 assert "confidence" in decision

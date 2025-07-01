@@ -6,47 +6,30 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 from src.stinger.core.config import ConfigLoader
 from src.stinger.core.pipeline import GuardrailPipeline
-from src.stinger.filters.pass_through import PassThroughFilter
-from src.stinger.filters.keyword_block import KeywordBlockFilter
-from src.stinger.filters.regex_filter import RegexFilter
-from src.stinger.filters.length_filter import LengthFilter
-from src.stinger.filters.url_filter import URLFilter
+from src.stinger.guardrails.pass_through import PassThroughGuardrail
+from src.stinger.guardrails.keyword_block import KeywordBlockGuardrail
+from src.stinger.guardrails.regex_guardrail import RegexGuardrail
+from src.stinger.guardrails.length_guardrail import LengthGuardrail
+from src.stinger.guardrails.url_guardrail import URLGuardrail
 
 def load_jsonl(path):
     with open(path, 'r') as f:
         return [json.loads(line) for line in f if line.strip()]
 
-FILTER_REGISTRY = {
-    'pass_through': PassThroughFilter,
-    'keyword_block': KeywordBlockFilter,
-    'regex_filter': RegexFilter,
-    'length_filter': LengthFilter,
-    'url_filter': URLFilter,
+GUARDRAIL_REGISTRY = {
+    'pass_through': PassThroughGuardrail,
+    'keyword_block': KeywordBlockGuardrail,
+    'regex_filter': RegexGuardrail,
+    'length_filter': LengthGuardrail,
+    'url_filter': URLGuardrail,
 }
 
 async def run_smoke_test():
     """Run smoke test with pass-through filter."""
     print("🚀 Starting smoke test...")
     
-    # Load configuration
-    config_loader = ConfigLoader()
-    config = config_loader.load('tests/configs/minimal.yaml')
-    print("✅ Configuration loaded")
-    
-    # Create filters from config
-    filter_configs = config_loader.get_pipeline_config('input')
-    filters = []
-    for fc in filter_configs:
-        filter_type = fc.get('type')
-        filter_cls = FILTER_REGISTRY.get(filter_type)
-        if filter_cls:
-            filters.append(filter_cls(fc))
-        else:
-            print(f"⚠️ Unknown filter type: {filter_type}, skipping.")
-    print(f"✅ {len(filters)} filters created")
-    
-    # Create pipeline
-    pipeline = GuardrailPipeline(filters)
+    # Create pipeline from config
+    pipeline = GuardrailPipeline('tests/configs/minimal.yaml')
     print("✅ Pipeline created")
     
     # Load test cases from JSONL
@@ -59,12 +42,20 @@ async def run_smoke_test():
         test_input = case.get('input')
         expected = case.get('expected')
         try:
-            result = await pipeline.process(test_input)
-            if result.blocked == expected:
+            result = await pipeline.check_input_async(test_input)
+            # Convert PipelineResult to action string
+            if result['blocked']:
+                action = 'block'
+            elif result['warnings']:
+                action = 'warn'
+            else:
+                action = 'allow'
+            
+            if action == expected:
                 print(f"✅ Test {i}: PASS - '{str(test_input)[:20]}...' ({case.get('description')})")
                 passed += 1
             else:
-                print(f"❌ Test {i}: FAIL - '{str(test_input)[:20]}...' -> {result.blocked} (expected {expected})")
+                print(f"❌ Test {i}: FAIL - '{str(test_input)[:20]}...' -> {action} (expected {expected})")
         except Exception as e:
             print(f"❌ Test {i}: ERROR - '{str(test_input)[:20]}...' -> {str(e)}")
     

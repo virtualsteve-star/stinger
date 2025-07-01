@@ -391,8 +391,8 @@ from stinger.core.api_key_manager import get_openai_key     # ✅ Correct
 sys.path.insert(0, str(Path(__file__).parent.parent.parent / "src"))  # ❌ Remove entirely
 
 # In some test files:
-from src.stinger.filters.length_filter import LengthFilter  # ❌ Wrong
-from stinger.filters.length_filter import LengthFilter      # ✅ Correct
+from src.stinger.guardrails.length_filter import LengthGuardrail  # ❌ Wrong
+from stinger.guardrails.length_filter import LengthGuardrail      # ✅ Correct
 ```
 
 #### **Systematic Import Path Correction:**
@@ -428,7 +428,7 @@ from stinger.core.conversation import Conversation, Turn
 from stinger.core.config import ConfigLoader
 
 # Specific filters (for custom implementations):
-from stinger.filters.simple_pii_detection_filter import SimplePIIDetectionFilter
+from stinger.guardrails.simple_pii_detection_filter import SimplePIIDetectionGuardrail
 
 # Utilities (for advanced usage):
 from stinger.utils.exceptions import GuardrailsError
@@ -468,7 +468,7 @@ from stinger import GuardrailPipeline, create_pipeline
 # For audit trail:
 from stinger import audit
 
-# For custom filters:
+# For custom guardrails:
 from stinger.core.guardrail_interface import GuardrailInterface
 ```
 
@@ -718,7 +718,7 @@ import sys
 required_files = [
     'src/stinger/__init__.py',
     'src/stinger/core/__init__.py', 
-    'src/stinger/filters/__init__.py',
+    'src/stinger/guardrails/__init__.py',
     'pyproject.toml',
     'README.md',
     'LICENSE'

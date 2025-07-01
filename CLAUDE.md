@@ -72,7 +72,7 @@ This rule is non-negotiable for code safety and review process.
 ## Project-Specific Guidelines
 
 ### 9. Filter Development
-- All filters must inherit from BaseFilter
+- All filters must inherit from BaseGuardrail
 - Implement proper error handling and graceful degradation
 - Add comprehensive test cases for each filter
 - Document filter configuration options

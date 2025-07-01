@@ -90,7 +90,7 @@ class ModelFactory:
             # Fallback to default configuration
             return {
                 'default': 'gpt-4.1-nano',
-                'filters': {
+                "guardrails": {
                     'content_moderation': 'gpt-4.1-nano',
                     'prompt_injection': 'gpt-4.1-nano',
                     'pii_detection': 'gpt-4.1-nano',
@@ -104,9 +104,9 @@ class ModelFactory:
                 }
             }
     
-    def create_model_provider(self, filter_type: str, api_key: str) -> ModelProvider:
+    def create_model_provider(self, guardrail_type: str, api_key: str) -> ModelProvider:
         """Create a model provider for a specific filter type."""
-        model_name = self.config['filters'].get(filter_type, self.config['default'])
+        model_name = self.config['filters'].get(guardrail_type, self.config['default'])
         settings = self.config['settings']
         
         return OpenAIModelProvider(
@@ -115,9 +115,9 @@ class ModelFactory:
             **settings
         )
     
-    def get_model_name(self, filter_type: str) -> str:
+    def get_model_name(self, guardrail_type: str) -> str:
         """Get the model name for a specific filter type."""
-        return self.config['filters'].get(filter_type, self.config['default'])
+        return self.config['filters'].get(guardrail_type, self.config['default'])
     
     def get_settings(self) -> Dict[str, Any]:
         """Get the global model settings."""

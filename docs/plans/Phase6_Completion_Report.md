@@ -32,7 +32,7 @@ Phase 6 has been successfully completed with all core objectives achieved. The S
 ### ✅ 2. Topic Allow/Deny Lists
 **Status**: ✅ 100% Complete
 **Deliverables**:
-- TopicFilter class with multiple modes (allow/deny/both)
+- TopicGuardrail class with multiple modes (allow/deny/both)
 - Regex pattern support for flexible matching
 - Confidence scoring for topic extraction
 - Health monitoring integration

@@ -316,7 +316,7 @@ class OpenAIPromptInjection(GuardrailInterface):
 
 ### OpenAI Content Moderation Configuration
 ```yaml
-filters:
+guardrails:
   - name: "openai_content_moderation"
     type: "openai_content_moderation"
     enabled: true
@@ -328,7 +328,7 @@ filters:
 
 ### OpenAI Prompt Injection Detection Configuration
 ```yaml
-filters:
+guardrails:
   - name: "openai_prompt_injection"
     type: "openai_prompt_injection"
     enabled: true
@@ -387,7 +387,7 @@ export ENCRYPTION_KEY="your-encryption-key"
 
 ### Content Moderation Configuration (Swappable)
 ```yaml
-filters:
+guardrails:
   - name: "content_moderation"
     type: "content_moderation"
     enabled: true
@@ -409,7 +409,7 @@ filters:
 
 ### Prompt Injection Configuration (Swappable)
 ```yaml
-filters:
+guardrails:
   - name: "prompt_injection"
     type: "prompt_injection"
     enabled: true

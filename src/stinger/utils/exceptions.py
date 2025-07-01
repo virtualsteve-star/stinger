@@ -41,12 +41,12 @@ class ConfigurationError(GuardrailsError):
 class FilterError(GuardrailsError):
     """Raised when a filter encounters an error."""
     
-    def __init__(self, message: str, filter_name: Optional[str] = None, filter_type: Optional[str] = None):
+    def __init__(self, message: str, guardrail_name: Optional[str] = None, guardrail_type: Optional[str] = None):
         context = {}
-        if filter_name:
-            context["filter_name"] = filter_name
-        if filter_type:
-            context["filter_type"] = filter_type
+        if guardrail_name:
+            context["guardrail_name"] = guardrail_name
+        if guardrail_type:
+            context["guardrail_type"] = guardrail_type
         super().__init__(message, "FILTER_ERROR", context)
 
 
@@ -97,8 +97,8 @@ class ConfigurationValidationError(GuardrailsError):
 class FilterInitializationError(GuardrailsError):
     """Raised when a filter fails to initialize."""
     
-    def __init__(self, message: str, filter_name: str, config: Optional[Dict[str, Any]] = None):
-        context = {"filter_name": filter_name}
+    def __init__(self, message: str, guardrail_name: str, config: Optional[Dict[str, Any]] = None):
+        context = {"guardrail_name": guardrail_name}
         if config:
             context["config"] = str(config)
         super().__init__(message, "FILTER_INIT_ERROR", context)

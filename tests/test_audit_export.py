@@ -65,7 +65,7 @@ class TestAuditExport:
             
             # Check that all required columns exist
             expected_columns = ['timestamp', 'event_type', 'user_id', 'conversation_id', 
-                               'request_id', 'filter_name', 'decision', 'reason', 
+                               'request_id', 'guardrail_name', 'decision', 'reason', 
                                'confidence', 'summary']
             for row in rows:
                 for col in expected_columns:
@@ -104,13 +104,13 @@ class TestAuditExport:
             
             # Check export data structure
             assert 'export_timestamp' in export_data
-            assert 'filters' in export_data
+            assert 'guardrails' in export_data
             assert 'total_records' in export_data
             assert 'records' in export_data
             
             # Check filter information
-            filters = export_data['filters']
-            assert filters['source_file'] == audit_file
+            guardrails = export_data['guardrails']
+            assert guardrails['source_file'] == audit_file
             
             # Check records
             records = export_data['records']
@@ -192,7 +192,7 @@ class TestAuditExport:
             
             # Should have exactly 1 guardrail decision
             assert len(records) == 1
-            assert records[0]['filter_name'] == "test_filter"
+            assert records[0]['guardrail_name'] == "test_filter"
             assert records[0]['decision'] == "block"
     
     def test_export_auto_filename(self):

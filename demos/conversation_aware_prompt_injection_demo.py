@@ -12,7 +12,7 @@ from pathlib import Path
 # Add src to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
-from stinger.filters.prompt_injection_filter import PromptInjectionFilter
+from stinger.guardrails.prompt_injection_filter import PromptInjectionGuardrail
 from conversation_aware_prompt_injection_helpers import (
     get_demo_scenarios,
     print_conversation_summary,
@@ -52,7 +52,7 @@ class ConversationAwarePromptInjectionDemo:
             'legacy_mode': False
         }
         
-        self.filter = PromptInjectionFilter("demo_filter", self.config)
+        self.filter = PromptInjectionGuardrail("demo_filter", self.config)
     
     async def run_scenario(self, scenario_name: str, factory_func):
         """Run a single demo scenario."""

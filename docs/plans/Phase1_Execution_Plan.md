@@ -9,7 +9,7 @@
 ## Summary of Achievements
 - All success criteria met and exceeded
 - Completed in ~1 hour (vs planned 5-6 hours)
-- Added bonus features: KeywordBlockFilter, pipeline chaining, GitHub repo setup
+- Added bonus features: KeywordBlockGuardrail, pipeline chaining, GitHub repo setup
 - All 12 smoke tests passing
 - Ready for Phase 2 development
 
@@ -26,7 +26,7 @@ stinger/
 │   ├── core/
 │   │   ├── __init__.py
 │   │   ├── pipeline.py          # FilterPipeline class
-│   │   ├── base_filter.py       # BaseFilter abstract class
+│   │   ├── base_filter.py       # BaseGuardrail abstract class
 │   │   └── config.py            # ConfigLoader class
 │   ├── filters/
 │   │   ├── __init__.py
@@ -50,10 +50,10 @@ stinger/
 
 ## 2. Core Implementation (Minimal)
 
-### 2.1 BaseFilter Class
+### 2.1 BaseGuardrail Class
 ```python
 # Simple abstract base class
-class BaseFilter:
+class BaseGuardrail:
     def __init__(self, config: dict):
         self.config = config
         self.enabled = config.get('enabled', True)
@@ -80,8 +80,8 @@ class FilterResult:
 ```python
 # Basic pipeline that runs filters in order
 class FilterPipeline:
-    def __init__(self, filters: List[BaseFilter]):
-        self.filters = filters
+    def __init__(self, guardrails: List[BaseGuardrail]):
+        self.guardrails = filters
     
     async def process(self, content: str) -> PipelineResult:
         # Simple sequential processing
@@ -101,7 +101,7 @@ class ConfigLoader:
 
 ```python
 # Simplest possible filter - just passes content through
-class PassThroughFilter(BaseFilter):
+class PassThroughGuardrail(BaseGuardrail):
     async def run(self, content: str) -> FilterResult:
         return FilterResult(action='allow', reason='pass_through')
 ```
@@ -155,13 +155,13 @@ async def run_smoke_test():
 - Set up `requirements.txt` with minimal dependencies (`pyyaml`, `pytest`, `pytest-asyncio`)
 
 ### Step 2: Core Classes (2 hours)
-- Implement `BaseFilter` abstract class
+- Implement `BaseGuardrail` abstract class
 - Implement `FilterResult` dataclass
 - Implement `FilterPipeline` with basic sequential processing
 - Implement `ConfigLoader` with YAML loading
 
 ### Step 3: Pass-Through Filter (30 minutes)
-- Implement `PassThroughFilter` class
+- Implement `PassThroughGuardrail` class
 - Test basic instantiation and running
 
 ### Step 4: Configuration (30 minutes)

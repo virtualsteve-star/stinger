@@ -22,7 +22,7 @@ def fix_imports_in_file(filepath):
         (r'import src\.core\.', 'import src.stinger.core.'),
         
         # Filter imports
-        (r'from src\.filters\.', 'from src.stinger.filters.'),
+        (r'from src\.filters\.', 'from src.stinger.guardrails.'),
         (r'import src\.filters\.', 'import src.stinger.filters.'),
         
         # Adapter imports

@@ -147,7 +147,7 @@ class AuditTrail:
         
         self._write_audit_record(record)
         
-    def log_guardrail_decision(self, filter_name: str, decision: str, reason: str,
+    def log_guardrail_decision(self, guardrail_name: str, decision: str, reason: str,
                                user_id: str = None, conversation_id: str = None,
                                request_id: str = None, confidence: float = None,
                                rule_triggered: str = None):
@@ -161,7 +161,7 @@ class AuditTrail:
             "request_id": request_id,
             "user_id": user_id,
             "conversation_id": conversation_id,
-            "filter_name": filter_name,
+            "guardrail_name": guardrail_name,
             "decision": decision,  # block, allow, warn
             "reason": reason,
             "confidence": confidence,
@@ -418,12 +418,12 @@ def log_response(response: str, user_id: str = None, conversation_id: str = None
     _audit_trail.log_response(response, user_id, conversation_id, request_id, model_used, processing_time_ms)
 
 
-def log_guardrail_decision(filter_name: str, decision: str, reason: str,
+def log_guardrail_decision(guardrail_name: str, decision: str, reason: str,
                            user_id: str = None, conversation_id: str = None,
                            request_id: str = None, confidence: float = None,
                            rule_triggered: str = None):
     """Log guardrail security decision for audit trail."""
-    _audit_trail.log_guardrail_decision(filter_name, decision, reason, user_id, conversation_id, 
+    _audit_trail.log_guardrail_decision(guardrail_name, decision, reason, user_id, conversation_id, 
                                         request_id, confidence, rule_triggered)
 
 
@@ -531,10 +531,10 @@ def print_query_results(records: list, limit: int = 10):
             response = record.get("response", "")[:100]
             print(f"   Response: {response}{'...' if len(record.get('response', '')) > 100 else ''}")
         elif event_type == "guardrail_decision":
-            filter_name = record.get("filter_name", "Unknown")
+            guardrail_name = record.get("guardrail_name", "Unknown")
             decision = record.get("decision", "Unknown")
             reason = record.get("reason", "")[:50]
-            print(f"   Filter: {filter_name}, Decision: {decision}")
+            print(f"   Filter: {guardrail_name}, Decision: {decision}")
             print(f"   Reason: {reason}{'...' if len(record.get('reason', '')) > 50 else ''}")
         
         print()
@@ -599,7 +599,7 @@ def export_csv(destination: str = "./audit.log", output_file: str = None,
         # Write header
         writer.writerow([
             'timestamp', 'event_type', 'user_id', 'conversation_id', 'request_id',
-            'filter_name', 'decision', 'reason', 'confidence', 'summary'
+            'guardrail_name', 'decision', 'reason', 'confidence', 'summary'
         ])
         
         # Write records
@@ -613,9 +613,9 @@ def export_csv(destination: str = "./audit.log", output_file: str = None,
                 response = record.get("response", "")
                 summary = response[:100] + "..." if len(response) > 100 else response
             elif record.get("event_type") == "guardrail_decision":
-                filter_name = record.get("filter_name", "")
+                guardrail_name = record.get("guardrail_name", "")
                 decision = record.get("decision", "")
-                summary = f"{filter_name}: {decision}"
+                summary = f"{guardrail_name}: {decision}"
             else:
                 summary = record.get("event_type", "")
             
@@ -625,7 +625,7 @@ def export_csv(destination: str = "./audit.log", output_file: str = None,
                 record.get("user_id", ""),
                 record.get("conversation_id", ""),
                 record.get("request_id", ""),
-                record.get("filter_name", ""),
+                record.get("guardrail_name", ""),
                 record.get("decision", ""),
                 record.get("reason", ""),
                 record.get("confidence", ""),
@@ -669,7 +669,7 @@ def export_json(destination: str = "./audit.log", output_file: str = None,
     # Create export data structure
     export_data = {
         "export_timestamp": datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z'),
-        "filters": {
+        "guardrails": {
             "conversation_id": conversation_id,
             "user_id": user_id,
             "start_time": start_time,

@@ -81,14 +81,14 @@ class GuardrailInterface(ABC):
 Here's a simple example - a profanity filter:
 
 ```python
-# src/stinger/filters/custom_profanity_filter.py
+# src/stinger/guardrails/custom_profanity_filter.py
 
 import re
 from typing import Dict, Any, List
-from .base_filter import BaseFilter
+from .base_filter import BaseGuardrail
 from ..core.guardrail_interface import GuardrailInterface, GuardrailResult, GuardrailType
 
-class CustomProfanityFilter(BaseFilter, GuardrailInterface):
+class CustomProfanityFilter(BaseGuardrail, GuardrailInterface):
     """
     Custom profanity filter that blocks content containing profane words.
     """
@@ -197,7 +197,7 @@ class CustomProfanityFilter(BaseFilter, GuardrailInterface):
 Create a YAML configuration file:
 
 ```yaml
-# src/stinger/filters/configs/custom_profanity.yaml
+# src/stinger/guardrails/configs/custom_profanity.yaml
 name: "custom_profanity_filter"
 enabled: true
 profanity_words:
@@ -216,8 +216,8 @@ Add your filter to the factory:
 # src/stinger/core/guardrail_factory.py
 
 # Add this to the _create_filter method
-elif filter_type == "custom_profanity":
-    from ..filters.custom_profanity_filter import CustomProfanityFilter
+elif guardrail_type == "custom_profanity":
+    from ..guardrails.custom_profanity_filter import CustomProfanityFilter
     return CustomProfanityFilter(config)
 ```
 
@@ -243,7 +243,7 @@ print(f"Blocked: {result['blocked']}")
 # tests/test_custom_profanity_filter.py
 
 import pytest
-from src.stinger.filters.custom_profanity_filter import CustomProfanityFilter
+from src.stinger.guardrails.custom_profanity_filter import CustomProfanityFilter
 
 class TestCustomProfanityFilter:
     
@@ -255,15 +255,15 @@ class TestCustomProfanityFilter:
             'block_threshold': 1
         }
         
-        filter_instance = CustomProfanityFilter(config)
+        guardrail_instance = CustomProfanityFilter(config)
         
         # Test with profanity
-        result = await filter_instance.analyze("This is bad content")
+        result = await guardrail_instance.analyze("This is bad content")
         assert result.blocked == True
         assert result.confidence > 0.5
         
         # Test without profanity
-        result = await filter_instance.analyze("This is good content")
+        result = await guardrail_instance.analyze("This is good content")
         assert result.blocked == False
         assert result.confidence == 0.0
     
@@ -275,14 +275,14 @@ class TestCustomProfanityFilter:
             'block_threshold': 2
         }
         
-        filter_instance = CustomProfanityFilter(config)
+        guardrail_instance = CustomProfanityFilter(config)
         
         # One profanity word (below threshold)
-        result = await filter_instance.analyze("This is bad")
+        result = await guardrail_instance.analyze("This is bad")
         assert result.blocked == False
         
         # Two profanity words (at threshold)
-        result = await filter_instance.analyze("This is bad and bad")
+        result = await guardrail_instance.analyze("This is bad and bad")
         assert result.blocked == True
 ```
 
@@ -317,7 +317,7 @@ def test_custom_profanity_in_pipeline():
 ### 1. AI-Powered Filters
 
 ```python
-class AIContentFilter(BaseFilter, GuardrailInterface):
+class AIContentFilter(BaseGuardrail, GuardrailInterface):
     """Filter using AI to analyze content."""
     
     def __init__(self, config: Dict[str, Any]):
@@ -373,7 +373,7 @@ class AIContentFilter(BaseFilter, GuardrailInterface):
 ### 2. Regex-Based Filters
 
 ```python
-class RegexFilter(BaseFilter, GuardrailInterface):
+class RegexGuardrail(BaseGuardrail, GuardrailInterface):
     """Filter using regex patterns."""
     
     def __init__(self, config: Dict[str, Any]):
@@ -408,7 +408,7 @@ class RegexFilter(BaseFilter, GuardrailInterface):
 ### 3. Rate-Limited Filters
 
 ```python
-class RateLimitedFilter(BaseFilter, GuardrailInterface):
+class RateLimitedFilter(BaseGuardrail, GuardrailInterface):
     """Filter with built-in rate limiting."""
     
     def __init__(self, config: Dict[str, Any]):
@@ -452,7 +452,7 @@ class RateLimitedFilter(BaseFilter, GuardrailInterface):
 ### Adding Health Status
 
 ```python
-class CustomFilter(BaseFilter, GuardrailInterface):
+class CustomFilter(BaseGuardrail, GuardrailInterface):
     
     def get_health_status(self) -> Dict[str, Any]:
         """Get filter health status."""
@@ -510,7 +510,7 @@ async def analyze(self, content: str) -> GuardrailResult:
 ### Dynamic Configuration
 
 ```python
-class ConfigurableFilter(BaseFilter, GuardrailInterface):
+class ConfigurableFilter(BaseGuardrail, GuardrailInterface):
     
     def update_config(self, config: Dict[str, Any]) -> bool:
         """Update filter configuration dynamically."""
@@ -581,7 +581,7 @@ def validate_filter_config(config_path: str) -> bool:
 ### 1. Performance Optimization
 
 ```python
-class OptimizedFilter(BaseFilter, GuardrailInterface):
+class OptimizedFilter(BaseGuardrail, GuardrailInterface):
     
     def __init__(self, config: Dict[str, Any]):
         super().__init__(config)
@@ -618,7 +618,7 @@ class OptimizedFilter(BaseFilter, GuardrailInterface):
 ### 2. Error Handling
 
 ```python
-class RobustFilter(BaseFilter, GuardrailInterface):
+class RobustFilter(BaseGuardrail, GuardrailInterface):
     
     async def analyze(self, content: str) -> GuardrailResult:
         """Robust analysis with error handling."""
@@ -649,7 +649,7 @@ class RobustFilter(BaseFilter, GuardrailInterface):
                 blocked=False,
                 confidence=0.0,
                 reason=f"Filter error: {str(e)}",
-                details={'error': str(e), 'filter_name': self.name}
+                details={'error': str(e), 'guardrail_name': self.name}
             )
 ```
 
@@ -659,7 +659,7 @@ class RobustFilter(BaseFilter, GuardrailInterface):
 import logging
 from datetime import datetime
 
-class MonitoredFilter(BaseFilter, GuardrailInterface):
+class MonitoredFilter(BaseGuardrail, GuardrailInterface):
     
     def __init__(self, config: Dict[str, Any]):
         super().__init__(config)
@@ -708,14 +708,14 @@ class MonitoredFilter(BaseFilter, GuardrailInterface):
 ### Complete Example: Sentiment Filter
 
 ```python
-# src/stinger/filters/sentiment_filter.py
+# src/stinger/guardrails/sentiment_filter.py
 
 import re
 from typing import Dict, Any, List
-from .base_filter import BaseFilter
+from .base_filter import BaseGuardrail
 from ..core.guardrail_interface import GuardrailInterface, GuardrailResult, GuardrailType
 
-class SentimentFilter(BaseFilter, GuardrailInterface):
+class SentimentFilter(BaseGuardrail, GuardrailInterface):
     """
     Filter content based on sentiment analysis.
     Blocks overly negative or hostile content.
@@ -818,7 +818,7 @@ class SentimentFilter(BaseFilter, GuardrailInterface):
 
 ## 🎯 Next Steps
 
-Now that you understand how to create custom filters:
+Now that you understand how to create custom guardrails:
 
 1. **Start Simple**: Begin with basic regex or keyword filters
 2. **Add Testing**: Write comprehensive tests for your filters
@@ -828,11 +828,11 @@ Now that you understand how to create custom filters:
 
 ## 📖 Additional Resources
 
-- **Base Filter Class**: `src/stinger/filters/base_filter.py`
+- **Base Filter Class**: `src/stinger/guardrails/base_filter.py`
 - **Guardrail Interface**: `src/stinger/core/guardrail_interface.py`
-- **Existing Filters**: `src/stinger/filters/` directory
+- **Existing Filters**: `src/stinger/guardrails/` directory
 - **Test Examples**: `tests/` directory
-- **Configuration Examples**: `src/stinger/filters/configs/`
+- **Configuration Examples**: `src/stinger/guardrails/configs/`
 
 ---
 

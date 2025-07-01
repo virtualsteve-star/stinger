@@ -5,10 +5,10 @@ from pathlib import Path
 # Add src to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent / 'src'))
 
-from src.stinger.filters.prompt_injection_filter import PromptInjectionFilter
+from src.stinger.guardrails.prompt_injection_guardrail import PromptInjectionGuardrail
 
 async def test():
-    filter = PromptInjectionFilter('test', {
+    filter = PromptInjectionGuardrail('test', {
         'risk_threshold': 70,
         'block_levels': ['high', 'critical'],
         'on_error': 'allow'

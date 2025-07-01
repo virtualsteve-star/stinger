@@ -3,7 +3,7 @@ version: "1.0"
 models:
   default: "gpt-4.1-nano"  # Always use gpt-4.1-nano, NOT gpt-4o-mini
   
-  filters:
+  guardrails:
     content_moderation: "gpt-4.1-nano"
     prompt_injection: "gpt-4.1-nano"
     pii_detection: "gpt-4.1-nano"

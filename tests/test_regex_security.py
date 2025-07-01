@@ -19,7 +19,7 @@ from src.stinger.core.regex_security import (
     safe_compile_regex,
     safe_regex_search
 )
-from src.stinger.filters.regex_filter import RegexFilter
+from src.stinger.guardrails.regex_guardrail import RegexGuardrail
 
 
 class TestRegexSecurityValidator:
@@ -159,21 +159,21 @@ class TestRegexSecurityValidator:
 
 
 class TestRegexFilterSecurity:
-    """Test that RegexFilter uses security validation."""
+    """Test that RegexGuardrail uses security validation."""
     
     def test_safe_regex_filter_creation(self):
-        """Test that RegexFilter can be created with safe patterns."""
+        """Test that RegexGuardrail can be created with safe patterns."""
         config = {
             'patterns': [r'hello', r'[a-z]+', r'\d{1,5}'],
             'blocked': True
         }
         
         # Should create successfully
-        filter_instance = RegexFilter(config)
-        assert len(filter_instance.compiled_patterns) == 3
+        guardrail_instance = RegexGuardrail(config)
+        assert len(guardrail_instance.compiled_patterns) == 3
     
     def test_dangerous_regex_filter_rejected(self):
-        """Test that RegexFilter rejects dangerous patterns."""
+        """Test that RegexGuardrail rejects dangerous patterns."""
         config = {
             'patterns': [r'hello', r'(a+)+b'],  # One safe, one dangerous
             'blocked': True
@@ -181,44 +181,44 @@ class TestRegexFilterSecurity:
         
         # Should raise ValueError due to unsafe pattern
         with pytest.raises(ValueError, match="Invalid or unsafe regex pattern"):
-            RegexFilter(config)
+            RegexGuardrail(config)
     
     @pytest.mark.asyncio
     async def test_regex_filter_safe_execution(self):
-        """Test that RegexFilter executes safely."""
+        """Test that RegexGuardrail executes safely."""
         config = {
             'patterns': [r'test', r'hello'],
             'blocked': True
         }
         
-        filter_instance = RegexFilter(config)
+        guardrail_instance = RegexGuardrail(config)
         
         # Normal execution should work
-        result = await filter_instance.analyze("this is a test")
+        result = await guardrail_instance.analyze("this is a test")
         assert result.blocked == True
         assert 'test' in result.reason
         
         # Non-matching text should be allowed
-        result = await filter_instance.analyze("no matches here")
+        result = await guardrail_instance.analyze("no matches here")
         assert result.blocked == False
     
     @pytest.mark.asyncio
     async def test_regex_filter_timeout_protection(self):
-        """Test that RegexFilter protects against execution timeouts."""
+        """Test that RegexGuardrail protects against execution timeouts."""
         # Create filter with a pattern that should be safe but test timeout handling
         config = {
             'patterns': [r'a+'],
             'blocked': True
         }
         
-        filter_instance = RegexFilter(config)
+        guardrail_instance = RegexGuardrail(config)
         
         # Patch the safe_search to simulate timeout
-        with patch.object(filter_instance.security_validator, 'safe_search') as mock_search:
+        with patch.object(guardrail_instance.security_validator, 'safe_search') as mock_search:
             mock_search.side_effect = SecurityError("Regex execution timeout: >50ms")
             
             # Should handle timeout gracefully and continue
-            result = await filter_instance.analyze("aaaaaaa")
+            result = await guardrail_instance.analyze("aaaaaaa")
             assert result.blocked == False  # No matches due to timeout
 
 

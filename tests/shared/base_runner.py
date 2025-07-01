@@ -13,12 +13,12 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 
 from src.core.config import ConfigLoader
 from src.core.pipeline import FilterPipeline
-from src.filters.pass_through import PassThroughFilter
-from src.filters.keyword_block import KeywordBlockFilter
-from src.filters.keyword_list import KeywordListFilter
-from src.filters.regex_filter import RegexFilter
-from src.filters.length_filter import LengthFilter
-from src.filters.url_filter import URLFilter
+from src.filters.pass_through import PassThroughGuardrail
+from src.filters.keyword_block import KeywordBlockGuardrail
+from src.filters.keyword_list import KeywordListGuardrail
+from src.filters.regex_filter import RegexGuardrail
+from src.filters.length_filter import LengthGuardrail
+from src.filters.url_filter import URLGuardrail
 
 def load_jsonl(path):
     """Load test cases from JSONL file."""
@@ -29,13 +29,13 @@ def load_jsonl(path):
         print(f"⚠️ Test corpus not found: {path}")
         return []
 
-FILTER_REGISTRY = {
-    'pass_through': PassThroughFilter,
-    'keyword_block': KeywordBlockFilter,
-    'keyword_list': KeywordListFilter,
-    'regex_filter': RegexFilter,
-    'length_filter': LengthFilter,
-    'url_filter': URLFilter,
+GUARDRAIL_REGISTRY = {
+    'pass_through': PassThroughGuardrail,
+    'keyword_block': KeywordBlockGuardrail,
+    'keyword_list': KeywordListGuardrail,
+    'regex_filter': RegexGuardrail,
+    'length_filter': LengthGuardrail,
+    'url_filter': URLGuardrail,
 }
 
 class BaseConversationSimulator:
@@ -50,18 +50,18 @@ class BaseConversationSimulator:
     def _create_pipeline(self) -> FilterPipeline:
         """Create filter pipeline from configuration."""
         filter_configs = self.config_loader.get_pipeline_config('input')
-        filters = []
+        guardrails = []
         
         for fc in filter_configs:
-            filter_type = fc.get('type')
-            filter_cls = FILTER_REGISTRY.get(filter_type)
+            guardrail_type = fc.get('type')
+            filter_cls = GUARDRAIL_REGISTRY.get(guardrail_type)
             if filter_cls:
                 try:
                     filters.append(filter_cls(fc))
                 except Exception as e:
                     print(f"❌ Failed to create filter {fc.get('name')}: {str(e)}")
             else:
-                print(f"⚠️ Unknown filter type: {filter_type}")
+                print(f"⚠️ Unknown filter type: {guardrail_type}")
         
         return FilterPipeline(filters, debug=self.debug)
     

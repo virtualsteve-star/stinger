@@ -18,7 +18,7 @@ Phase 4 focuses on dramatically improving the developer experience and configura
 ### 1. Keyword List Filter (High Priority)
 **Problem**: Current system requires separate configuration blocks for each keyword, leading to verbose and repetitive YAML files.
 
-**Solution**: Implement a `KeywordListFilter` that accepts multiple keywords in a single configuration block, with support for loading keywords from external files.
+**Solution**: Implement a `KeywordListGuardrail` that accepts multiple keywords in a single configuration block, with support for loading keywords from external files.
 
 **Implementation**:
 ```yaml
@@ -70,7 +70,7 @@ shut up
 ```
 
 **Tasks**:
-- [ ] Create `src/filters/keyword_list.py` with `KeywordListFilter` class
+- [ ] Create `src/filters/keyword_list.py` with `KeywordListGuardrail` class
 - [ ] Implement case-sensitive and case-insensitive matching options
 - [ ] Add support for phrase matching (multi-word keywords)
 - [ ] Add support for loading keywords from external files

@@ -192,7 +192,7 @@ class TestAuditTrailBasic:
             
             # Log a guardrail decision
             audit.log_guardrail_decision(
-                filter_name="content_moderation",
+                guardrail_name="content_moderation",
                 decision="block",
                 reason="Content violates policy",
                 user_id="user_123",
@@ -214,7 +214,7 @@ class TestAuditTrailBasic:
             # Check the decision record
             decision_record = json.loads(lines[1])
             assert decision_record["event_type"] == "guardrail_decision"
-            assert decision_record["filter_name"] == "content_moderation"
+            assert decision_record["guardrail_name"] == "content_moderation"
             assert decision_record["decision"] == "block"
             assert decision_record["reason"] == "Content violates policy"
             assert decision_record["confidence"] == 0.95

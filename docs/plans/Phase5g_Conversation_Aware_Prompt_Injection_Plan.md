@@ -15,7 +15,7 @@
 **Production Ready**: Yes
 
 ### Key Deliverables Completed:
-- ✅ Enhanced PromptInjectionFilter with conversation context support
+- ✅ Enhanced PromptInjectionGuardrail with conversation context support
 - ✅ Multi-turn pattern detection (trust-building, gradual escalation, context manipulation)
 - ✅ Context preparation with configurable strategies (recent, suspicious, mixed)
 - ✅ Long conversation management with token limits and truncation
@@ -62,7 +62,7 @@ This enhanced definition from Phase 5f provides richer context for multi-turn an
 ### 1. Enhanced Prompt Injection Filter Interface
 
 ```python
-class ConversationAwarePromptInjectionFilter(PromptInjectionFilter):
+class ConversationAwarePromptInjectionFilter(PromptInjectionGuardrail):
     """Enhanced prompt injection detection using conversation context."""
     
     def __init__(self, name: str, config: Dict[str, Any]):
@@ -519,7 +519,7 @@ def validate_config(self, config: Dict[str, Any]) -> bool:
 ### 5. Implementation Plan
 
 #### Phase 1: Core Conversation Integration (Week 1)
-1. **Extend PromptInjectionFilter class**
+1. **Extend PromptInjectionGuardrail class**
    - Add conversation awareness configuration
    - Implement conversation context preparation methods
    - Add context strategy selection logic
