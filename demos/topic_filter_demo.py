@@ -108,9 +108,9 @@ class TopicFilterDemo:
         print("-" * 40)
         
         for i, content in enumerate(self.test_content, 1):
-            result = await filter_obj.run(content)
+            result = await filter_obj.analyze(content)
             
-            status = "🚫 BLOCKED" if result.action == 'block' else "✅ ALLOWED"
+            status = "🚫 BLOCKED" if result.blocked == True else "✅ ALLOWED"
             print(f"{i:2d}. {status} | {content[:50]}{'...' if len(content) > 50 else ''}")
             print(f"    Reason: {result.reason}")
             print(f"    Confidence: {result.confidence:.2f}")
@@ -266,13 +266,13 @@ class TopicFilterDemo:
         start_time = time.time()
         
         for i, content in enumerate(test_content, 1):
-            result = await filter_obj.run(content)
-            analysis = filter_obj.analyze(content)
+            result = await filter_obj.analyze(content)
             
             print(f"{i}. Content: {content[:40]}...")
-            print(f"   Action: {result.action}")
+            print(f"   Action: {result.blocked}")
             print(f"   Confidence: {result.confidence:.2f}")
-            print(f"   Total matches: {analysis['details']['total_matches']}")
+            if hasattr(result, 'details') and 'total_matches' in result.details:
+                print(f"   Total matches: {result.details['total_matches']}")
         
         end_time = time.time()
         elapsed = end_time - start_time

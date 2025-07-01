@@ -21,12 +21,12 @@ async def test_inline_keywords_basic():
         'on_error': 'block'
     }
     filter_obj = KeywordListFilter(config)
-    result = await filter_obj.run("You are an idiot!")
-    assert result.action == 'block'
+    result = await filter_obj.analyze("You are an idiot!")
+    assert result.blocked == True
     assert 'idiot' in result.reason
-    result = await filter_obj.run("Hello, how are you?")
-    assert result.action == 'allow'
-    assert result.reason == 'no keyword matches'
+    result = await filter_obj.analyze("Hello, how are you?")
+    assert result.blocked == False
+    assert result.reason == 'No keyword matches found'
 
 @pytest.mark.asyncio
 async def test_inline_keywords_case_sensitive():
@@ -39,10 +39,10 @@ async def test_inline_keywords_case_sensitive():
         'on_error': 'block'
     }
     filter_obj = KeywordListFilter(config)
-    result = await filter_obj.run("You are an Idiot!")
-    assert result.action == 'block'
-    result = await filter_obj.run("You are an idiot!")
-    assert result.action == 'allow'
+    result = await filter_obj.analyze("You are an Idiot!")
+    assert result.blocked == True
+    result = await filter_obj.analyze("You are an idiot!")
+    assert result.blocked == False
 
 @pytest.mark.asyncio
 async def test_phrase_matching():
@@ -54,11 +54,11 @@ async def test_phrase_matching():
         'on_error': 'block'
     }
     filter_obj = KeywordListFilter(config)
-    result = await filter_obj.run("Please shut up and listen!")
-    assert result.action == 'block'
+    result = await filter_obj.analyze("Please shut up and listen!")
+    assert result.blocked == True
     assert 'shut up' in result.reason
-    result = await filter_obj.run("Please shut the door!")
-    assert result.action == 'allow'
+    result = await filter_obj.analyze("Please shut the door!")
+    assert result.blocked == False
 
 @pytest.mark.asyncio
 async def test_file_loading_basic():
@@ -74,10 +74,10 @@ async def test_file_loading_basic():
             'on_error': 'block'
         }
         filter_obj = KeywordListFilter(config)
-        result = await filter_obj.run("You are an idiot!")
-        assert result.action == 'block'
-        result = await filter_obj.run("Hello, how are you?")
-        assert result.action == 'allow'
+        result = await filter_obj.analyze("You are an idiot!")
+        assert result.blocked == True
+        result = await filter_obj.analyze("Hello, how are you?")
+        assert result.blocked == False
     finally:
         os.unlink(temp_file)
 
@@ -91,7 +91,7 @@ async def test_multiple_matches():
         'on_error': 'block'
     }
     filter_obj = KeywordListFilter(config)
-    result = await filter_obj.run("You are an idiot and stupid!")
-    assert result.action == 'block'
+    result = await filter_obj.analyze("You are an idiot and stupid!")
+    assert result.blocked == True
     assert 'idiot' in result.reason
     assert 'stupid' in result.reason 

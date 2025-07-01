@@ -165,7 +165,7 @@ class TestRegexFilterSecurity:
         """Test that RegexFilter can be created with safe patterns."""
         config = {
             'patterns': [r'hello', r'[a-z]+', r'\d{1,5}'],
-            'action': 'block'
+            'blocked': True
         }
         
         # Should create successfully
@@ -176,7 +176,7 @@ class TestRegexFilterSecurity:
         """Test that RegexFilter rejects dangerous patterns."""
         config = {
             'patterns': [r'hello', r'(a+)+b'],  # One safe, one dangerous
-            'action': 'block'
+            'blocked': True
         }
         
         # Should raise ValueError due to unsafe pattern
@@ -188,19 +188,19 @@ class TestRegexFilterSecurity:
         """Test that RegexFilter executes safely."""
         config = {
             'patterns': [r'test', r'hello'],
-            'action': 'block'
+            'blocked': True
         }
         
         filter_instance = RegexFilter(config)
         
         # Normal execution should work
-        result = await filter_instance.run("this is a test")
-        assert result.action == 'block'
+        result = await filter_instance.analyze("this is a test")
+        assert result.blocked == True
         assert 'test' in result.reason
         
         # Non-matching text should be allowed
-        result = await filter_instance.run("no matches here")
-        assert result.action == 'allow'
+        result = await filter_instance.analyze("no matches here")
+        assert result.blocked == False
     
     @pytest.mark.asyncio
     async def test_regex_filter_timeout_protection(self):
@@ -208,7 +208,7 @@ class TestRegexFilterSecurity:
         # Create filter with a pattern that should be safe but test timeout handling
         config = {
             'patterns': [r'a+'],
-            'action': 'block'
+            'blocked': True
         }
         
         filter_instance = RegexFilter(config)
@@ -218,8 +218,8 @@ class TestRegexFilterSecurity:
             mock_search.side_effect = SecurityError("Regex execution timeout: >50ms")
             
             # Should handle timeout gracefully and continue
-            result = await filter_instance.run("aaaaaaa")
-            assert result.action == 'allow'  # No matches due to timeout
+            result = await filter_instance.analyze("aaaaaaa")
+            assert result.blocked == False  # No matches due to timeout
 
 
 class TestReDoSAttackSimulation:

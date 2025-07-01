@@ -7,8 +7,9 @@ various types of personally identifiable information without requiring AI.
 
 import re
 import logging
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 from ..core.guardrail_interface import GuardrailInterface, GuardrailType, GuardrailResult
+from ..core.conversation import Conversation
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +45,7 @@ class SimplePIIDetectionFilter(GuardrailInterface):
         
         self.enabled_patterns = valid_patterns
     
-    async def analyze(self, content: str) -> GuardrailResult:
+    async def analyze(self, content: str, conversation: Optional['Conversation'] = None) -> GuardrailResult:
         """Analyze content for PII patterns using regex."""
         if not self.enabled:
             return GuardrailResult(

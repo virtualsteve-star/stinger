@@ -7,9 +7,10 @@ with centralized model configuration and fallback to simple regex detection.
 
 import json
 import logging
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 from ..core.guardrail_interface import GuardrailInterface, GuardrailType, GuardrailResult
 from ..core.model_config import ModelFactory, ModelError
+from ..core.conversation import Conversation
 from ..core.api_key_manager import get_openai_key
 from .simple_pii_detection_filter import SimplePIIDetectionFilter
 
@@ -62,7 +63,7 @@ Respond with a JSON object containing:
 Text to analyze: {content}
 """
     
-    async def analyze(self, content: str) -> GuardrailResult:
+    async def analyze(self, content: str, conversation: Optional['Conversation'] = None) -> GuardrailResult:
         """Analyze content for PII using AI with centralized model configuration."""
         if not self.enabled:
             return GuardrailResult(

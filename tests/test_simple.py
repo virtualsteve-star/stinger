@@ -32,11 +32,11 @@ async def test_regex_filter():
     
     for i, (input_text, expected) in enumerate(test_cases, 1):
         try:
-            result = await filter_obj.run(input_text)
-            if result.action == expected:
+            result = await filter_obj.analyze(input_text)
+            if result.blocked == expected:
                 print(f"✅ Test {i}: PASS - '{input_text[:30]}...'")
             else:
-                print(f"❌ Test {i}: FAIL - '{input_text[:30]}...' -> {result.action} (expected {expected})")
+                print(f"❌ Test {i}: FAIL - '{input_text[:30]}...' -> {result.blocked} (expected {expected})")
         except Exception as e:
             print(f"💥 Test {i}: ERROR - {str(e)}")
     

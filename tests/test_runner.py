@@ -60,11 +60,11 @@ async def run_smoke_test():
         expected = case.get('expected')
         try:
             result = await pipeline.process(test_input)
-            if result.action == expected:
+            if result.blocked == expected:
                 print(f"✅ Test {i}: PASS - '{str(test_input)[:20]}...' ({case.get('description')})")
                 passed += 1
             else:
-                print(f"❌ Test {i}: FAIL - '{str(test_input)[:20]}...' -> {result.action} (expected {expected})")
+                print(f"❌ Test {i}: FAIL - '{str(test_input)[:20]}...' -> {result.blocked} (expected {expected})")
         except Exception as e:
             print(f"❌ Test {i}: ERROR - '{str(test_input)[:20]}...' -> {str(e)}")
     
