@@ -172,14 +172,20 @@ class SetupWizard:
         
         if api_key:
             try:
-                # Add to keychain
+                # Use stdin to pass the key securely
                 cmd = [
                     'security', 'add-generic-password',
                     '-a', os.environ.get('USER', 'stinger'),
                     '-s', 'openai-api-key',
-                    '-w', api_key
+                    '-w'  # Read password from stdin
                 ]
-                subprocess.run(cmd, check=True, capture_output=True)
+                # Pass the API key via stdin to avoid command line exposure
+                result = subprocess.run(
+                    cmd, 
+                    input=api_key.encode('utf-8'),
+                    check=True, 
+                    capture_output=True
+                )
                 print("✅ API key stored in Keychain")
                 
                 print("\nTo use this key, add to your shell profile:")
