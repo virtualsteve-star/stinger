@@ -1,31 +1,26 @@
-from typing import Optional
+from typing import Optional, List
 from ..core.guardrail_interface import GuardrailInterface, GuardrailResult, GuardrailType
+from ..core.config_validator import ConfigValidator, ValidationRule, create_length_validator, LENGTH_GUARDRAIL_RULES
 from ..core.conversation import Conversation
-
-# Need to recreate FilterResult for backward compatibility
-from dataclasses import dataclass
 
 class LengthGuardrail(GuardrailInterface):
     def __init__(self, config: dict):
         """Initialize length filter."""
         name = config.get('name', 'length_filter')
-        enabled = config.get('enabled', True)
-        super().__init__(name, GuardrailType.LENGTH_FILTER, enabled)
         
-        # Keep config for backward compatibility
-        self.config = config.copy()
+        # Initialize with validation
+        super().__init__(name, GuardrailType.LENGTH_FILTER, config)
         self.min_length = config.get('min_length', 0)
         self.max_length = config.get('max_length', None)
         self.action = config.get('action', 'block')
-        
-        # Validate configuration
-        if self.min_length < 0:
-            raise ValueError("min_length must be non-negative")
-        if self.max_length is not None and self.max_length < 0:
-            raise ValueError("max_length must be non-negative")
-        if (self.max_length is not None and 
-            self.min_length > self.max_length):
-            raise ValueError("min_length cannot be greater than max_length")
+    
+    def get_validation_rules(self) -> List[ValidationRule]:
+        """Get validation rules for length guardrail."""
+        return LENGTH_GUARDRAIL_RULES
+    
+    def get_config_validator(self) -> ConfigValidator:
+        """Get custom validator with cross-field validation."""
+        return create_length_validator()
     
 
     async def analyze(self, content: str, conversation: Optional['Conversation'] = None) -> GuardrailResult:
@@ -129,15 +124,4 @@ class LengthGuardrail(GuardrailInterface):
         except Exception:
             return False
     
-    def validate_config(self) -> bool:
-        """Validate length filter configuration."""
-        if not isinstance(self.min_length, (int, float)):
-            return False
-        
-        if self.max_length is not None and not isinstance(self.max_length, (int, float)):
-            return False
-        
-        if self.action not in ['block', 'allow', 'warn']:
-            return False
-        
-        return True 
+ 

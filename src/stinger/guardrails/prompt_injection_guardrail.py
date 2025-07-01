@@ -11,6 +11,7 @@ from typing import Dict, Any, Optional, List
 from dataclasses import dataclass
 
 from ..core.guardrail_interface import GuardrailInterface, GuardrailType, GuardrailResult
+from ..core.config_validator import ValidationRule, AI_GUARDRAIL_RULES
 from ..core.api_key_manager import APIKeyManager
 from ..core.conversation import Conversation, Turn
 from ..adapters.openai_adapter import OpenAIAdapter
@@ -34,14 +35,7 @@ class PromptInjectionGuardrail(GuardrailInterface):
     
     def __init__(self, name: str, config: Dict[str, Any]):
         """Initialize the prompt injection detection filter."""
-        super().__init__(name, GuardrailType.PROMPT_INJECTION, config.get('enabled', True))
-        
-        # Basic configuration
-        self.risk_threshold = config.get('risk_threshold', 70)  # 0-100
-        self.block_levels = config.get('block_levels', ['high', 'critical'])
-        self.warn_levels = config.get('warn_levels', ['medium'])
-        self.on_error = config.get('on_error', 'allow')  # 'allow', 'block', 'warn'
-        
+        # Set attributes needed by validation BEFORE calling super().__init__
         # Conversation awareness configuration
         conv_config = config.get('conversation_awareness', {})
         self.conversation_awareness_enabled = conv_config.get('enabled', False)
@@ -52,6 +46,15 @@ class PromptInjectionGuardrail(GuardrailInterface):
             'ignore', 'forget', 'pretend', 'trust', 'friend', 'you are', 'act as',
             'bypass', 'safety', 'rules'
         ])
+        
+        # Now call parent init which will trigger validation
+        super().__init__(name, GuardrailType.PROMPT_INJECTION, config)
+        
+        # Basic configuration
+        self.risk_threshold = config.get('risk_threshold', 70)  # 0-100
+        self.block_levels = config.get('block_levels', ['high', 'critical'])
+        self.warn_levels = config.get('warn_levels', ['medium'])
+        self.on_error = config.get('on_error', 'allow')  # 'allow', 'block', 'warn'
         
         # Pattern detection weights
         pattern_config = config.get('pattern_detection', {})
@@ -67,9 +70,10 @@ class PromptInjectionGuardrail(GuardrailInterface):
         self.api_key_manager = APIKeyManager()
         self.openai_adapter: Optional[OpenAIAdapter] = None
         self._initialize_adapter()
-        
-        # Validate configuration
-        self._validate_config(config)
+    
+    def get_validation_rules(self) -> List[ValidationRule]:
+        """Get validation rules for prompt injection guardrail."""
+        return AI_GUARDRAIL_RULES
     
     def _validate_config(self, config: Dict[str, Any]) -> None:
         """Validate conversation-aware configuration."""

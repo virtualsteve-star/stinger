@@ -265,20 +265,21 @@ class TestRegexFilter:
         for config in valid_configs:
             config['on_error'] = 'allow'
             guardrail_instance = RegexGuardrail(config)
-            assert guardrail_instance.validate_config() == True
+            # Should not raise an exception during initialization
 
     def test_config_validation_failure(self):
         """Test configuration validation failures."""
-        invalid_configs = [
-            {'patterns': 'not_a_list', 'action': 'block'},
-            {'patterns': [r'\d+'], 'action': 'invalid_action'},
-            {'patterns': [r'[invalid'], 'action': 'block'},  # Invalid regex
-        ]
+        # Test patterns type validation
+        with pytest.raises(ValueError, match="patterns must be of type list"):
+            RegexGuardrail({'patterns': 'not_a_list', 'action': 'block', 'on_error': 'allow'})
         
-        for config in invalid_configs[:-1]:  # Skip the invalid regex one
-            config['on_error'] = 'allow'
-            guardrail_instance = RegexGuardrail(config)
-            assert guardrail_instance.validate_config() == False
+        # Test action validation
+        with pytest.raises(ValueError, match="action must be one of"):
+            RegexGuardrail({'patterns': [r'\d+'], 'action': 'invalid_action', 'on_error': 'allow'})
+        
+        # Test invalid regex pattern
+        with pytest.raises(ValueError, match="Invalid or unsafe regex pattern"):
+            RegexGuardrail({'patterns': [r'[invalid'], 'action': 'block', 'on_error': 'allow'})
 
     @pytest.mark.asyncio
     async def test_unicode_content(self):

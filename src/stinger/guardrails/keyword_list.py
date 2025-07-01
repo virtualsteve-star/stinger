@@ -2,11 +2,9 @@ import os
 from pathlib import Path
 from typing import List, Optional
 from ..core.guardrail_interface import GuardrailInterface, GuardrailResult, GuardrailType
+from ..core.config_validator import ValidationRule, KEYWORD_GUARDRAIL_RULES, ConfigValidator
 from ..core.conversation import Conversation
 from ..utils.exceptions import FilterError
-
-# Need to recreate FilterResult for backward compatibility
-from dataclasses import dataclass
 
 class KeywordListGuardrail(GuardrailInterface):
     """
@@ -17,13 +15,33 @@ class KeywordListGuardrail(GuardrailInterface):
     def __init__(self, config: dict):
         """Initialize keyword list filter."""
         name = config.get('name', 'keyword_list')
-        enabled = config.get('enabled', True)
-        super().__init__(name, GuardrailType.KEYWORD_LIST, enabled)
+        
+        # Initialize with validation
+        super().__init__(name, GuardrailType.KEYWORD_LIST, config)
         
         self.config = config  # Keep for compatibility with _load_keywords
         self.keywords = []
         self.case_sensitive = config.get('case_sensitive', False)
         self._load_keywords()
+    
+    def get_validation_rules(self) -> List[ValidationRule]:
+        """Get validation rules for keyword list guardrail."""
+        return KEYWORD_GUARDRAIL_RULES
+    
+    def get_config_validator(self) -> ConfigValidator:
+        """Get custom validator with keyword validation logic."""
+        class KeywordListValidator(ConfigValidator):
+            def validate(self, config: dict) -> tuple[bool, List[str]]:
+                is_valid, errors = super().validate(config)
+                
+                # Additional validation: must have either keywords or keywords_file
+                if not config.get('keywords') and not config.get('keywords_file'):
+                    errors.append("Either 'keywords' or 'keywords_file' must be provided")
+                    is_valid = False
+                
+                return is_valid, errors
+        
+        return KeywordListValidator(KEYWORD_GUARDRAIL_RULES)
     
     def _load_keywords(self):
         """Load keywords from config or file."""

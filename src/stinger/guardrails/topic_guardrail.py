@@ -10,12 +10,10 @@ import re
 from typing import Dict, List, Optional, Any
 # FilterResult removed - now using GuardrailResult only
 from ..core.guardrail_interface import GuardrailInterface, GuardrailResult, GuardrailType
+from ..core.config_validator import ValidationRule, TOPIC_GUARDRAIL_RULES
 from ..core.conversation import Conversation
 
 logger = logging.getLogger(__name__)
-
-# Need to recreate FilterResult for backward compatibility
-from dataclasses import dataclass
 
 class TopicGuardrail(GuardrailInterface):
     """
@@ -44,8 +42,7 @@ class TopicGuardrail(GuardrailInterface):
         """
         # Initialize GuardrailInterface with required parameters
         name = config.get('name', 'topic_filter')
-        enabled = config.get('enabled', True)
-        super().__init__(name, GuardrailType.TOPIC_FILTER, enabled)
+        super().__init__(name, GuardrailType.TOPIC_FILTER, config)
         
         self.allow_topics = config.get('allow_topics', [])
         self.deny_topics = config.get('deny_topics', [])
@@ -60,6 +57,10 @@ class TopicGuardrail(GuardrailInterface):
         self._compile_patterns()
         
         logger.info(f"Initialized TopicGuardrail '{self.name}' with mode '{self.mode}'")
+    
+    def get_validation_rules(self) -> List[ValidationRule]:
+        """Get validation rules for topic guardrail."""
+        return TOPIC_GUARDRAIL_RULES
     
     def _compile_patterns(self) -> None:
         """Compile regex patterns for topic matching."""

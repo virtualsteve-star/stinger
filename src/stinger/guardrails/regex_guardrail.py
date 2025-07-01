@@ -1,18 +1,17 @@
 import re
 from typing import List, Optional
 from ..core.guardrail_interface import GuardrailInterface, GuardrailResult, GuardrailType
+from ..core.config_validator import ValidationRule, REGEX_GUARDRAIL_RULES
 from ..core.conversation import Conversation
 from ..core.regex_security import RegexSecurityValidator, SecurityError
-
-# Need to recreate FilterResult for backward compatibility
-from dataclasses import dataclass
 
 class RegexGuardrail(GuardrailInterface):
     def __init__(self, config: dict):
         """Initialize regex filter."""
         name = config.get('name', 'regex_filter')
-        enabled = config.get('enabled', True)
-        super().__init__(name, GuardrailType.REGEX_FILTER, enabled)
+        
+        # Initialize with validation
+        super().__init__(name, GuardrailType.REGEX_FILTER, config)
         
         self.patterns = config.get('patterns', [])
         self.action = config.get('action', 'block')  # 'block', 'allow', 'warn'
@@ -40,6 +39,10 @@ class RegexGuardrail(GuardrailInterface):
                 
             except (re.error, SecurityError) as e:
                 raise ValueError(f"Invalid or unsafe regex pattern '{pattern}': {str(e)}")
+    
+    def get_validation_rules(self) -> List[ValidationRule]:
+        """Get validation rules for regex guardrail."""
+        return REGEX_GUARDRAIL_RULES
     
 
     async def analyze(self, content: str, conversation: Optional['Conversation'] = None) -> GuardrailResult:
@@ -151,19 +154,4 @@ class RegexGuardrail(GuardrailInterface):
             except (re.error, SecurityError) as e:
                 raise ValueError(f"Invalid or unsafe regex pattern '{pattern}': {str(e)}")
     
-    def validate_config(self) -> bool:
-        """Validate regex filter configuration."""
-        if not isinstance(self.patterns, list):
-            return False
-        
-        if self.action not in ['block', 'allow', 'warn']:
-            return False
-        
-        # Validate regex patterns
-        for pattern in self.patterns:
-            try:
-                re.compile(pattern)
-            except re.error:
-                return False
-        
-        return True 
+ 

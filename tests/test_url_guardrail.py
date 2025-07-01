@@ -269,14 +269,14 @@ class TestURLFilter:
         
         for config in invalid_configs[:-1]:  # Skip the last valid one
             config['on_error'] = 'allow'
-            guardrail_instance = URLGuardrail(config)
-            assert guardrail_instance.validate_config() == False
+            with pytest.raises(ValueError):
+                guardrail_instance = URLGuardrail(config)
         
         # Test the valid minimal config
         valid_config = invalid_configs[-1]
         valid_config['on_error'] = 'allow'
         guardrail_instance = URLGuardrail(valid_config)
-        assert guardrail_instance.validate_config() == True
+        # Should not raise an exception
 
     @pytest.mark.asyncio
     async def test_url_extraction_patterns(self):

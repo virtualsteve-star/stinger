@@ -1,20 +1,27 @@
-from typing import Optional
+from typing import Optional, List
 from ..core.guardrail_interface import GuardrailInterface, GuardrailResult, GuardrailType
+from ..core.config_validator import ValidationRule, COMMON_GUARDRAIL_RULES
 from ..core.conversation import Conversation
-
-# Need to recreate FilterResult for backward compatibility
-from dataclasses import dataclass
 
 class KeywordBlockGuardrail(GuardrailInterface):
     def __init__(self, config: dict):
         """Initialize keyword block filter."""
         name = config.get('name', 'keyword_block')
-        enabled = config.get('enabled', True)
-        super().__init__(name, GuardrailType.KEYWORD_BLOCK, enabled)
+        super().__init__(name, GuardrailType.KEYWORD_BLOCK, config)
         
-        # Keep config for backward compatibility
-        self.config = config.copy()
         self.keyword = config.get('keyword', '').lower()
+    
+    def get_validation_rules(self) -> List[ValidationRule]:
+        """Get validation rules for keyword block guardrail."""
+        return COMMON_GUARDRAIL_RULES + [
+            ValidationRule(
+                field='keyword',
+                required=True,
+                field_type=str,
+                min_length=1,
+                error_message="keyword must be a non-empty string"
+            )
+        ]
     
 
     async def analyze(self, content: str, conversation: Optional['Conversation'] = None) -> GuardrailResult:

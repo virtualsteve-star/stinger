@@ -8,10 +8,10 @@ common initialization, API interaction, fallback logic, and configuration manage
 import json
 import logging
 from abc import abstractmethod
-from typing import Dict, Any, Optional, Type, Tuple
-from dataclasses import dataclass
+from typing import Dict, Any, Optional, Type, Tuple, List
 
 from ..core.guardrail_interface import GuardrailInterface, GuardrailType, GuardrailResult
+from ..core.config_validator import ValidationRule, AI_GUARDRAIL_RULES
 from ..core.model_config import ModelFactory, ModelError
 from ..core.conversation import Conversation
 from ..core.api_key_manager import get_openai_key
@@ -38,7 +38,7 @@ class BaseAIGuardrail(GuardrailInterface):
             default_confidence_threshold: Default confidence threshold for this guardrail type
             default_on_error: Default error handling behavior
         """
-        super().__init__(name, guardrail_type, config.get('enabled', True))
+        super().__init__(name, guardrail_type, config)
         
         # Configuration
         self.confidence_threshold = config.get('confidence_threshold', default_confidence_threshold)
@@ -97,6 +97,10 @@ class BaseAIGuardrail(GuardrailInterface):
     def get_categories_field_name(self) -> str:
         """Get the name of the categories field for this guardrail type."""
         pass
+    
+    def get_validation_rules(self) -> List[ValidationRule]:
+        """Get validation rules for AI guardrails."""
+        return AI_GUARDRAIL_RULES
     
     async def analyze(self, content: str, conversation: Optional['Conversation'] = None) -> GuardrailResult:
         """Analyze content using AI with centralized model configuration."""

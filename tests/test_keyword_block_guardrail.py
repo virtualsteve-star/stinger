@@ -89,22 +89,18 @@ class TestKeywordBlockFilter:
     @pytest.mark.asyncio
     async def test_no_keyword_configured(self):
         """Test behavior when no keyword is configured."""
-        config = {'on_error': 'allow'}  # No keyword
-        guardrail_instance = KeywordBlockGuardrail(config)
-        
-        result = await guardrail_instance.analyze("Any content should be allowed")
-        assert result.blocked == False
-        assert result.reason == 'No keyword configured'
+        # Now that validation is enforced, we expect this to fail
+        with pytest.raises(ValueError, match="Required field 'keyword' is missing"):
+            config = {'on_error': 'allow'}  # No keyword
+            guardrail_instance = KeywordBlockGuardrail(config)
 
     @pytest.mark.asyncio
     async def test_empty_keyword_configured(self):
         """Test behavior when empty keyword is configured."""
-        config = {'keyword': '', 'on_error': 'allow'}
-        guardrail_instance = KeywordBlockGuardrail(config)
-        
-        result = await guardrail_instance.analyze("Any content should be allowed")
-        assert result.blocked == False
-        assert result.reason == 'No keyword configured'
+        # Validation now prevents empty keywords
+        with pytest.raises(ValueError, match="keyword must have length >= 1"):
+            config = {'keyword': '', 'on_error': 'allow'}
+            guardrail_instance = KeywordBlockGuardrail(config)
 
     @pytest.mark.asyncio
     async def test_whitespace_keyword(self):
@@ -205,7 +201,7 @@ class TestKeywordBlockFilter:
         # Valid configuration
         valid_config = {'keyword': 'test', 'on_error': 'allow'}
         guardrail_instance = KeywordBlockGuardrail(valid_config)
-        assert guardrail_instance.config['keyword'] == 'test'
+        assert guardrail_instance.keyword == 'test'
         
         # Configuration with extra fields
         config_with_extras = {
@@ -214,8 +210,8 @@ class TestKeywordBlockFilter:
             'extra_field': 'ignored'
         }
         guardrail_instance = KeywordBlockGuardrail(config_with_extras)
-        assert guardrail_instance.config['keyword'] == 'test'
-        assert guardrail_instance.config.get('extra_field') == 'ignored'
+        assert guardrail_instance.keyword == 'test'
+        # Extra fields are ignored during initialization
 
     @pytest.mark.asyncio
     async def test_edge_case_keywords(self):

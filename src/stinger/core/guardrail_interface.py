@@ -11,6 +11,7 @@ from dataclasses import dataclass
 from enum import Enum
 import logging
 from .input_validation import validate_input_content, ValidationError
+from .config_validator import ConfigValidator, ValidationRule
 
 
 class GuardrailType(Enum):
@@ -70,11 +71,24 @@ class GuardrailResult:
 class GuardrailInterface(ABC):
     """Universal interface for all guardrails to ensure pluggability."""
     
-    def __init__(self, name: str, guardrail_type: GuardrailType, enabled: bool = True):
-        """Initialize guardrail with name, type, and enabled status."""
+    def __init__(self, name: str, guardrail_type: GuardrailType, config: Dict[str, Any]):
+        """Initialize guardrail with name, type, and configuration.
+        
+        Args:
+            name: Name of the guardrail instance
+            guardrail_type: Type of guardrail
+            config: Configuration dictionary
+            
+        Raises:
+            ValueError: If configuration validation fails
+        """
+        # Validate configuration before initialization
+        self._validate_config(config)
+        
+        # Initialize core attributes
         self.name = name
         self.guardrail_type = guardrail_type
-        self.enabled = enabled
+        self.enabled = config.get('enabled', True)
     
     @abstractmethod
     async def analyze(self, content: str, conversation: Optional['Conversation'] = None) -> GuardrailResult:
@@ -156,6 +170,37 @@ class GuardrailInterface(ABC):
     def get_config(self) -> Dict[str, Any]:
         """Get current configuration of this guardrail."""
         pass
+    
+    @abstractmethod
+    def get_validation_rules(self) -> List[ValidationRule]:
+        """Get the validation rules for this guardrail.
+        
+        Returns:
+            List of ValidationRule objects defining the validation schema
+        """
+        pass
+    
+    def get_config_validator(self) -> ConfigValidator:
+        """Get the configuration validator for this guardrail.
+        
+        Can be overridden by subclasses that need custom validator logic.
+        
+        Returns:
+            ConfigValidator instance
+        """
+        return ConfigValidator(self.get_validation_rules())
+    
+    def _validate_config(self, config: Dict[str, Any]):
+        """Validate the configuration using the centralized validator.
+        
+        Args:
+            config: Configuration dictionary to validate
+            
+        Raises:
+            ValueError: If configuration is invalid
+        """
+        validator = self.get_config_validator()
+        validator.validate_with_exception(config)
     
     @abstractmethod
     def update_config(self, config: Dict[str, Any]) -> bool:
