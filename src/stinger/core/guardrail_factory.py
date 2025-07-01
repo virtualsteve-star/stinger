@@ -10,14 +10,7 @@ from typing import Dict, Any, Optional
 from .guardrail_interface import GuardrailInterface, GuardrailType, GuardrailRegistry, GuardrailFactory
 from ..utils.exceptions import FilterInitializationError
 
-# Import legacy filter adapters
-from ..filters.legacy_adapters import (
-    KeywordBlockAdapter,
-    RegexFilterAdapter,
-    LengthFilterAdapter,
-    URLFilterAdapter,
-    PassThroughFilterAdapter
-)
+# Legacy filter adapters removed - all filters now use GuardrailInterface directly
 
 # Import new Phase 5 filters
 from ..filters.content_moderation_filter import ContentModerationFilter
@@ -31,13 +24,18 @@ from ..filters.ai_toxicity_detection_filter import AIToxicityDetectionFilter
 from ..filters.simple_code_generation_filter import SimpleCodeGenerationFilter
 from ..filters.ai_code_generation_filter import AICodeGenerationFilter
 
+# Import TopicFilter (Phase 7B.2)
+from ..filters.topic_filter import TopicFilter
+
 logger = logging.getLogger(__name__)
 
 
 def create_keyword_block_filter(name: str, config: Dict[str, Any]) -> GuardrailInterface:
     """Create a keyword block filter."""
     try:
-        return KeywordBlockAdapter(name, config)
+        # Import the direct implementation for new GuardrailInterface
+        from ..filters.keyword_block import KeywordBlockFilter
+        return KeywordBlockFilter(config)
     except Exception as e:
         logger.error(f"Failed to create keyword block filter '{name}': {e}")
         raise FilterInitializationError(
@@ -50,7 +48,9 @@ def create_keyword_block_filter(name: str, config: Dict[str, Any]) -> GuardrailI
 def create_regex_filter(name: str, config: Dict[str, Any]) -> GuardrailInterface:
     """Create a regex filter."""
     try:
-        return RegexFilterAdapter(name, config)
+        # Import the direct implementation for new GuardrailInterface
+        from ..filters.regex_filter import RegexFilter
+        return RegexFilter(config)
     except Exception as e:
         logger.error(f"Failed to create regex filter '{name}': {e}")
         raise FilterInitializationError(
@@ -63,7 +63,9 @@ def create_regex_filter(name: str, config: Dict[str, Any]) -> GuardrailInterface
 def create_length_filter(name: str, config: Dict[str, Any]) -> GuardrailInterface:
     """Create a length filter."""
     try:
-        return LengthFilterAdapter(name, config)
+        # Import the direct implementation for new GuardrailInterface
+        from ..filters.length_filter import LengthFilter
+        return LengthFilter(config)
     except Exception as e:
         logger.error(f"Failed to create length filter '{name}': {e}")
         raise FilterInitializationError(
@@ -76,7 +78,9 @@ def create_length_filter(name: str, config: Dict[str, Any]) -> GuardrailInterfac
 def create_url_filter(name: str, config: Dict[str, Any]) -> GuardrailInterface:
     """Create a URL filter."""
     try:
-        return URLFilterAdapter(name, config)
+        # Import the direct implementation for new GuardrailInterface
+        from ..filters.url_filter import URLFilter
+        return URLFilter(config)
     except Exception as e:
         logger.error(f"Failed to create URL filter '{name}': {e}")
         raise FilterInitializationError(
@@ -89,7 +93,9 @@ def create_url_filter(name: str, config: Dict[str, Any]) -> GuardrailInterface:
 def create_pass_through_filter(name: str, config: Dict[str, Any]) -> GuardrailInterface:
     """Create a pass-through filter."""
     try:
-        return PassThroughFilterAdapter(name, config)
+        # Import the direct implementation for new GuardrailInterface
+        from ..filters.pass_through import PassThroughFilter
+        return PassThroughFilter(config)
     except Exception as e:
         logger.error(f"Failed to create pass-through filter '{name}': {e}")
         raise FilterInitializationError(
@@ -203,14 +209,43 @@ def create_ai_code_generation_filter(name: str, config: Dict[str, Any]) -> Guard
         ) from e
 
 
+def create_topic_filter(name: str, config: Dict[str, Any]) -> GuardrailInterface:
+    """Create a topic filter."""
+    try:
+        return TopicFilter(config)
+    except Exception as e:
+        logger.error(f"Failed to create topic filter '{name}': {e}")
+        raise FilterInitializationError(
+            f"Failed to create topic filter '{name}': {str(e)}", 
+            filter_name=name, 
+            config=config
+        ) from e
+
+
+def create_keyword_list_filter(name: str, config: Dict[str, Any]) -> GuardrailInterface:
+    """Create a keyword list filter."""
+    try:
+        from ..filters.keyword_list import KeywordListFilter
+        return KeywordListFilter(config)
+    except Exception as e:
+        logger.error(f"Failed to create keyword list filter '{name}': {e}")
+        raise FilterInitializationError(
+            f"Failed to create keyword list filter '{name}': {str(e)}", 
+            filter_name=name, 
+            config=config
+        ) from e
+
+
 def register_all_factories(registry: GuardrailRegistry) -> None:
     """Register all guardrail factories with the registry."""
     # Register all filters unconditionally
     registry.register_factory(GuardrailType.KEYWORD_BLOCK, create_keyword_block_filter)
+    registry.register_factory(GuardrailType.KEYWORD_LIST, create_keyword_list_filter)
     registry.register_factory(GuardrailType.REGEX_FILTER, create_regex_filter)
     registry.register_factory(GuardrailType.LENGTH_FILTER, create_length_filter)
     registry.register_factory(GuardrailType.URL_FILTER, create_url_filter)
     registry.register_factory(GuardrailType.PASS_THROUGH, create_pass_through_filter)
+    registry.register_factory(GuardrailType.TOPIC_FILTER, create_topic_filter)
     registry.register_factory(GuardrailType.CONTENT_MODERATION, create_content_moderation_filter)
     registry.register_factory(GuardrailType.PROMPT_INJECTION, create_prompt_injection_filter)
     registry.register_factory(GuardrailType.PII_DETECTION, create_simple_pii_detection_filter)  # Default to simple

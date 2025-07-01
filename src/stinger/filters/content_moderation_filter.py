@@ -8,6 +8,7 @@ import logging
 from typing import Dict, Any, Optional
 from ..core.guardrail_interface import GuardrailInterface, GuardrailType, GuardrailResult
 from ..core.api_key_manager import APIKeyManager
+from ..core.conversation import Conversation
 from ..adapters.openai_adapter import OpenAIAdapter, ModerationResult
 
 logger = logging.getLogger(__name__)
@@ -45,7 +46,7 @@ class ContentModerationFilter(GuardrailInterface):
         except Exception as e:
             logger.error(f"Failed to initialize OpenAI adapter for {self.name}: {e}")
     
-    async def analyze(self, content: str) -> GuardrailResult:
+    async def analyze(self, content: str, conversation: Optional['Conversation'] = None) -> GuardrailResult:
         """Analyze content using OpenAI moderation API."""
         if not self.is_enabled():
             return GuardrailResult(

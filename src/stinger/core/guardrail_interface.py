@@ -18,10 +18,12 @@ class GuardrailType(Enum):
     CONTENT_MODERATION = "content_moderation"
     PROMPT_INJECTION = "prompt_injection"
     KEYWORD_BLOCK = "keyword_block"
+    KEYWORD_LIST = "keyword_list"
     REGEX_FILTER = "regex_filter"
     LENGTH_FILTER = "length_filter"
     URL_FILTER = "url_filter"
     PASS_THROUGH = "pass_through"
+    TOPIC_FILTER = "topic_filter"
     PII_DETECTION = "pii_detection"
     TOXICITY_DETECTION = "toxicity_detection"
     CODE_GENERATION = "code_generation"
@@ -56,8 +58,16 @@ class GuardrailInterface(ABC):
         self.enabled = enabled
     
     @abstractmethod
-    async def analyze(self, content: str) -> GuardrailResult:
-        """Analyze content and return standardized result."""
+    async def analyze(self, content: str, conversation: Optional['Conversation'] = None) -> GuardrailResult:
+        """Analyze content and return standardized result.
+        
+        Args:
+            content: The content to analyze
+            conversation: Optional conversation context for multi-turn analysis
+            
+        Returns:
+            GuardrailResult with analysis details
+        """
         pass
     
     async def analyze_safe(self, content: str) -> GuardrailResult:

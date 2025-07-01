@@ -12,18 +12,7 @@ from src.stinger.core.guardrail_factory import register_all_factories
 from src.stinger.core.api_key_manager import APIKeyManager
 
 
-def register_all_factories(registry: GuardrailRegistry):
-    """Register all available guardrail factories."""
-    from src.stinger.filters.legacy_adapters import (
-        KeywordBlockAdapter, RegexFilterAdapter, LengthFilterAdapter,
-        URLFilterAdapter, PassThroughFilterAdapter
-    )
-    
-    registry.register_factory(GuardrailType.KEYWORD_BLOCK, KeywordBlockAdapter)
-    registry.register_factory(GuardrailType.REGEX_FILTER, RegexFilterAdapter)
-    registry.register_factory(GuardrailType.LENGTH_FILTER, LengthFilterAdapter)
-    registry.register_factory(GuardrailType.URL_FILTER, URLFilterAdapter)
-    registry.register_factory(GuardrailType.PASS_THROUGH, PassThroughFilterAdapter)
+# Use the actual register_all_factories from the module
 
 
 class TestGuardrailInterface:
@@ -156,54 +145,7 @@ class TestAPIKeyManager:
         assert isinstance(health, dict)
 
 
-class TestLegacyFilterAdapters:
-    """Test the legacy filter adapters."""
-    
-    @pytest.mark.asyncio
-    async def test_keyword_block_adapter(self):
-        """Test keyword block filter adapter."""
-        from src.stinger.filters.legacy_adapters import KeywordBlockAdapter
-        
-        config = {
-            'name': 'test_keyword',
-            'type': 'keyword_block',
-            'enabled': True,
-            'keyword': 'test'
-        }
-        
-        adapter = KeywordBlockAdapter('test_keyword', config)
-        
-        # Test with matching content
-        result = await adapter.analyze("This is a test message")
-        assert result.blocked is True
-        assert "test" in result.reason.lower()
-        
-        # Test with non-matching content
-        result = await adapter.analyze("This message has no keywords")
-        assert result.blocked is False
-    
-    @pytest.mark.asyncio
-    async def test_regex_filter_adapter(self):
-        """Test regex filter adapter."""
-        from src.stinger.filters.legacy_adapters import RegexFilterAdapter
-        
-        config = {
-            'name': 'test_regex',
-            'type': 'regex_filter',
-            'enabled': True,
-            'patterns': [r'\btest\b'],
-            'action': 'block'
-        }
-        
-        adapter = RegexFilterAdapter('test_regex', config)
-        
-        # Test with matching content
-        result = await adapter.analyze("This is a test message")
-        assert result.blocked is True
-        
-        # Test with non-matching content
-        result = await adapter.analyze("This message has no matches")
-        assert result.blocked is False
+# Legacy filter adapters removed - all filters now use GuardrailInterface directly
 
 
 class TestGuardrailFactoryAndAPIFilters:

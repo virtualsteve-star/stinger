@@ -77,12 +77,12 @@ async def run_test_suite(config_path: str, test_corpus_path: str, suite_name: st
         
         try:
             result = await pipeline.process(test_input)
-            if result.action == expected:
+            if result.blocked == expected:
                 print(f"✅ Test {i:2d}: PASS - {description}")
                 passed += 1
             else:
                 print(f"❌ Test {i:2d}: FAIL - {description}")
-                print(f"   Expected: {expected}, Got: {result.action}")
+                print(f"   Expected: {expected}, Got: {result.blocked}")
                 print(f"   Reason: {result.reason}")
         except Exception as e:
             print(f"💥 Test {i:2d}: ERROR - {description}")

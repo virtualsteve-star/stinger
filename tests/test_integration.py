@@ -97,7 +97,7 @@ class ConversationSimulator:
                 # Process through pipeline
                 try:
                     result = await self.pipeline.process(test_input)
-                    action = result.action
+                    action = result.blocked
                     reason = result.reason
                 except Exception as e:
                     action = "error"
@@ -200,7 +200,7 @@ class ConversationSimulator:
                 # Run moderation
                 try:
                     result = await self.pipeline.process(test_input)
-                    action = result.action
+                    action = result.blocked
                 except Exception as e:
                     action = "error"
                 tag = {

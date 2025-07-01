@@ -9,6 +9,7 @@ from .keyword_list import KeywordListFilter
 from .regex_filter import RegexFilter
 from .length_filter import LengthFilter
 from .url_filter import URLFilter
+from .topic_filter import TopicFilter
 
 # Registry mapping filter type names to filter classes
 FILTER_REGISTRY = {
@@ -18,6 +19,7 @@ FILTER_REGISTRY = {
     'regex_filter': RegexFilter,
     'length_filter': LengthFilter,
     'url_filter': URLFilter,
+    'topic_filter': TopicFilter,
 }
 
 # Export all filter classes for direct import
@@ -29,4 +31,5 @@ __all__ = [
     'RegexFilter',
     'LengthFilter',
     'URLFilter',
+    'TopicFilter',
 ]

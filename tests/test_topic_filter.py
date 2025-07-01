@@ -59,9 +59,9 @@ class TestTopicFilter:
         
         filter_obj = TopicFilter(config)
         
-        result = await filter_obj.run("I want to discuss politics and religion")
+        result = await filter_obj.analyze("I want to discuss politics and religion")
         
-        assert result.action == 'block'
+        assert result.blocked == True
         assert 'politics' in result.reason
         assert result.confidence > 0
     
@@ -76,9 +76,9 @@ class TestTopicFilter:
         
         filter_obj = TopicFilter(config)
         
-        result = await filter_obj.run("I need help with my account")
+        result = await filter_obj.analyze("I need help with my account")
         
-        assert result.action == 'allow'
+        assert result.blocked == False
         assert 'denied topics' not in result.reason
     
     @pytest.mark.asyncio
@@ -92,9 +92,9 @@ class TestTopicFilter:
         
         filter_obj = TopicFilter(config)
         
-        result = await filter_obj.run("I want to discuss politics")
+        result = await filter_obj.analyze("I want to discuss politics")
         
-        assert result.action == 'block'
+        assert result.blocked == True
         assert 'allowed topics' in result.reason
         assert result.confidence == 1.0
     
@@ -109,9 +109,9 @@ class TestTopicFilter:
         
         filter_obj = TopicFilter(config)
         
-        result = await filter_obj.run("I need customer service help")
+        result = await filter_obj.analyze("I need customer service help")
         
-        assert result.action == 'allow'
+        assert result.blocked == False
         assert 'customer service' in result.reason
     
     @pytest.mark.asyncio
@@ -126,9 +126,9 @@ class TestTopicFilter:
         
         filter_obj = TopicFilter(config)
         
-        result = await filter_obj.run("I need customer service but also want to discuss politics")
+        result = await filter_obj.analyze("I need customer service but also want to discuss politics")
         
-        assert result.action == 'block'
+        assert result.blocked == True
         assert 'politics' in result.reason
     
     @pytest.mark.asyncio
@@ -143,9 +143,9 @@ class TestTopicFilter:
         
         filter_obj = TopicFilter(config)
         
-        result = await filter_obj.run("I want to discuss sports")
+        result = await filter_obj.analyze("I want to discuss sports")
         
-        assert result.action == 'block'
+        assert result.blocked == True
         assert 'allowed topics' in result.reason
     
     @pytest.mark.asyncio
@@ -160,10 +160,10 @@ class TestTopicFilter:
         
         filter_obj = TopicFilter(config)
         
-        result = await filter_obj.run("I need customer service help")
+        result = await filter_obj.analyze("I need customer service help")
         
-        assert result.action == 'allow'
-        assert 'both allow and deny checks' in result.reason
+        assert result.blocked == False
+        assert 'Content matches allowed topics' in result.reason
     
     @pytest.mark.asyncio
     async def test_case_sensitive_matching(self):
@@ -178,12 +178,12 @@ class TestTopicFilter:
         filter_obj = TopicFilter(config)
         
         # Should not match due to case sensitivity
-        result = await filter_obj.run("I want to discuss politics")
-        assert result.action == 'allow'
+        result = await filter_obj.analyze("I want to discuss politics")
+        assert result.blocked == False
         
         # Should match
-        result = await filter_obj.run("I want to discuss POLITICS")
-        assert result.action == 'block'
+        result = await filter_obj.analyze("I want to discuss POLITICS")
+        assert result.blocked == True
     
     @pytest.mark.asyncio
     async def test_case_insensitive_matching(self):
@@ -198,11 +198,11 @@ class TestTopicFilter:
         filter_obj = TopicFilter(config)
         
         # Should match regardless of case
-        result = await filter_obj.run("I want to discuss POLITICS")
-        assert result.action == 'block'
+        result = await filter_obj.analyze("I want to discuss POLITICS")
+        assert result.blocked == True
         
-        result = await filter_obj.run("I want to discuss Politics")
-        assert result.action == 'block'
+        result = await filter_obj.analyze("I want to discuss Politics")
+        assert result.blocked == True
     
     @pytest.mark.asyncio
     async def test_regex_matching(self):
@@ -217,12 +217,12 @@ class TestTopicFilter:
         filter_obj = TopicFilter(config)
         
         # Should match
-        result = await filter_obj.run("This is spam content")
-        assert result.action == 'block'
+        result = await filter_obj.analyze("This is spam content")
+        assert result.blocked == True
         
         # Should not match (word boundary)
-        result = await filter_obj.run("This is spammy content")
-        assert result.action == 'allow'
+        result = await filter_obj.analyze("This is spammy content")
+        assert result.blocked == False
     
     @pytest.mark.asyncio
     async def test_confidence_threshold(self):
@@ -237,8 +237,8 @@ class TestTopicFilter:
         filter_obj = TopicFilter(config)
         
         # One match out of three topics = 0.33 confidence, below threshold
-        result = await filter_obj.run("I want to discuss politics")
-        assert result.action == 'allow'
+        result = await filter_obj.analyze("I want to discuss politics")
+        assert result.blocked == False
         assert 'Confidence' in result.reason
     
     @pytest.mark.asyncio
@@ -253,8 +253,8 @@ class TestTopicFilter:
         
         filter_obj = TopicFilter(config)
         
-        result = await filter_obj.run("I want to discuss politics")
-        assert result.action == 'allow'
+        result = await filter_obj.analyze("I want to discuss politics")
+        assert result.blocked == False
         assert 'disabled' in result.reason
     
     @pytest.mark.asyncio
@@ -268,9 +268,9 @@ class TestTopicFilter:
         
         filter_obj = TopicFilter(config)
         
-        result = await filter_obj.run("")
-        assert result.action == 'allow'
-        assert 'empty content' in result.reason
+        result = await filter_obj.analyze("")
+        assert result.blocked == False
+        assert 'Empty content' in result.reason
     
     def test_guardrail_interface_compatibility(self):
         """Test GuardrailInterface compatibility."""
@@ -386,8 +386,8 @@ class TestTopicFilterEdgeCases:
         filter_obj = TopicFilter(config)
         
         # Should still work with valid patterns
-        result = await filter_obj.run("This contains valid_pattern")
-        assert result.action == 'block'
+        result = await filter_obj.analyze("This contains valid_pattern")
+        assert result.blocked == True
     
     @pytest.mark.asyncio
     async def test_empty_topic_lists(self):
@@ -401,9 +401,9 @@ class TestTopicFilterEdgeCases:
         
         filter_obj = TopicFilter(config)
         
-        result = await filter_obj.run("Any content")
-        assert result.action == 'allow'
-        assert 'both allow and deny checks' in result.reason
+        result = await filter_obj.analyze("Any content")
+        assert result.blocked == False
+        assert 'No topic restrictions' in result.reason
     
     @pytest.mark.asyncio
     async def test_duplicate_topics(self):
@@ -416,8 +416,8 @@ class TestTopicFilterEdgeCases:
         
         filter_obj = TopicFilter(config)
         
-        result = await filter_obj.run("I want to discuss politics")
-        assert result.action == 'block'
+        result = await filter_obj.analyze("I want to discuss politics")
+        assert result.blocked == True
     
     @pytest.mark.asyncio
     async def test_very_long_content(self):
@@ -433,8 +433,8 @@ class TestTopicFilterEdgeCases:
         # Create very long content
         long_content = "This is a very long content. " * 1000 + "I want to discuss politics"
         
-        result = await filter_obj.run(long_content)
-        assert result.action == 'block'
+        result = await filter_obj.analyze(long_content)
+        assert result.blocked == True
     
     @pytest.mark.asyncio
     async def test_special_characters(self):
@@ -447,8 +447,8 @@ class TestTopicFilterEdgeCases:
         
         filter_obj = TopicFilter(config)
         
-        result = await filter_obj.run("I want to discuss politics! @#$%^&*()")
-        assert result.action == 'block'
+        result = await filter_obj.analyze("I want to discuss politics! @#$%^&*()")
+        assert result.blocked == True
     
     @pytest.mark.asyncio
     async def test_unicode_content(self):
@@ -461,8 +461,8 @@ class TestTopicFilterEdgeCases:
         
         filter_obj = TopicFilter(config)
         
-        result = await filter_obj.run("I want to discuss politics 🗳️")
-        assert result.action == 'block'
+        result = await filter_obj.analyze("I want to discuss politics 🗳️")
+        assert result.blocked == True
 
 
 class TestTopicFilterPerformance:
@@ -489,7 +489,7 @@ class TestTopicFilterPerformance:
         start_time = time.time()
         
         for i in range(10):
-            await filter_obj.run(f"This is content with topic_{i}")
+            await filter_obj.analyze(f"This is content with topic_{i}")
         
         end_time = time.time()
         
@@ -517,7 +517,7 @@ class TestTopicFilterPerformance:
         start_time = time.time()
         
         for i in range(50):
-            await filter_obj.run(f"This is test content {i} with various words")
+            await filter_obj.analyze(f"This is test content {i} with various words")
         
         end_time = time.time()
         

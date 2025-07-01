@@ -1,17 +1,26 @@
 import os
 from pathlib import Path
 from typing import List, Optional
-from ..core.base_filter import BaseFilter, FilterResult
+from ..core.guardrail_interface import GuardrailInterface, GuardrailResult, GuardrailType
+from ..core.conversation import Conversation
 from ..utils.exceptions import FilterError
 
-class KeywordListFilter(BaseFilter):
+# Need to recreate FilterResult for backward compatibility
+from dataclasses import dataclass
+
+class KeywordListFilter(GuardrailInterface):
     """
     Filter that blocks content containing any of a list of keywords.
     Supports both inline keywords and loading from external files.
     """
     
     def __init__(self, config: dict):
-        super().__init__(config)
+        """Initialize keyword list filter."""
+        name = config.get('name', 'keyword_list')
+        enabled = config.get('enabled', True)
+        super().__init__(name, GuardrailType.KEYWORD_LIST, enabled)
+        
+        self.config = config  # Keep for compatibility with _load_keywords
         self.keywords = []
         self.case_sensitive = config.get('case_sensitive', False)
         self._load_keywords()
@@ -79,13 +88,30 @@ class KeywordListFilter(BaseFilter):
         
         return keywords
     
-    async def run(self, content: str) -> FilterResult:
-        """Run the keyword list filter on the given content."""
+
+    async def analyze(self, content: str, conversation: Optional['Conversation'] = None) -> GuardrailResult:
+        """Analyze content for blocked keywords."""
         if not content:
-            return FilterResult(action='allow', reason='no content to check')
+            return GuardrailResult(
+                blocked=False,
+                confidence=0.0,
+                reason='No content to analyze',
+                details={'keywords_count': len(self.keywords)},
+                guardrail_name=self.name,
+                guardrail_type=self.guardrail_type,
+                risk_level='low'
+            )
         
         if not self.keywords:
-            return FilterResult(action='allow', reason='no keywords configured')
+            return GuardrailResult(
+                blocked=False,
+                confidence=0.0,
+                reason='No keywords configured',
+                details={'keywords_count': 0},
+                guardrail_name=self.name,
+                guardrail_type=self.guardrail_type,
+                risk_level='low'
+            )
         
         # Prepare content for matching
         content_to_check = content if self.case_sensitive else content.lower()
@@ -97,15 +123,70 @@ class KeywordListFilter(BaseFilter):
                 matched_keywords.append(keyword)
         
         if matched_keywords:
-            # Return the first matched keyword for the reason
-            matched_keyword = matched_keywords[0]
-            return FilterResult(
-                action='block',
-                reason=f'blocked keywords: {", ".join(matched_keywords)}',
-                confidence=1.0
+            return GuardrailResult(
+                blocked=True,
+                confidence=1.0,
+                reason=f'Blocked keywords found: {", ".join(matched_keywords)}',
+                details={
+                    'matched_keywords': matched_keywords,
+                    'total_keywords': len(self.keywords),
+                    'case_sensitive': self.case_sensitive
+                },
+                guardrail_name=self.name,
+                guardrail_type=self.guardrail_type,
+                risk_level='high'
             )
         
-        return FilterResult(action='allow', reason='no keyword matches')
+        return GuardrailResult(
+            blocked=False,
+            confidence=0.0,
+            reason='No keyword matches found',
+            details={
+                'matched_keywords': [],
+                'total_keywords': len(self.keywords),
+                'case_sensitive': self.case_sensitive
+            },
+            guardrail_name=self.name,
+            guardrail_type=self.guardrail_type,
+            risk_level='low'
+        )
+    
+    def is_available(self) -> bool:
+        """Check if filter is available."""
+        return True
+    
+    def get_config(self) -> dict:
+        """Get current configuration."""
+        return {
+            'name': self.name,
+            'type': self.guardrail_type.value,
+            'enabled': self.enabled,
+            'keywords': self.keywords,
+            'case_sensitive': self.case_sensitive,
+            'keywords_file': self.config.get('keywords_file')
+        }
+    
+    def update_config(self, config: dict) -> bool:
+        """Update configuration."""
+        try:
+            # Update config dict for _load_keywords compatibility
+            if 'keywords' in config:
+                self.config['keywords'] = config['keywords']
+            if 'keywords_file' in config:
+                self.config['keywords_file'] = config['keywords_file']
+            if 'case_sensitive' in config:
+                self.case_sensitive = config['case_sensitive']
+                self.config['case_sensitive'] = config['case_sensitive']
+            if 'enabled' in config:
+                self.enabled = config['enabled']
+            
+            # Reload keywords if keywords or file changed
+            if 'keywords' in config or 'keywords_file' in config or 'case_sensitive' in config:
+                self._load_keywords()
+            
+            return True
+        except Exception:
+            return False
     
     def validate_config(self) -> bool:
         """Validate filter configuration."""

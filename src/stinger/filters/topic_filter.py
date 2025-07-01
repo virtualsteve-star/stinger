@@ -8,13 +8,16 @@ It can be used to restrict or allow content based on predefined topic lists.
 import logging
 import re
 from typing import Dict, List, Optional, Any
-from ..core.base_filter import BaseFilter, FilterResult
+# FilterResult removed - now using GuardrailResult only
 from ..core.guardrail_interface import GuardrailInterface, GuardrailResult, GuardrailType
+from ..core.conversation import Conversation
 
 logger = logging.getLogger(__name__)
 
+# Need to recreate FilterResult for backward compatibility
+from dataclasses import dataclass
 
-class TopicFilter(BaseFilter, GuardrailInterface):
+class TopicFilter(GuardrailInterface):
     """
     Filter content based on topic allow/deny lists.
     
@@ -39,7 +42,10 @@ class TopicFilter(BaseFilter, GuardrailInterface):
                 - use_regex: Whether to treat topics as regex patterns
                 - confidence_threshold: Minimum confidence for blocking
         """
-        super().__init__(config)
+        # Initialize GuardrailInterface with required parameters
+        name = config.get('name', 'topic_filter')
+        enabled = config.get('enabled', True)
+        super().__init__(name, GuardrailType.TOPIC_FILTER, enabled)
         
         self.allow_topics = config.get('allow_topics', [])
         self.deny_topics = config.get('deny_topics', [])
@@ -87,89 +93,7 @@ class TopicFilter(BaseFilter, GuardrailInterface):
                 pattern = re.compile(re.escape(topic), flags)
                 self._compiled_deny_patterns.append(pattern)
     
-    async def run(self, content: str) -> FilterResult:
-        """
-        Run the topic filter on content.
-        
-        Args:
-            content: Content to check
-            
-        Returns:
-            FilterResult with action and details
-        """
-        if not self.enabled:
-            return FilterResult(action='allow', reason='filter disabled')
-        
-        if not content:
-            return FilterResult(action='allow', reason='empty content')
-        
-        # Find matches
-        allow_matches = self._find_matches(content, self._compiled_allow_patterns, self.allow_topics)
-        deny_matches = self._find_matches(content, self._compiled_deny_patterns, self.deny_topics)
-        
-        # Determine action based on mode
-        action = 'allow'
-        reason = 'no matches'
-        confidence = 0.0
-        
-        if self.mode == "allow":
-            # Only allow content if it matches allow_topics
-            if not allow_matches:
-                action = 'block'
-                reason = "Content does not match any allowed topics"
-                confidence = 1.0
-            else:
-                action = 'allow'
-                reason = f"Content matches allowed topics: {', '.join(allow_matches)}"
-                confidence = min(1.0, len(allow_matches) / max(len(self.allow_topics), 1))
-        
-        elif self.mode == "deny":
-            # Block content if it matches deny_topics
-            if deny_matches:
-                confidence = min(1.0, len(deny_matches) / max(len(self.deny_topics), 1))
-                if confidence >= self.confidence_threshold:
-                    action = 'block'
-                    reason = f"Content matches denied topics: {', '.join(deny_matches)}"
-                else:
-                    action = 'allow'
-                    reason = f"Confidence {confidence:.2f} below threshold {self.confidence_threshold}"
-            else:
-                action = 'allow'
-                reason = "Content does not match any denied topics"
-        
-        elif self.mode == "both":
-            # Use both lists with deny taking priority
-            if deny_matches:
-                action = 'block'
-                reason = f"Content matches denied topics: {', '.join(deny_matches)}"
-                confidence = min(1.0, len(deny_matches) / max(len(self.deny_topics), 1))
-            elif self.allow_topics and not allow_matches:
-                action = 'block'
-                reason = "Content does not match any allowed topics"
-                confidence = 1.0
-            else:
-                action = 'allow'
-                reason = "Content passes both allow and deny checks"
-                confidence = min(1.0, len(allow_matches) / max(len(self.allow_topics), 1)) if self.allow_topics else 0.0
-        
-        # Check confidence threshold (only for allow/deny matches, not for block due to missing allow matches)
-        if action == 'allow' and confidence < self.confidence_threshold:
-            if self.mode == "both" and self.allow_topics and not allow_matches and not deny_matches:
-                reason = "Content passes both allow and deny checks"
-            elif len(self.allow_topics) == 0 and len(self.deny_topics) == 0:
-                reason = "Content passes both allow and deny checks"
-            elif not allow_matches and not deny_matches:
-                reason = "Content passes both allow and deny checks"
-            else:
-                reason = f"Confidence {confidence:.2f} below threshold {self.confidence_threshold}"
-        
-        return FilterResult(
-            action=action,
-            confidence=confidence,
-            reason=reason,
-            filter_name=self.name,
-            filter_type=self.type
-        )
+    # Legacy run() method removed - now using analyze() method only
     
     def check(self, content: str) -> GuardrailResult:
         """
@@ -333,7 +257,7 @@ class TopicFilter(BaseFilter, GuardrailInterface):
     def get_guardrail_type(self) -> GuardrailType:
         """Get the guardrail type."""
         return GuardrailType.CONTENT_MODERATION
-    
+
     def is_available(self) -> bool:
         """Check if the filter is available."""
         return True
@@ -388,4 +312,93 @@ class TopicFilter(BaseFilter, GuardrailInterface):
                 'deny_topics_count': len(self.deny_topics),
                 'total_matches': total_matches
             }
-        } 
+        }
+    
+    async def analyze(self, content: str, conversation: Optional['Conversation'] = None) -> GuardrailResult:
+        """
+        Analyze content for topic matches (GuardrailInterface async method).
+        
+        Args:
+            content: Content to analyze
+            conversation: Optional conversation context (not used in this filter)
+            
+        Returns:
+            GuardrailResult with blocking decision and details
+        """
+        if not self.enabled:
+            return GuardrailResult(
+                blocked=False,
+                confidence=0.0,
+                reason="Topic filter disabled",
+                details={'enabled': False},
+                guardrail_name=self.name,
+                guardrail_type=self.guardrail_type
+            )
+        
+        if not content:
+            return GuardrailResult(
+                blocked=False,
+                confidence=0.0,
+                reason="Empty content",
+                details={'empty_content': True},
+                guardrail_name=self.name,
+                guardrail_type=self.guardrail_type
+            )
+        
+        # Find matches
+        allow_matches = self._find_matches(content, self._compiled_allow_patterns, self.allow_topics)
+        deny_matches = self._find_matches(content, self._compiled_deny_patterns, self.deny_topics)
+        
+        # Determine blocking decision based on mode
+        blocked = False
+        reason = "Content allowed"
+        confidence = 0.0
+        
+        if self.mode == "allow":
+            # Only allow content if it matches allow_topics
+            if not allow_matches:
+                blocked = True
+                reason = "Content does not match any allowed topics"
+                confidence = 1.0
+            else:
+                confidence = min(1.0, len(allow_matches) / max(len(self.allow_topics), 1))
+                reason = f"Content matches allowed topics: {', '.join(allow_matches)}"
+        
+        elif self.mode == "deny":
+            # Block content if it matches deny_topics
+            if deny_matches:
+                confidence = min(1.0, len(deny_matches) / max(len(self.deny_topics), 1))
+                if confidence >= self.confidence_threshold:
+                    blocked = True
+                    reason = f"Content matches denied topics: {', '.join(deny_matches)}"
+                else:
+                    reason = f"Confidence {confidence:.2f} below threshold {self.confidence_threshold}"
+        
+        elif self.mode == "both":
+            # Use both lists with deny taking priority
+            if deny_matches:
+                blocked = True
+                reason = f"Content matches denied topics: {', '.join(deny_matches)}"
+                confidence = min(1.0, len(deny_matches) / max(len(self.deny_topics), 1))
+            elif self.allow_topics and not allow_matches:
+                blocked = True
+                reason = "Content does not match any allowed topics"
+                confidence = 1.0
+            else:
+                confidence = min(1.0, len(allow_matches) / max(len(self.allow_topics), 1)) if allow_matches else 0.0
+                reason = f"Content matches allowed topics: {', '.join(allow_matches)}" if allow_matches else "No topic restrictions"
+        
+        return GuardrailResult(
+            blocked=blocked,
+            confidence=confidence,
+            reason=reason,
+            details={
+                'mode': self.mode,
+                'allow_matches': allow_matches,
+                'deny_matches': deny_matches,
+                'allow_topics_count': len(self.allow_topics),
+                'deny_topics_count': len(self.deny_topics)
+            },
+            guardrail_name=self.name,
+            guardrail_type=self.guardrail_type
+        ) 

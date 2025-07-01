@@ -7,8 +7,9 @@ various types of code and programming content without requiring AI.
 
 import re
 import logging
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 from ..core.guardrail_interface import GuardrailInterface, GuardrailType, GuardrailResult
+from ..core.conversation import Conversation
 
 logger = logging.getLogger(__name__)
 
@@ -66,7 +67,7 @@ class SimpleCodeGenerationFilter(GuardrailInterface):
         
         self.enabled_categories = valid_categories
     
-    async def analyze(self, content: str) -> GuardrailResult:
+    async def analyze(self, content: str, conversation: Optional['Conversation'] = None) -> GuardrailResult:
         """Analyze content for code generation patterns using regex."""
         if not self.enabled:
             return GuardrailResult(

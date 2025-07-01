@@ -15,7 +15,6 @@ import asyncio
 from unittest.mock import Mock
 
 from src.stinger.filters.keyword_block import KeywordBlockFilter
-from src.stinger.core.base_filter import FilterResult
 
 
 class TestKeywordBlockFilter:
@@ -34,14 +33,14 @@ class TestKeywordBlockFilter:
         filter_instance = KeywordBlockFilter(self.basic_config)
         
         # Test blocking
-        result = await filter_instance.run("This contains blocked_word in text")
-        assert result.action == 'block'
-        assert 'blocked keyword: blocked_word' in result.reason
+        result = await filter_instance.analyze("This contains blocked_word in text")
+        assert result.blocked == True
+        assert 'Blocked keyword found: blocked_word' in result.reason
         
         # Test allowing
-        result = await filter_instance.run("This contains safe content")
-        assert result.action == 'allow'
-        assert result.reason == 'no match'
+        result = await filter_instance.analyze("This contains safe content")
+        assert result.blocked == False
+        assert result.reason == 'No keyword match found'
 
     @pytest.mark.asyncio
     async def test_case_insensitive_matching(self):
@@ -56,9 +55,9 @@ class TestKeywordBlockFilter:
         ]
         
         for test_case in test_cases:
-            result = await filter_instance.run(test_case)
-            assert result.action == 'block', f"Failed to block: {test_case}"
-            assert 'blocked keyword: blocked_word' in result.reason
+            result = await filter_instance.analyze(test_case)
+            assert result.blocked == True, f"Failed to block: {test_case}"
+            assert 'Blocked keyword found: blocked_word' in result.reason
 
     @pytest.mark.asyncio
     async def test_partial_word_matching(self):
@@ -66,11 +65,11 @@ class TestKeywordBlockFilter:
         filter_instance = KeywordBlockFilter({'keyword': 'test', 'on_error': 'allow'})
         
         # Should match partial words
-        result = await filter_instance.run("This is a testing example")
-        assert result.action == 'block'
+        result = await filter_instance.analyze("This is a testing example")
+        assert result.blocked == True
         
-        result = await filter_instance.run("Contest results are here")
-        assert result.action == 'block'
+        result = await filter_instance.analyze("Contest results are here")
+        assert result.blocked == True
 
     @pytest.mark.asyncio
     async def test_empty_and_none_content(self):
@@ -78,14 +77,14 @@ class TestKeywordBlockFilter:
         filter_instance = KeywordBlockFilter(self.basic_config)
         
         # Empty string
-        result = await filter_instance.run("")
-        assert result.action == 'allow'
-        assert result.reason == 'no match'
+        result = await filter_instance.analyze("")
+        assert result.blocked == False
+        assert result.reason == 'No content to analyze'
         
         # None content
-        result = await filter_instance.run(None)
-        assert result.action == 'allow'
-        assert result.reason == 'no match'
+        result = await filter_instance.analyze(None)
+        assert result.blocked == False
+        assert result.reason == 'No content to analyze'
 
     @pytest.mark.asyncio
     async def test_no_keyword_configured(self):
@@ -93,9 +92,9 @@ class TestKeywordBlockFilter:
         config = {'on_error': 'allow'}  # No keyword
         filter_instance = KeywordBlockFilter(config)
         
-        result = await filter_instance.run("Any content should be allowed")
-        assert result.action == 'allow'
-        assert result.reason == 'no keyword set'
+        result = await filter_instance.analyze("Any content should be allowed")
+        assert result.blocked == False
+        assert result.reason == 'No keyword configured'
 
     @pytest.mark.asyncio
     async def test_empty_keyword_configured(self):
@@ -103,9 +102,9 @@ class TestKeywordBlockFilter:
         config = {'keyword': '', 'on_error': 'allow'}
         filter_instance = KeywordBlockFilter(config)
         
-        result = await filter_instance.run("Any content should be allowed")
-        assert result.action == 'allow'
-        assert result.reason == 'no keyword set'
+        result = await filter_instance.analyze("Any content should be allowed")
+        assert result.blocked == False
+        assert result.reason == 'No keyword configured'
 
     @pytest.mark.asyncio
     async def test_whitespace_keyword(self):
@@ -113,9 +112,9 @@ class TestKeywordBlockFilter:
         config = {'keyword': '   ', 'on_error': 'allow'}
         filter_instance = KeywordBlockFilter(config)
         
-        result = await filter_instance.run("Content with   spaces")
-        assert result.action == 'block'
-        assert 'blocked keyword:' in result.reason
+        result = await filter_instance.analyze("Content with   spaces")
+        assert result.blocked == True
+        assert 'Blocked keyword found:' in result.reason
 
     @pytest.mark.asyncio
     async def test_special_characters_in_keyword(self):
@@ -135,9 +134,9 @@ class TestKeywordBlockFilter:
             config = {'keyword': keyword, 'on_error': 'allow'}
             filter_instance = KeywordBlockFilter(config)
             
-            result = await filter_instance.run(f"Text containing {keyword} should be blocked")
-            assert result.action == 'block', f"Failed to block keyword: {keyword}"
-            assert f'blocked keyword: {keyword.lower()}' in result.reason
+            result = await filter_instance.analyze(f"Text containing {keyword} should be blocked")
+            assert result.blocked == True, f"Failed to block keyword: {keyword}"
+            assert f'Blocked keyword found: {keyword.lower()}' in result.reason
 
     @pytest.mark.asyncio
     async def test_unicode_content(self):
@@ -146,12 +145,12 @@ class TestKeywordBlockFilter:
         filter_instance = KeywordBlockFilter(config)
         
         # Unicode content without keyword
-        result = await filter_instance.run("Content with émojis 🚀 and spëcial chars")
-        assert result.action == 'allow'
+        result = await filter_instance.analyze("Content with émojis 🚀 and spëcial chars")
+        assert result.blocked == False
         
         # Unicode content with keyword
-        result = await filter_instance.run("test with émojis 🚀 and spëcial chars")
-        assert result.action == 'block'
+        result = await filter_instance.analyze("test with émojis 🚀 and spëcial chars")
+        assert result.blocked == True
 
     @pytest.mark.asyncio
     async def test_very_long_content(self):
@@ -161,13 +160,13 @@ class TestKeywordBlockFilter:
         
         # Long content without keyword
         long_content = "haystack " * 10000
-        result = await filter_instance.run(long_content)
-        assert result.action == 'allow'
+        result = await filter_instance.analyze(long_content)
+        assert result.blocked == False
         
         # Long content with keyword at the end
         long_content_with_keyword = long_content + " needle"
-        result = await filter_instance.run(long_content_with_keyword)
-        assert result.action == 'block'
+        result = await filter_instance.analyze(long_content_with_keyword)
+        assert result.blocked == True
 
     @pytest.mark.asyncio
     async def test_multiple_keyword_occurrences(self):
@@ -175,9 +174,9 @@ class TestKeywordBlockFilter:
         filter_instance = KeywordBlockFilter(self.basic_config)
         
         content = "blocked_word appears multiple times: blocked_word and BLOCKED_WORD"
-        result = await filter_instance.run(content)
-        assert result.action == 'block'
-        assert 'blocked keyword: blocked_word' in result.reason
+        result = await filter_instance.analyze(content)
+        assert result.blocked == True
+        assert 'Blocked keyword found: blocked_word' in result.reason
 
     @pytest.mark.asyncio
     async def test_concurrent_filtering(self):
@@ -193,12 +192,12 @@ class TestKeywordBlockFilter:
         ]
         
         # Run concurrent filtering
-        tasks = [filter_instance.run(content) for content in test_contents]
+        tasks = [filter_instance.analyze(content) for content in test_contents]
         results = await asyncio.gather(*tasks)
         
         # Verify results
         expected_actions = ['allow', 'block', 'allow', 'block', 'allow']
-        actual_actions = [result.action for result in results]
+        actual_actions = ['block' if result.blocked else 'allow' for result in results]
         assert actual_actions == expected_actions
 
     def test_filter_initialization(self):
@@ -233,20 +232,20 @@ class TestKeywordBlockFilter:
             config = {'keyword': keyword, 'on_error': 'allow'}
             filter_instance = KeywordBlockFilter(config)
             
-            result = await filter_instance.run(test_content)
-            assert result.action == 'block', f"Failed to block keyword: {repr(keyword)}"
+            result = await filter_instance.analyze(test_content)
+            assert result.blocked == True, f"Failed to block keyword: {repr(keyword)}"
 
     @pytest.mark.asyncio
     async def test_filter_result_structure(self):
         """Test that FilterResult has correct structure."""
         filter_instance = KeywordBlockFilter(self.basic_config)
         
-        result = await filter_instance.run("Content with blocked_word")
+        result = await filter_instance.analyze("Content with blocked_word")
         
         # Check FilterResult structure
-        assert hasattr(result, 'action')
+        assert hasattr(result, 'blocked')
         assert hasattr(result, 'reason')
-        assert result.action in ['allow', 'block', 'warn']
+        assert isinstance(result.blocked, bool)
         assert isinstance(result.reason, str)
         assert len(result.reason) > 0
 
@@ -260,7 +259,7 @@ class TestKeywordBlockFilter:
         # Test multiple runs for performance
         start_time = time.time()
         for _ in range(1000):
-            await filter_instance.run("Test content without keyword")
+            await filter_instance.analyze("Test content without keyword")
         end_time = time.time()
         
         # Should complete 1000 runs in reasonable time (< 1 second)
