@@ -157,7 +157,7 @@ class TestGuardrailFactoryAndAPIFilters:
     """Test the Guardrail Factory and API-based Filters."""
 
     @pytest.mark.asyncio
-    async def test_content_moderation_filter_unavailable(self):
+    async def test_content_moderation_filter_unavailable(self, mock_openai_key):
         """Test content moderation filter when OpenAI is unavailable."""
         try:
             from src.stinger.guardrails.content_moderation_guardrail import (
@@ -192,7 +192,7 @@ class TestGuardrailFactoryAndAPIFilters:
             pytest.skip("Guardrail Factory and API-based Filters not available")
 
     @pytest.mark.asyncio
-    async def test_content_moderation_filter_available(self):
+    async def test_content_moderation_filter_available(self, mock_openai_key):
         """Test content moderation filter when OpenAI is available."""
         try:
             from src.stinger.adapters.openai_adapter import ModerationResult
@@ -235,7 +235,7 @@ class TestGuardrailFactoryAndAPIFilters:
             pytest.skip("Guardrail Factory and API-based Filters not available")
 
     @pytest.mark.asyncio
-    async def test_prompt_injection_filter_unavailable(self):
+    async def test_prompt_injection_filter_unavailable(self, mock_openai_key):
         """Test prompt injection filter when OpenAI is unavailable."""
         try:
             from src.stinger.guardrails.prompt_injection_guardrail import PromptInjectionGuardrail
@@ -268,7 +268,7 @@ class TestGuardrailFactoryAndAPIFilters:
             pytest.skip("Guardrail Factory and API-based Filters not available")
 
     @pytest.mark.asyncio
-    async def test_prompt_injection_filter_available(self):
+    async def test_prompt_injection_filter_available(self, mock_openai_key):
         """Test prompt injection filter when OpenAI is available."""
         try:
             from src.stinger.guardrails.prompt_injection_guardrail import (

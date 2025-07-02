@@ -34,8 +34,6 @@ from .guardrail_interface import (
 # Legacy filter adapters removed - all filters now use GuardrailInterface directly
 
 
-
-
 logger = logging.getLogger(__name__)
 
 
