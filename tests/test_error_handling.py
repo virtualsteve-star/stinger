@@ -359,7 +359,7 @@ class TestErrorLogging:
                 assert "ValueError" in log_call[0][0]
                 assert "Test error with sensitive data" in log_call[0][0]
                 assert log_call[1]["extra"]["error_id"] == error_id
-                assert log_call[1]["extra"]["is_production"] == True
+                assert log_call[1]["extra"]["is_production"] is True
 
 
 class TestIntegrationWithExistingCode:
