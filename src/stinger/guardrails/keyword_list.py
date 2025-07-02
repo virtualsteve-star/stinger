@@ -114,7 +114,7 @@ class KeywordListGuardrail(GuardrailInterface):
                 safe_msg = safe_error_message(
                     e, f"reading keywords file {safe_path} at line {line_num}"
                 )
-            raise FilterError(f"Failed to read keywords file: {safe_msg}")
+            raise GuardrailError(f"Failed to read keywords file: {safe_msg}")
 
         return keywords
 
@@ -226,7 +226,7 @@ class KeywordListGuardrail(GuardrailInterface):
         has_file = bool(self.config.get("keywords_file"))
 
         if not has_inline and not has_file:
-            raise FilterError(
+            raise GuardrailError(
                 "KeywordListGuardrail requires either 'keywords' or 'keywords_file' configuration"
             )
 

@@ -72,7 +72,7 @@ def main():
     parser = argparse.ArgumentParser(description="Stinger CLI - LLM Guardrails")
     subparsers = parser.add_subparsers(dest="command")
 
-    demo_parser = subparsers.add_parser("demo", help="Run a demo guardrail check")
+    subparsers.add_parser("demo", help="Run a demo guardrail check")
 
     prompt_parser = subparsers.add_parser("check-prompt", help="Check a user prompt for safety")
     prompt_parser.add_argument("prompt", type=str, help="Prompt to check")
@@ -87,7 +87,7 @@ def main():
         "--detailed", "-d", action="store_true", help="Show detailed health information"
     )
 
-    setup_parser = subparsers.add_parser("setup", help="Run interactive setup wizard")
+    subparsers.add_parser("setup", help="Run interactive setup wizard")
 
     args = parser.parse_args()
     if args.command == "demo":

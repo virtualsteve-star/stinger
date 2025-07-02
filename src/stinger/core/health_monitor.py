@@ -186,14 +186,14 @@ class HealthMonitor:
         # Get input guardrails
         for guardrail in self.pipeline.input_pipeline:
             filter_health = self._get_filter_health(guardrail)
-            filters.append(filter_health)
+            guardrails.append(filter_health)
 
         # Get output guardrails
         for guardrail in self.pipeline.output_pipeline:
             filter_health = self._get_filter_health(guardrail)
-            filters.append(filter_health)
+            guardrails.append(filter_health)
 
-        return filters
+        return guardrails
 
     def get_recent_errors(self, limit: int = 10) -> List[HealthEvent]:
         """

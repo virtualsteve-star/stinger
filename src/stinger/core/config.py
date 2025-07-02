@@ -303,6 +303,6 @@ class ConfigLoader:
 
             filter_class = GUARDRAIL_REGISTRY[guardrail_type]
             guardrail_instance = filter_class(config=guardrail_config)
-            filters.append(guardrail_instance)
+            guardrails.append(guardrail_instance)
 
-        return filters
+        return guardrails

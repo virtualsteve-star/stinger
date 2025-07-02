@@ -68,11 +68,13 @@ class APIKeyManager:
         """Generate a new encryption key with secure failure mode."""
         if not ENCRYPTION_AVAILABLE or Fernet is None:
             logger.critical(
-                "Cryptography dependencies not available - refusing to proceed with insecure storage"
+                "Cryptography dependencies not available - "
+                "refusing to proceed with insecure storage"
             )
             raise SecurityError(
                 "Cryptography dependencies not available. "
-                "Install with: pip install 'stinger[crypto]' or set keys via environment variables only."
+                "Install with: pip install 'stinger[crypto]' or "
+                "set keys via environment variables only."
             )
         return Fernet.generate_key().decode()
 

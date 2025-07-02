@@ -8,11 +8,10 @@ model communication without any guardrail-specific logic.
 import asyncio
 import logging
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Dict, List, Optional
 
 # Optional OpenAI import
 try:
-    import openai
     from openai import AsyncOpenAI
 
     OPENAI_AVAILABLE = True
