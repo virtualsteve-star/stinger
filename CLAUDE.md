@@ -130,3 +130,124 @@ Before submitting any changes:
 
 ## Remember
 **Quality over speed. Architecture over quick fixes. Tests that actually test.**
+
+## Common Development Commands
+
+### Testing
+```bash
+# Run all tests
+pytest tests/ -v
+
+# Run specific test file
+pytest tests/test_simple_pii_detection_guardrail.py -v
+
+# Run specific test
+pytest tests/test_integration.py::test_pipeline_with_all_guardrails -v
+
+# Run with coverage
+pytest tests/ -v --cov=src/stinger --cov-report=html
+
+# Run only fast tests (skip slow/integration tests)
+pytest tests/ -v -m "not slow"
+```
+
+### Building and Publishing
+```bash
+# Build distribution packages
+python3 -m build
+
+# Check package quality
+python3 -m twine check dist/*
+
+# Install in development mode
+pip install -e .
+
+# Install with all dependencies
+pip install -e ".[all]"
+```
+
+### Code Quality
+```bash
+# Format code
+black src/ tests/ --line-length=100
+
+# Sort imports
+isort src/ tests/
+
+# Type checking
+mypy src/stinger --ignore-missing-imports
+
+# Lint
+flake8 src/ tests/ --max-line-length=100 --extend-ignore=E203,W503
+```
+
+### Running Demos
+```bash
+# CLI demo
+stinger demo
+
+# Web demo
+cd demos/web_demo && python3 start_demo.py
+
+# Conversation demo
+python3 demos/conversation_demo.py
+```
+
+## High-Level Architecture
+
+### Core Pipeline Architecture
+The framework centers around the `GuardrailPipeline` which orchestrates guardrails:
+
+```
+User Input → Input Pipeline → LLM → Output Pipeline → Response
+                ↓                         ↓
+            Audit Trail              Audit Trail
+```
+
+### Key Components
+
+1. **GuardrailInterface** (`src/stinger/core/guardrail_interface.py`)
+   - Base interface all guardrails implement
+   - Defines `analyze()` method returning `GuardrailResult`
+   - Supports both sync and async operations
+
+2. **GuardrailPipeline** (`src/stinger/core/pipeline.py`)
+   - Orchestrates multiple guardrails in sequence
+   - Separate input and output pipelines
+   - Handles configuration loading and guardrail initialization
+   - Integrates with conversation tracking and audit logging
+
+3. **Configuration System**
+   - YAML-based configuration with schema validation
+   - Preset system for common use cases (customer_service, medical, etc.)
+   - Runtime configuration updates supported
+   - Located in `src/stinger/core/config.py` and `preset_configs.py`
+
+4. **Guardrail Types**
+   - **Simple/Regex-based**: PII detection, toxicity, code generation
+   - **AI-powered**: Uses OpenAI for advanced detection
+   - **Stateful**: Conversation-aware prompt injection
+   - All located in `src/stinger/guardrails/`
+
+5. **Conversation Management** (`src/stinger/core/conversation.py`)
+   - Tracks multi-turn conversations
+   - Provides context to guardrails
+   - Integrates with rate limiting
+
+6. **Audit System** (`src/stinger/core/audit.py`)
+   - Zero-config audit trail
+   - Logs all security decisions
+   - PII redaction capabilities
+   - Async buffering for performance
+
+### Web Demo Architecture
+The web demo (`demos/web_demo/`) showcases the framework:
+- **Backend**: FastAPI server integrating GuardrailPipeline
+- **Frontend**: React app demonstrating real-time guardrail feedback
+- **Serves as**: Integration example and testing ground
+
+### Extension Points
+1. Create new guardrails by implementing `GuardrailInterface`
+2. Add guardrail types in `GuardrailType` enum
+3. Register factory functions in `guardrail_factory.py`
+4. Create presets in `preset_configs.py`

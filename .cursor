@@ -122,6 +122,17 @@
 - Avoid copy/paste by using `--body-file` flag for issue content
 - Example: `gh issue create --title "Title" --body-file issue.md`
 
+### 12. Temporary File Cleanup
+- **ALWAYS clean up temporary files** after creating PRs or filing issues
+- **Common temporary files to remove**:
+  - `pr_*_summary.md` - PR review summaries
+  - `issue_*.md` - Issue description files
+  - `temp_*.md` - Temporary documentation files
+  - `body.md` - GitHub CLI body files
+- **Before committing**: Check project root for any temporary files
+- **After PR merge**: Remove any temporary files used during PR creation
+- **Use .gitignore**: Add patterns for common temporary file types if needed
+
 ## Code Review Checklist
 
 Before submitting any changes:

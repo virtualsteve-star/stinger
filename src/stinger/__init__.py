@@ -5,7 +5,7 @@ A powerful, easy-to-use framework for safeguarding LLM applications with
 comprehensive content filtering and moderation capabilities.
 """
 
-__version__ = "0.1.0"
+__version__ = "0.1.0a1"
 __author__ = "Stinger Team"
 
 # High-level API - the main way developers should use Stinger

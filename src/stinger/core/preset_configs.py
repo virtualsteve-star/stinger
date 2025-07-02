@@ -80,7 +80,7 @@ class PresetConfigs:
                     },
                     {
                         "name": "profanity_filter",
-                        "type": "keyword_block",
+                        "type": "keyword_list",
                         "enabled": True,
                         "on_error": "warn",
                         "config": {
@@ -127,7 +127,10 @@ class PresetConfigs:
                         "name": "pii_check",
                         "type": "simple_pii_detection",
                         "enabled": True,
-                        "on_error": "warn"
+                        "on_error": "block",
+                        "config": {
+                            "confidence_threshold": 0.6
+                        }
                     },
                     {
                         "name": "toxicity_check",
@@ -213,7 +216,7 @@ class PresetConfigs:
                     },
                     {
                         "name": "medical_advice_filter",
-                        "type": "keyword_block",
+                        "type": "keyword_list",
                         "enabled": True,
                         "on_error": "warn",
                         "config": {
@@ -329,7 +332,7 @@ class PresetConfigs:
                     },
                     {
                         "name": "financial_advice_filter",
-                        "type": "keyword_block",
+                        "type": "keyword_list",
                         "enabled": True,
                         "on_error": "warn",
                         "config": {

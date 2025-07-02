@@ -1,0 +1,94 @@
+name: Security Monitoring
+
+on:
+  schedule:
+    # Run weekly on Mondays at 9 AM UTC
+    - cron: '0 9 * * 1'
+  workflow_dispatch:
+
+jobs:
+  dependency-security:
+    name: Dependency Security Check
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install security tools
+      run: |
+        python -m pip install --upgrade pip
+        pip install safety pip-audit
+
+    - name: Check for known vulnerabilities
+      run: |
+        echo "## 🔒 Security Scan Results" >> security-report.md
+        echo "**Scan Date**: $(date)" >> security-report.md
+        echo "" >> security-report.md
+        
+        echo "### Safety Check" >> security-report.md
+        safety check --output text >> security-report.md || echo "⚠️ Safety found issues" >> security-report.md
+        echo "" >> security-report.md
+        
+        echo "### Pip Audit" >> security-report.md
+        pip-audit --format=text >> security-report.md || echo "⚠️ Pip-audit found issues" >> security-report.md
+
+    - name: Upload security report
+      uses: actions/upload-artifact@v3
+      with:
+        name: security-report
+        path: security-report.md
+
+    - name: Create issue for vulnerabilities
+      if: failure()
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const fs = require('fs');
+          const report = fs.readFileSync('security-report.md', 'utf8');
+          
+          await github.rest.issues.create({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            title: `🔒 Security Vulnerabilities Found - ${new Date().toISOString().split('T')[0]}`,
+            body: `Automated security scan found potential vulnerabilities:\n\n\`\`\`\n${report}\n\`\`\`\n\nPlease review and address these issues.`,
+            labels: ['security', 'bug', 'high-priority']
+          });
+
+  code-quality-monitoring:
+    name: Code Quality Check
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install analysis tools
+      run: |
+        python -m pip install --upgrade pip
+        pip install radon xenon complexity-report
+
+    - name: Generate code metrics
+      run: |
+        echo "## 📊 Code Quality Metrics" > quality-report.md
+        echo "**Analysis Date**: $(date)" >> quality-report.md
+        echo "" >> quality-report.md
+        
+        echo "### Cyclomatic Complexity" >> quality-report.md
+        radon cc src/ --total-average >> quality-report.md
+        echo "" >> quality-report.md
+        
+        echo "### Maintainability Index" >> quality-report.md
+        radon mi src/ >> quality-report.md
+
+    - name: Upload quality report
+      uses: actions/upload-artifact@v3
+      with:
+        name: quality-report
+        path: quality-report.md

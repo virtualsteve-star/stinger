@@ -7,7 +7,16 @@
 ### 1. Installation
 
 ```bash
-# Clone the repository
+# Install the alpha release
+pip install stinger-guardrails-alpha
+
+# Set up your configuration
+stinger setup
+```
+
+#### Alternative: Install from Source
+```bash
+# Clone the repository  
 git clone https://github.com/virtualsteve-star/stinger.git
 cd Stinger
 
