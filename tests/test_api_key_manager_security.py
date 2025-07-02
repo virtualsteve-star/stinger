@@ -22,21 +22,23 @@ class TestAPIKeyManagerSecurity:
     def test_encryption_key_failure_modes(self):
         """Test secure failure when encryption unavailable."""
         with patch("src.stinger.core.api_key_manager.ENCRYPTION_AVAILABLE", False):
-            # Should create manager but with no encryption capability
-            manager = APIKeyManager()
+            # Clear environment to ensure clean test
+            with patch.dict(os.environ, {}, clear=True):
+                # Should create manager but with no encryption capability
+                manager = APIKeyManager()
 
-            # Verify encryption key is None (secure fallback)
-            assert manager.encryption_key is None
+                # Verify encryption key is None (secure fallback)
+                assert getattr(manager, '_encryption_key', None) is None
 
-            # Verify fernet is None (no encryption)
-            assert manager._fernet is None
+                # Verify fernet is None (no encryption)
+                assert manager._fernet is None
 
-            # Should still work with environment variables
-            test_key = "sk-test-key-12345"
-            with patch.dict(os.environ, {"OPENAI_API_KEY": test_key}, clear=True):
-                # Create fresh manager to test environment loading
-                manager_fresh = APIKeyManager()
-                assert manager_fresh.get_openai_key() == test_key
+                # Should still work with environment variables
+                test_key = "sk-test-key-12345"
+                with patch.dict(os.environ, {"OPENAI_API_KEY": test_key}):
+                    # Create fresh manager to test environment loading
+                    manager_fresh = APIKeyManager()
+                    assert manager_fresh.get_openai_key() == test_key
 
     def test_key_export_production_block(self):
         """Test key export blocked in production."""
@@ -61,7 +63,7 @@ class TestAPIKeyManagerSecurity:
                     manager = APIKeyManager()
 
                     # Verify production environment is detected
-                    assert manager._is_development() == False
+                    assert manager._is_development() is False
 
                     # Test that key export is blocked
                     with pytest.raises(SecurityError, match="Key export not allowed in production"):
@@ -124,7 +126,7 @@ class TestAPIKeyManagerSecurity:
                 # Remove pytest from modules temporarily for this test
                 pytest_module = sys.modules.pop("pytest", None)
                 try:
-                    assert manager._is_development() == False
+                    assert manager._is_development() is False
                 finally:
                     if pytest_module:
                         sys.modules["pytest"] = pytest_module
