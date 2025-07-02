@@ -1,7 +1,7 @@
 import logging
 import os
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 from ..core.config_validator import KEYWORD_GUARDRAIL_RULES, ConfigValidator, ValidationRule
 from ..core.conversation import Conversation
@@ -37,7 +37,7 @@ class KeywordListGuardrail(GuardrailInterface):
         """Get custom validator with keyword validation logic."""
 
         class KeywordListValidator(ConfigValidator):
-            def validate(self, config: dict) -> tuple[bool, List[str]]:
+            def validate(self, config: dict) -> Tuple[bool, List[str]]:
                 is_valid, errors = super().validate(config)
 
                 # Additional validation: must have either keywords or keywords_file

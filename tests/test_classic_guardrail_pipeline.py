@@ -49,7 +49,7 @@ async def run_test_suite(config_path: str, test_corpus_path: str, suite_name: st
         filter_cls = GUARDRAIL_REGISTRY.get(guardrail_type)
         if filter_cls:
             try:
-                filters.append(filter_cls(fc))
+                guardrails.append(filter_cls(fc))
                 print(f"✅ Created filter: {fc.get('name')} ({guardrail_type})")
             except Exception as e:
                 print(f"❌ Failed to create filter {fc.get('name')}: {str(e)}")
@@ -61,7 +61,7 @@ async def run_test_suite(config_path: str, test_corpus_path: str, suite_name: st
         return False
 
     # Create pipeline
-    pipeline = GuardrailPipeline(filters)
+    pipeline = GuardrailPipeline(guardrails)
     print(f"✅ Pipeline created with {len(filters)} filters")
 
     # Load test cases

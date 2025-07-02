@@ -8,7 +8,7 @@ for all guardrails, eliminating duplicate validation logic and ensuring consiste
 import re
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 
 @dataclass
@@ -27,7 +27,7 @@ class ValidationRule:
     custom_validator: Optional[Callable[[Any], bool]] = None  # Custom validation function
     error_message: Optional[str] = None  # Custom error message
 
-    def validate(self, value: Any) -> tuple[bool, Optional[str]]:
+    def validate(self, value: Any) -> Tuple[bool, Optional[str]]:
         """
         Validate a value against this rule.
 
@@ -93,7 +93,7 @@ class ConfigValidator:
         """
         self.rules = {rule.field: rule for rule in rules}
 
-    def validate(self, config: Dict[str, Any]) -> tuple[bool, List[str]]:
+    def validate(self, config: Dict[str, Any]) -> Tuple[bool, List[str]]:
         """
         Validate a configuration dictionary against all rules.
 
@@ -217,7 +217,7 @@ def create_length_validator() -> ConfigValidator:
     class LengthConfigValidator(ConfigValidator):
         """Custom validator for length guardrail with cross-field validation."""
 
-        def validate(self, config: Dict[str, Any]) -> tuple[bool, List[str]]:
+        def validate(self, config: Dict[str, Any]) -> Tuple[bool, List[str]]:
             """Validate with additional cross-field checks."""
             # Run standard validation first
             is_valid, errors = super().validate(config)
