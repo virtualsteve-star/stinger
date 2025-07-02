@@ -11,7 +11,6 @@ from pathlib import Path
 import pytest
 
 from src.stinger.guardrails.keyword_list import KeywordListGuardrail
-from src.stinger.utils.exceptions import GuardrailError
 
 
 @pytest.mark.asyncio

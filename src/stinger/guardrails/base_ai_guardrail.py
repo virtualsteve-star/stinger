@@ -14,7 +14,7 @@ from ..core.api_key_manager import get_openai_key
 from ..core.config_validator import AI_GUARDRAIL_RULES, ValidationRule
 from ..core.conversation import Conversation
 from ..core.guardrail_interface import GuardrailInterface, GuardrailResult, GuardrailType
-from ..core.model_config import ModelError, ModelFactory
+from ..core.model_config import ModelFactory
 
 logger = logging.getLogger(__name__)
 

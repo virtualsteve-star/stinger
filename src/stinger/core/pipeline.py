@@ -11,7 +11,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional, TypedDict, Union
 
-from ..utils.exceptions import ConfigurationError, PipelineError
+# Exceptions imported but kept for potential future use
 from . import audit
 from .config import ConfigLoader
 from .conversation import Conversation, Turn

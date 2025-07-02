@@ -6,14 +6,12 @@ Verifies secure error message handling and environment detection.
 """
 
 import os
-import tempfile
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 
 from src.stinger.core.error_handling import (
     ProductionErrorHandler,
-    SecurityError,
     is_production,
     safe_error_message,
     sanitize_error_details,
@@ -29,48 +27,48 @@ class TestEnvironmentDetection:
         # Test explicit production environment variables
         with patch.dict(os.environ, {"ENVIRONMENT": "production"}):
             handler = ProductionErrorHandler()
-            assert handler.is_production() == True
+            assert handler.is_production() is True
 
         with patch.dict(os.environ, {"ENV": "prod"}):
             handler = ProductionErrorHandler()
-            assert handler.is_production() == True
+            assert handler.is_production() is True
 
         with patch.dict(os.environ, {"STAGE": "production"}):
             handler = ProductionErrorHandler()
-            assert handler.is_production() == True
+            assert handler.is_production() is True
 
     def test_development_environment_detection(self):
         """Test development environment detection."""
         with patch.dict(os.environ, {"DEBUG": "1", "DEVELOPMENT": "1"}, clear=True):
             handler = ProductionErrorHandler()
-            assert handler.is_production() == False
+            assert handler.is_production() is False
 
         with patch.dict(os.environ, {"ENV": "development"}, clear=True):
             handler = ProductionErrorHandler()
-            assert handler.is_production() == False
+            assert handler.is_production() is False
 
     def test_cloud_provider_detection(self):
         """Test cloud provider environment detection."""
         # Heroku
         with patch.dict(os.environ, {"DYNO": "web.1"}, clear=True):
             handler = ProductionErrorHandler()
-            assert handler.is_production() == True
+            assert handler.is_production() is True
 
         # AWS
         with patch.dict(os.environ, {"AWS_EXECUTION_ENV": "AWS_ECS_FARGATE"}, clear=True):
             handler = ProductionErrorHandler()
-            assert handler.is_production() == True
+            assert handler.is_production() is True
 
         # Google Cloud
         with patch.dict(os.environ, {"GOOGLE_CLOUD_PROJECT": "my-project"}, clear=True):
             handler = ProductionErrorHandler()
-            assert handler.is_production() == True
+            assert handler.is_production() is True
 
     def test_default_environment_detection(self):
         """Test default to development when environment is unclear."""
         with patch.dict(os.environ, {}, clear=True):
             handler = ProductionErrorHandler()
-            assert handler.is_production() == False
+            assert handler.is_production() is False
 
 
 class TestErrorMessageSanitization:
@@ -329,13 +327,13 @@ class TestConvenienceFunctions:
         error_handling._error_handler = None
 
         with patch.dict(os.environ, {"ENVIRONMENT": "production"}, clear=True):
-            assert is_production() == True
+            assert is_production() is True
 
         # Reset global state for development test
         error_handling._error_handler = None
 
         with patch.dict(os.environ, {"DEBUG": "1"}, clear=True):
-            assert is_production() == False
+            assert is_production() is False
 
 
 class TestErrorLogging:
