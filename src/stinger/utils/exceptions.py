@@ -10,13 +10,18 @@ from typing import Optional, Dict, Any, List
 
 class GuardrailsError(Exception):
     """Base exception for guardrails framework."""
-    
-    def __init__(self, message: str, error_code: Optional[str] = None, context: Optional[Dict[str, Any]] = None):
+
+    def __init__(
+        self,
+        message: str,
+        error_code: Optional[str] = None,
+        context: Optional[Dict[str, Any]] = None,
+    ):
         self.message = message
         self.error_code = error_code or "GENERAL_ERROR"
         self.context = context or {}
         super().__init__(self._format_message())
-    
+
     def _format_message(self) -> str:
         """Format error message with code and context."""
         msg = f"[{self.error_code}] {self.message}"
@@ -28,8 +33,10 @@ class GuardrailsError(Exception):
 
 class ConfigurationError(GuardrailsError):
     """Raised when configuration is invalid."""
-    
-    def __init__(self, message: str, config_path: Optional[str] = None, field: Optional[str] = None):
+
+    def __init__(
+        self, message: str, config_path: Optional[str] = None, field: Optional[str] = None
+    ):
         context = {}
         if config_path:
             context["config_path"] = config_path
@@ -40,8 +47,13 @@ class ConfigurationError(GuardrailsError):
 
 class GuardrailError(GuardrailsError):
     """Raised when a guardrail encounters an error."""
-    
-    def __init__(self, message: str, guardrail_name: Optional[str] = None, guardrail_type: Optional[str] = None):
+
+    def __init__(
+        self,
+        message: str,
+        guardrail_name: Optional[str] = None,
+        guardrail_type: Optional[str] = None,
+    ):
         context = {}
         if guardrail_name:
             context["guardrail_name"] = guardrail_name
@@ -52,19 +64,23 @@ class GuardrailError(GuardrailsError):
 
 class PipelineError(GuardrailsError):
     """Raised when pipeline processing fails."""
-    
-    def __init__(self, message: str, pipeline_stage: Optional[str] = None, input_data: Optional[str] = None):
+
+    def __init__(
+        self, message: str, pipeline_stage: Optional[str] = None, input_data: Optional[str] = None
+    ):
         context = {}
         if pipeline_stage:
             context["pipeline_stage"] = pipeline_stage
         if input_data:
-            context["input_data"] = input_data[:100] + "..." if len(input_data) > 100 else input_data
+            context["input_data"] = (
+                input_data[:100] + "..." if len(input_data) > 100 else input_data
+            )
         super().__init__(message, "PIPELINE_ERROR", context)
 
 
 class GuardrailNotFoundError(GuardrailsError):
     """Raised when a requested guardrail is not found."""
-    
+
     def __init__(self, guardrail_name: str, available_guardrails: Optional[List[str]] = None):
         message = f"Guardrail '{guardrail_name}' not found"
         context = {"guardrail_name": guardrail_name}
@@ -75,7 +91,7 @@ class GuardrailNotFoundError(GuardrailsError):
 
 class InvalidGuardrailTypeError(GuardrailsError):
     """Raised when an invalid guardrail type is specified."""
-    
+
     def __init__(self, guardrail_type: str, valid_types: Optional[List[str]] = None):
         message = f"Invalid guardrail type '{guardrail_type}'"
         context = {"guardrail_type": guardrail_type}
@@ -86,7 +102,7 @@ class InvalidGuardrailTypeError(GuardrailsError):
 
 class ConfigurationValidationError(GuardrailsError):
     """Raised when configuration validation fails."""
-    
+
     def __init__(self, message: str, validation_errors: Optional[List[str]] = None):
         context = {}
         if validation_errors:
@@ -96,7 +112,7 @@ class ConfigurationValidationError(GuardrailsError):
 
 class GuardrailInitializationError(GuardrailsError):
     """Raised when a guardrail fails to initialize."""
-    
+
     def __init__(self, message: str, guardrail_name: str, config: Optional[Dict[str, Any]] = None):
         context = {"guardrail_name": guardrail_name}
         if config:
@@ -106,8 +122,10 @@ class GuardrailInitializationError(GuardrailsError):
 
 class PipelineInitializationError(GuardrailsError):
     """Raised when pipeline fails to initialize."""
-    
-    def __init__(self, message: str, config_path: Optional[str] = None, guardrail_count: Optional[int] = None):
+
+    def __init__(
+        self, message: str, config_path: Optional[str] = None, guardrail_count: Optional[int] = None
+    ):
         context = {}
         if config_path:
             context["config_path"] = config_path
@@ -118,8 +136,10 @@ class PipelineInitializationError(GuardrailsError):
 
 class InputValidationError(GuardrailsError):
     """Raised when input validation fails."""
-    
-    def __init__(self, message: str, input_type: Optional[str] = None, input_length: Optional[int] = None):
+
+    def __init__(
+        self, message: str, input_type: Optional[str] = None, input_length: Optional[int] = None
+    ):
         context = {}
         if input_type:
             context["input_type"] = input_type
@@ -132,14 +152,12 @@ class InputValidationError(GuardrailsError):
 ERROR_CODES = {
     "GENERAL_ERROR": "General framework error",
     "CONFIG_ERROR": "Configuration error",
-    "GUARDRAIL_ERROR": "Guardrail processing error", 
+    "GUARDRAIL_ERROR": "Guardrail processing error",
     "PIPELINE_ERROR": "Pipeline processing error",
     "GUARDRAIL_NOT_FOUND": "Requested guardrail not found",
     "INVALID_GUARDRAIL_TYPE": "Invalid guardrail type specified",
     "CONFIG_VALIDATION_ERROR": "Configuration validation failed",
     "GUARDRAIL_INIT_ERROR": "Guardrail initialization failed",
     "PIPELINE_INIT_ERROR": "Pipeline initialization failed",
-    "INPUT_VALIDATION_ERROR": "Input validation failed"
+    "INPUT_VALIDATION_ERROR": "Input validation failed",
 }
-
- 

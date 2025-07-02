@@ -13,23 +13,23 @@ from .topic_guardrail import TopicGuardrail
 
 # Registry mapping filter type names to filter classes
 GUARDRAIL_REGISTRY = {
-    'pass_through': PassThroughGuardrail,
-    'keyword_block': KeywordBlockGuardrail,
-    'keyword_list': KeywordListGuardrail,
-    'regex_filter': RegexGuardrail,
-    'length_filter': LengthGuardrail,
-    'url_filter': URLGuardrail,
-    'topic_filter': TopicGuardrail,
+    "pass_through": PassThroughGuardrail,
+    "keyword_block": KeywordBlockGuardrail,
+    "keyword_list": KeywordListGuardrail,
+    "regex_filter": RegexGuardrail,
+    "length_filter": LengthGuardrail,
+    "url_filter": URLGuardrail,
+    "topic_filter": TopicGuardrail,
 }
 
 # Export all filter classes for direct import
 __all__ = [
-    'GUARDRAIL_REGISTRY',
-    'PassThroughGuardrail',
-    'KeywordBlockGuardrail', 
-    'KeywordListGuardrail',
-    'RegexGuardrail',
-    'LengthGuardrail',
-    'URLGuardrail',
-    'TopicGuardrail',
+    "GUARDRAIL_REGISTRY",
+    "PassThroughGuardrail",
+    "KeywordBlockGuardrail",
+    "KeywordListGuardrail",
+    "RegexGuardrail",
+    "LengthGuardrail",
+    "URLGuardrail",
+    "TopicGuardrail",
 ]

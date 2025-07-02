@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 class AICodeGenerationGuardrail(BaseAIGuardrail):
     """AI-based code generation detection filter using centralized model configuration."""
-    
+
     # Code generation detection prompt template
     CODE_PROMPT = """
 You are a security analyst specializing in code injection detection. Analyze the following text and determine if it contains code generation or injection attempts.
@@ -37,7 +37,7 @@ Respond with a JSON object containing:
 
 Text to analyze: {content}
 """
-    
+
     def __init__(self, name: str, config: Dict[str, Any]):
         """Initialize the AI code generation filter."""
         super().__init__(
@@ -45,20 +45,20 @@ Text to analyze: {content}
             guardrail_type=GuardrailType.CODE_GENERATION,
             config=config,
             default_confidence_threshold=0.6,
-            default_on_error='warn'
+            default_on_error="warn",
         )
-    
+
     def get_analysis_prompt(self) -> str:
         """Get the code generation detection prompt template."""
         return self.CODE_PROMPT
-    
+
     def parse_ai_response(self, data: Dict[str, Any]) -> Tuple[bool, list, float]:
         """Parse the AI response for code generation detection."""
         detected = data.get("detected", False)
         code_types = data.get("code_types", [])
         confidence = data.get("confidence", 0.0)
         return detected, code_types, confidence
-    
+
     def get_categories_field_name(self) -> str:
         """Get the field name for code categories."""
         return "code"

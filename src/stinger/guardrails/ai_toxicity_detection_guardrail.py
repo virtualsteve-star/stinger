@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 class AIToxicityDetectionGuardrail(BaseAIGuardrail):
     """AI-based toxicity detection filter using centralized model configuration."""
-    
+
     # Toxicity detection prompt template
     TOXICITY_PROMPT = """
 You are a content moderation specialist. Analyze the following text for toxic content.
@@ -36,7 +36,7 @@ Respond with a JSON object containing:
 
 Text to analyze: {content}
 """
-    
+
     def __init__(self, name: str, config: Dict[str, Any]):
         """Initialize the AI toxicity detection filter."""
         super().__init__(
@@ -44,20 +44,20 @@ Text to analyze: {content}
             guardrail_type=GuardrailType.TOXICITY_DETECTION,
             config=config,
             default_confidence_threshold=0.7,
-            default_on_error='allow'
+            default_on_error="allow",
         )
-    
+
     def get_analysis_prompt(self) -> str:
         """Get the toxicity detection prompt template."""
         return self.TOXICITY_PROMPT
-    
+
     def parse_ai_response(self, data: Dict[str, Any]) -> Tuple[bool, list, float]:
         """Parse the AI response for toxicity detection."""
         detected = data.get("detected", False)
         toxicity_types = data.get("toxicity_types", [])
         confidence = data.get("confidence", 0.0)
         return detected, toxicity_types, confidence
-    
+
     def get_categories_field_name(self) -> str:
         """Get the field name for toxicity categories."""
         return "toxicity"

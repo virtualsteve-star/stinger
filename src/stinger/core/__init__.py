@@ -10,7 +10,7 @@ from .guardrail_interface import (
     GuardrailResult,
     GuardrailType,
     GuardrailRegistry,
-    GuardrailFactory
+    GuardrailFactory,
 )
 from .config import ConfigLoader
 from .conversation import Conversation, Turn
@@ -20,7 +20,7 @@ __all__ = [
     "create_pipeline",
     "GuardrailInterface",
     "GuardrailResult",
-    "GuardrailType", 
+    "GuardrailType",
     "GuardrailRegistry",
     "GuardrailFactory",
     "ConfigLoader",
