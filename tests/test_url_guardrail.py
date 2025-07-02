@@ -43,13 +43,13 @@ class TestURLFilter:
         # Content with URLs
         content = "Visit https://example.com for more info"
         result = await guardrail_instance.analyze(content)
-        assert result.blocked == False  # example.com not in blocked list
+        assert result.blocked is False  # example.com not in blocked list
         assert "All URLs allowed: 1 found" in result.reason
 
         # Content without URLs
         content = "No URLs in this text"
         result = await guardrail_instance.analyze(content)
-        assert result.blocked == False
+        assert result.blocked is False
         assert result.reason == "No URLs found"
 
     @pytest.mark.asyncio
@@ -60,13 +60,13 @@ class TestURLFilter:
         # Content with blocked domain
         content = "Don't visit https://evil.com/malware"
         result = await guardrail_instance.analyze(content)
-        assert result.blocked == True
+        assert result.blocked is True
         assert "Blocked URLs found: https://evil.com/malware" in result.reason
 
         # Content with multiple blocked domains
         content = "Bad sites: https://evil.com and http://malicious.org/page"
         result = await guardrail_instance.analyze(content)
-        assert result.blocked == True
+        assert result.blocked is True
         assert "Blocked URLs found:" in result.reason
 
     @pytest.mark.asyncio
@@ -77,13 +77,13 @@ class TestURLFilter:
         # Content with allowed domain
         content = "Safe site: https://trusted.com/page"
         result = await guardrail_instance.analyze(content)
-        assert result.blocked == False
+        assert result.blocked is False
         assert "All URLs allowed: 1 found" in result.reason
 
         # Content with non-allowed domain (should be blocked)
         content = "Unknown site: https://unknown.com/page"
         result = await guardrail_instance.analyze(content)
-        assert result.blocked == True
+        assert result.blocked is True
         assert "Blocked URLs found: https://unknown.com/page" in result.reason
 
     @pytest.mark.asyncio
@@ -100,17 +100,17 @@ class TestURLFilter:
         # Blocked domain should be blocked even if in allowed list
         content = "Visit https://evil.com for info"
         result = await guardrail_instance.analyze(content)
-        assert result.blocked == True
+        assert result.blocked is True
 
         # Allowed domain should be allowed
         content = "Visit https://trusted.com for info"
         result = await guardrail_instance.analyze(content)
-        assert result.blocked == False
+        assert result.blocked is False
 
         # Unknown domain should be blocked (not in allowed list)
         content = "Visit https://unknown.com for info"
         result = await guardrail_instance.analyze(content)
-        assert result.blocked == True
+        assert result.blocked is True
 
     @pytest.mark.asyncio
     async def test_url_schemes_and_protocols(self):
@@ -127,7 +127,7 @@ class TestURLFilter:
         for url in test_urls:
             content = f"Visit {url} for info"
             result = await guardrail_instance.analyze(content)
-            assert result.blocked == False, f"Failed to handle URL: {url}"
+            assert result.blocked is False, f"Failed to handle URL: {url}"
             assert "All URLs allowed: 1 found" in result.reason
 
     @pytest.mark.asyncio
@@ -146,7 +146,7 @@ class TestURLFilter:
         for url in test_cases:
             content = f"Visit {url}"
             result = await guardrail_instance.analyze(content)
-            assert result.blocked == True, f"Failed to block URL with port: {url}"
+            assert result.blocked is True, f"Failed to block URL with port: {url}"
 
     @pytest.mark.asyncio
     async def test_multiple_urls_in_content(self):
@@ -160,7 +160,7 @@ class TestURLFilter:
         """
 
         result = await guardrail_instance.analyze(content)
-        assert result.blocked == True
+        assert result.blocked is True
         assert "Blocked URLs found: https://evil.com/malware" in result.reason
 
     @pytest.mark.asyncio
@@ -193,7 +193,7 @@ class TestURLFilter:
         for url in test_cases:
             content = f"Visit {url}"
             result = await guardrail_instance.analyze(content)
-            assert result.blocked == True, f"Failed case insensitive blocking for: {url}"
+            assert result.blocked is True, f"Failed case insensitive blocking for: {url}"
 
     @pytest.mark.asyncio
     async def test_complex_url_paths(self):
@@ -210,7 +210,7 @@ class TestURLFilter:
         for url in complex_urls:
             content = f"API endpoint: {url}"
             result = await guardrail_instance.analyze(content)
-            assert result.blocked == False, f"Failed to handle complex URL: {url}"
+            assert result.blocked is False, f"Failed to handle complex URL: {url}"
 
     @pytest.mark.asyncio
     async def test_empty_and_none_content(self):
@@ -219,12 +219,12 @@ class TestURLFilter:
 
         # Empty string
         result = await guardrail_instance.analyze("")
-        assert result.blocked == False
+        assert result.blocked is False
         assert result.reason == "No content to analyze"
 
         # None content
         result = await guardrail_instance.analyze(None)
-        assert result.blocked == False
+        assert result.blocked is False
         assert result.reason == "No content to analyze"
 
     @pytest.mark.asyncio
@@ -301,7 +301,7 @@ class TestURLFilter:
         # Should complete in reasonable time
         duration = end_time - start_time
         assert duration < 1.0, f"Performance test took too long: {duration}s"
-        assert result.blocked == False
+        assert result.blocked is False
         assert "All URLs allowed: 100 found" in result.reason
 
     @pytest.mark.asyncio
@@ -323,12 +323,12 @@ class TestURLFilter:
         # Subdomain should not be blocked (exact domain matching)
         content = "Visit https://sub.evil.com/page"
         result = await guardrail_instance.analyze(content)
-        assert result.blocked == False  # sub.evil.com != evil.com
+        assert result.blocked is False  # sub.evil.com != evil.com
 
         # Exact domain should be blocked
         content = "Visit https://evil.com/page"
         result = await guardrail_instance.analyze(content)
-        assert result.blocked == True
+        assert result.blocked is True
 
     @pytest.mark.asyncio
     async def test_concurrent_filtering(self):
