@@ -5,12 +5,13 @@ This filter uses OpenAI's content moderation API to detect and block inappropria
 """
 
 import logging
-from typing import Dict, Any, Optional, List
-from ..core.guardrail_interface import GuardrailInterface, GuardrailType, GuardrailResult
-from ..core.config_validator import ValidationRule, AI_GUARDRAIL_RULES
+from typing import Any, Dict, List, Optional
+
+from ..adapters.openai_adapter import ModerationResult, OpenAIAdapter
 from ..core.api_key_manager import APIKeyManager
+from ..core.config_validator import AI_GUARDRAIL_RULES, ValidationRule
 from ..core.conversation import Conversation
-from ..adapters.openai_adapter import OpenAIAdapter, ModerationResult
+from ..core.guardrail_interface import GuardrailInterface, GuardrailResult, GuardrailType
 
 logger = logging.getLogger(__name__)
 

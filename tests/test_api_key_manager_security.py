@@ -5,12 +5,13 @@ Security tests for API Key Manager
 Tests cover encryption key management vulnerabilities and security constraints.
 """
 
-import pytest
 import os
 import sys
 import tempfile
-from unittest.mock import patch, MagicMock
 from pathlib import Path
+from unittest.mock import MagicMock, patch
+
+import pytest
 
 from src.stinger.core.api_key_manager import APIKeyManager, SecurityError
 

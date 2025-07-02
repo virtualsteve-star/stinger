@@ -4,12 +4,13 @@ Comprehensive end-to-end tests for security audit trail system.
 This test validates all major requirements from the test plan.
 """
 
-import pytest
-import tempfile
 import json
 import os
 import sys
+import tempfile
 from pathlib import Path
+
+import pytest
 
 # Add src to path for testing
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))

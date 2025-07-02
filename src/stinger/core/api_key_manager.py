@@ -5,14 +5,15 @@ This module provides centralized API key management with security features
 for handling external API keys like OpenAI.
 """
 
+import json
+import logging
 import os
 import re
-import logging
 import sys
-from typing import Dict, Optional, Any, Union, TYPE_CHECKING
 from pathlib import Path
+from typing import TYPE_CHECKING, Any, Dict, Optional, Union
+
 import yaml
-import json
 
 
 class SecurityError(Exception):

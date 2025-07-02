@@ -11,10 +11,11 @@ Tests cover:
 - Performance characteristics
 """
 
-import pytest
 import asyncio
 import re
 from unittest.mock import Mock
+
+import pytest
 
 from src.stinger.guardrails.regex_guardrail import RegexGuardrail
 

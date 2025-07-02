@@ -5,15 +5,17 @@ Tests integration of all Phase 5a filters with the universal guardrail interface
 factory registration, and pipeline integration.
 """
 
-import pytest
 import asyncio
+
+import pytest
+
+from src.stinger.core.guardrail_factory import create_guardrail_from_config, register_all_factories
 from src.stinger.core.guardrail_interface import GuardrailRegistry, GuardrailType
-from src.stinger.core.guardrail_factory import register_all_factories, create_guardrail_from_config
+from src.stinger.guardrails.simple_code_generation_guardrail import SimpleCodeGenerationGuardrail
 from src.stinger.guardrails.simple_pii_detection_guardrail import SimplePIIDetectionGuardrail
 from src.stinger.guardrails.simple_toxicity_detection_guardrail import (
     SimpleToxicityDetectionGuardrail,
 )
-from src.stinger.guardrails.simple_code_generation_guardrail import SimpleCodeGenerationGuardrail
 
 
 class TestPhase5aIntegration:

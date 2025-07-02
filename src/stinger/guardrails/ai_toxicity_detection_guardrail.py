@@ -6,10 +6,10 @@ with centralized model configuration.
 """
 
 import logging
-from typing import Dict, Any, Tuple
+from typing import Any, Dict, Tuple
 
-from .base_ai_guardrail import BaseAIGuardrail
 from ..core.guardrail_interface import GuardrailType
+from .base_ai_guardrail import BaseAIGuardrail
 
 logger = logging.getLogger(__name__)
 

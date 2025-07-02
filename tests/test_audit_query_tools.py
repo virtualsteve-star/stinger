@@ -4,12 +4,13 @@ Tests for audit trail query tools.
 Tests the development query and analysis tools.
 """
 
-import pytest
-import tempfile
 import json
 import os
 import sys
+import tempfile
 from pathlib import Path
+
+import pytest
 
 # Add src to path for testing
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
@@ -145,8 +146,8 @@ class TestAuditQueryTools:
             results = audit.query(conversation_id="conv_456", destination=audit_file)
 
             # Should be able to print without errors
-            import io
             import contextlib
+            import io
 
             f = io.StringIO()
             with contextlib.redirect_stdout(f):
@@ -164,8 +165,8 @@ class TestAuditQueryTools:
 
     def test_print_query_results_empty(self):
         """Test printing empty query results."""
-        import io
         import contextlib
+        import io
 
         f = io.StringIO()
         with contextlib.redirect_stdout(f):

@@ -7,8 +7,8 @@ model communication without any guardrail-specific logic.
 
 import asyncio
 import logging
-from typing import Dict, Any, List, Optional
 from dataclasses import dataclass
+from typing import Any, Dict, List, Optional
 
 # Optional OpenAI import
 try:

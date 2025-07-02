@@ -6,10 +6,10 @@ regex patterns for dangerous constructs and enforcing complexity limits.
 """
 
 import re
-import time
 import threading
-from typing import List, Tuple, Optional
+import time
 from dataclasses import dataclass
+from typing import List, Optional, Tuple
 
 
 @dataclass

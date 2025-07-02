@@ -5,8 +5,8 @@ This module provides ready-to-use configurations for typical scenarios
 like content moderation, customer service, medical applications, etc.
 """
 
-from typing import Dict, Any
 from pathlib import Path
+from typing import Any, Dict
 
 
 class PresetConfigs:

@@ -7,16 +7,17 @@ Verifies secure error message handling and environment detection.
 
 import os
 import tempfile
+from unittest.mock import MagicMock, patch
+
 import pytest
-from unittest.mock import patch, MagicMock
 
 from src.stinger.core.error_handling import (
     ProductionErrorHandler,
-    safe_error_message,
-    sanitize_path,
-    sanitize_error_details,
-    is_production,
     SecurityError,
+    is_production,
+    safe_error_message,
+    sanitize_error_details,
+    sanitize_path,
 )
 
 

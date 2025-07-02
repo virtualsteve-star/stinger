@@ -5,10 +5,12 @@ Tests pattern matching accuracy, configuration options, and error handling
 for the regex-based PII detection filter.
 """
 
-import pytest
 import asyncio
-from src.stinger.guardrails.simple_pii_detection_guardrail import SimplePIIDetectionGuardrail
+
+import pytest
+
 from src.stinger.core.guardrail_interface import GuardrailType
+from src.stinger.guardrails.simple_pii_detection_guardrail import SimplePIIDetectionGuardrail
 
 
 class TestSimplePIIDetectionFilter:

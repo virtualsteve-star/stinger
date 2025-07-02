@@ -6,31 +6,35 @@ and registers them with the guardrail registry.
 """
 
 import logging
-from typing import Dict, Any, Optional
-from .guardrail_interface import (
-    GuardrailInterface,
-    GuardrailType,
-    GuardrailRegistry,
-    GuardrailFactory,
-)
-from ..utils.exceptions import GuardrailInitializationError
+from typing import Any, Dict, Optional
 
-# Legacy filter adapters removed - all filters now use GuardrailInterface directly
+from ..guardrails.ai_code_generation_guardrail import AICodeGenerationGuardrail
+from ..guardrails.ai_pii_detection_guardrail import AIPIIDetectionGuardrail
+from ..guardrails.ai_toxicity_detection_guardrail import AIToxicityDetectionGuardrail
 
 # Import new Phase 5 filters
 from ..guardrails.content_moderation_guardrail import ContentModerationGuardrail
 from ..guardrails.prompt_injection_guardrail import PromptInjectionGuardrail
+from ..guardrails.simple_code_generation_guardrail import SimpleCodeGenerationGuardrail
 
 # Import Phase 5a filters
 from ..guardrails.simple_pii_detection_guardrail import SimplePIIDetectionGuardrail
-from ..guardrails.ai_pii_detection_guardrail import AIPIIDetectionGuardrail
 from ..guardrails.simple_toxicity_detection_guardrail import SimpleToxicityDetectionGuardrail
-from ..guardrails.ai_toxicity_detection_guardrail import AIToxicityDetectionGuardrail
-from ..guardrails.simple_code_generation_guardrail import SimpleCodeGenerationGuardrail
-from ..guardrails.ai_code_generation_guardrail import AICodeGenerationGuardrail
 
 # Import TopicGuardrail (Phase 7B.2)
 from ..guardrails.topic_guardrail import TopicGuardrail
+from ..utils.exceptions import GuardrailInitializationError
+from .guardrail_interface import (
+    GuardrailFactory,
+    GuardrailInterface,
+    GuardrailRegistry,
+    GuardrailType,
+)
+
+# Legacy filter adapters removed - all filters now use GuardrailInterface directly
+
+
+
 
 logger = logging.getLogger(__name__)
 

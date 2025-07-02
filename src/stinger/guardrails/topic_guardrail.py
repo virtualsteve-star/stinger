@@ -7,12 +7,13 @@ It can be used to restrict or allow content based on predefined topic lists.
 
 import logging
 import re
-from typing import Dict, List, Optional, Any
+from typing import Any, Dict, List, Optional
+
+from ..core.config_validator import TOPIC_GUARDRAIL_RULES, ValidationRule
+from ..core.conversation import Conversation
 
 # FilterResult removed - now using GuardrailResult only
 from ..core.guardrail_interface import GuardrailInterface, GuardrailResult, GuardrailType
-from ..core.config_validator import ValidationRule, TOPIC_GUARDRAIL_RULES
-from ..core.conversation import Conversation
 
 logger = logging.getLogger(__name__)
 

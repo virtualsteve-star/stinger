@@ -1,12 +1,13 @@
-from typing import Optional, List
-from ..core.guardrail_interface import GuardrailInterface, GuardrailResult, GuardrailType
+from typing import List, Optional
+
 from ..core.config_validator import (
+    LENGTH_GUARDRAIL_RULES,
     ConfigValidator,
     ValidationRule,
     create_length_validator,
-    LENGTH_GUARDRAIL_RULES,
 )
 from ..core.conversation import Conversation
+from ..core.guardrail_interface import GuardrailInterface, GuardrailResult, GuardrailType
 
 
 class LengthGuardrail(GuardrailInterface):

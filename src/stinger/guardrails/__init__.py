@@ -3,13 +3,13 @@ Filter registry for Stinger LLM Guardrails.
 Maps filter type names to their corresponding filter classes.
 """
 
-from .pass_through import PassThroughGuardrail
 from .keyword_block import KeywordBlockGuardrail
 from .keyword_list import KeywordListGuardrail
-from .regex_guardrail import RegexGuardrail
 from .length_guardrail import LengthGuardrail
-from .url_guardrail import URLGuardrail
+from .pass_through import PassThroughGuardrail
+from .regex_guardrail import RegexGuardrail
 from .topic_guardrail import TopicGuardrail
+from .url_guardrail import URLGuardrail
 
 # Registry mapping filter type names to filter classes
 GUARDRAIL_REGISTRY = {

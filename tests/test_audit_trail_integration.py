@@ -5,12 +5,13 @@ Tests that the audit trail correctly captures all security events
 from the guardrail pipeline.
 """
 
-import pytest
-import tempfile
 import json
 import os
 import sys
+import tempfile
 from pathlib import Path
+
+import pytest
 
 # Add src to path for testing
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))

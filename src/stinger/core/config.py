@@ -1,10 +1,12 @@
-import yaml
 import os
 import re
 from pathlib import Path
-from typing import Dict, Any, Optional
-from ..utils.exceptions import ConfigurationError
+from typing import Any, Dict, Optional
+
 import jsonschema
+import yaml
+
+from ..utils.exceptions import ConfigurationError
 
 CONFIG_SCHEMA = {
     "type": "object",

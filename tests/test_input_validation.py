@@ -7,8 +7,9 @@ Verifies comprehensive input validation and resource protection.
 
 import os
 import time
+from unittest.mock import MagicMock, patch
+
 import pytest
-from unittest.mock import patch, MagicMock
 
 # Handle optional psutil import
 try:
@@ -20,14 +21,14 @@ except ImportError:
     PSUTIL_AVAILABLE = False
 
 from src.stinger.core.input_validation import (
-    ValidationLimits,
     InputValidator,
-    ValidationError,
     ResourceExhaustionError,
-    validate_input_content,
+    ValidationError,
+    ValidationLimits,
     validate_conversation_limits,
-    validate_system_resources,
+    validate_input_content,
     validate_pipeline_configuration,
+    validate_system_resources,
 )
 
 

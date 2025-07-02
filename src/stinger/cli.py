@@ -1,9 +1,10 @@
 import argparse
 import sys
-from stinger.core.pipeline import GuardrailPipeline
-from stinger.core.health_monitor import HealthMonitor, print_health_status
-from stinger.cli.setup_wizard import run_setup
+
 from stinger.cli.first_run import check_first_run
+from stinger.cli.setup_wizard import run_setup
+from stinger.core.health_monitor import HealthMonitor, print_health_status
+from stinger.core.pipeline import GuardrailPipeline
 
 
 def run_demo():

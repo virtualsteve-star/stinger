@@ -5,14 +5,15 @@ This module provides a Conversation class for managing multi-turn conversations,
 including rate limiting, logging context, and conversation history.
 """
 
-import uuid
-import time
 import logging
 import threading
+import time
+import uuid
 from dataclasses import dataclass, field
-from typing import Dict, Any, List, Optional, Union
 from datetime import datetime, timedelta
-from .input_validation import validate_conversation_limits, validate_input_content, ValidationError
+from typing import Any, Dict, List, Optional, Union
+
+from .input_validation import ValidationError, validate_conversation_limits, validate_input_content
 
 logger = logging.getLogger(__name__)
 

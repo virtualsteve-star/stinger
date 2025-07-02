@@ -4,10 +4,12 @@ Unit tests for KeywordListGuardrail
 Tests all functionality including inline keywords, file loading, and error handling.
 """
 
-import pytest
-import tempfile
 import os
+import tempfile
 from pathlib import Path
+
+import pytest
+
 from src.stinger.guardrails.keyword_list import KeywordListGuardrail
 from src.stinger.utils.exceptions import GuardrailError
 

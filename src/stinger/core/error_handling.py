@@ -5,12 +5,12 @@ Provides secure error handling for production environments by sanitizing
 error messages and preventing information disclosure.
 """
 
+import logging
 import os
 import re
 import uuid
-import logging
-from typing import Optional, Dict, Any
 from pathlib import Path
+from typing import Any, Dict, Optional
 
 
 class SecurityError(Exception):

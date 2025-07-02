@@ -4,11 +4,12 @@ Test script to verify AI filters integration with centralized API key management
 """
 
 import asyncio
-import tempfile
-import yaml
 import sys
+import tempfile
 from pathlib import Path
+
 import pytest
+import yaml
 
 # Add src to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))

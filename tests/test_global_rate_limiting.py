@@ -5,18 +5,20 @@ This module tests the global rate limiting capabilities that build on the existi
 conversation rate limiting system.
 """
 
-import pytest
-import time
 import threading
-from unittest.mock import patch, MagicMock
+import time
+from unittest.mock import MagicMock, patch
+
+import pytest
+
+from src.stinger.core.conversation import Conversation
+from src.stinger.core.pipeline import GuardrailPipeline
 from src.stinger.core.rate_limiter import (
-    RateLimitTracker,
     GlobalRateLimiter,
+    RateLimitTracker,
     get_global_rate_limiter,
     set_global_rate_limiter,
 )
-from src.stinger.core.pipeline import GuardrailPipeline
-from src.stinger.core.conversation import Conversation
 
 CONFIG = {
     "default_limits": {"requests_per_minute": 5, "requests_per_hour": 10},

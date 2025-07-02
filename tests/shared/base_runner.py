@@ -3,10 +3,10 @@ Shared base classes for integration test scenarios.
 Provides common functionality for running conversation-based tests.
 """
 
-import json
 import asyncio
-import sys
+import json
 import os
+import sys
 from collections import defaultdict
 from typing import Dict, List, Optional
 
@@ -14,11 +14,11 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 
 from src.stinger.core.config import ConfigLoader
 from src.stinger.core.pipeline import GuardrailPipeline
-from src.stinger.guardrails.pass_through import PassThroughGuardrail
 from src.stinger.guardrails.keyword_block import KeywordBlockGuardrail
 from src.stinger.guardrails.keyword_list import KeywordListGuardrail
-from src.stinger.guardrails.regex_filter import RegexGuardrail
 from src.stinger.guardrails.length_guardrail import LengthGuardrail
+from src.stinger.guardrails.pass_through import PassThroughGuardrail
+from src.stinger.guardrails.regex_filter import RegexGuardrail
 from src.stinger.guardrails.url_filter import URLGuardrail
 
 

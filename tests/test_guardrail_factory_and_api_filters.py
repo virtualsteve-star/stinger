@@ -4,13 +4,14 @@ Guardrail Factory, Registry, and API-based Filter Tests
 Tests for the extensible guardrail/filter system, including legacy adapters and OpenAI-based filters.
 """
 
-import pytest
 import asyncio
-from unittest.mock import Mock, patch, AsyncMock, MagicMock
-from src.stinger.core.guardrail_interface import GuardrailType, GuardrailRegistry, GuardrailFactory
-from src.stinger.core.guardrail_factory import register_all_factories
-from src.stinger.core.api_key_manager import APIKeyManager
+from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
+import pytest
+
+from src.stinger.core.api_key_manager import APIKeyManager
+from src.stinger.core.guardrail_factory import register_all_factories
+from src.stinger.core.guardrail_interface import GuardrailFactory, GuardrailRegistry, GuardrailType
 
 # Use the actual register_all_factories from the module
 
@@ -194,10 +195,10 @@ class TestGuardrailFactoryAndAPIFilters:
     async def test_content_moderation_filter_available(self):
         """Test content moderation filter when OpenAI is available."""
         try:
+            from src.stinger.adapters.openai_adapter import ModerationResult
             from src.stinger.guardrails.content_moderation_guardrail import (
                 ContentModerationGuardrail,
             )
-            from src.stinger.adapters.openai_adapter import ModerationResult
 
             config = {
                 "name": "test_moderation",
@@ -271,8 +272,8 @@ class TestGuardrailFactoryAndAPIFilters:
         """Test prompt injection filter when OpenAI is available."""
         try:
             from src.stinger.guardrails.prompt_injection_guardrail import (
-                PromptInjectionGuardrail,
                 InjectionResult,
+                PromptInjectionGuardrail,
             )
 
             config = {

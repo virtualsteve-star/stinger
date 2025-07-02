@@ -7,10 +7,10 @@ that the moderation framework can effectively handle toxic customer language
 while allowing normal interactions.
 """
 
-import asyncio
 import argparse
-import sys
+import asyncio
 import os
+import sys
 
 # Ensure src and tests are in sys.path for absolute imports
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))

@@ -7,14 +7,14 @@ Enhanced with conversation awareness for multi-turn pattern detection.
 
 import json
 import logging
-from typing import Dict, Any, Optional, List
 from dataclasses import dataclass
+from typing import Any, Dict, List, Optional
 
-from ..core.guardrail_interface import GuardrailInterface, GuardrailType, GuardrailResult
-from ..core.config_validator import ValidationRule, AI_GUARDRAIL_RULES
-from ..core.api_key_manager import APIKeyManager
-from ..core.conversation import Conversation, Turn
 from ..adapters.openai_adapter import OpenAIAdapter
+from ..core.api_key_manager import APIKeyManager
+from ..core.config_validator import AI_GUARDRAIL_RULES, ValidationRule
+from ..core.conversation import Conversation, Turn
+from ..core.guardrail_interface import GuardrailInterface, GuardrailResult, GuardrailType
 
 logger = logging.getLogger(__name__)
 

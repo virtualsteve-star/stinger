@@ -3,15 +3,15 @@ Setup wizard for Stinger Guardrails Framework.
 Helps users configure their environment and get started quickly.
 """
 
-import os
-import sys
 import json
-import subprocess
+import os
 import platform
+import shutil
+import subprocess
+import sys
+import time
 from pathlib import Path
 from typing import Dict, Optional, Tuple
-import shutil
-import time
 
 
 class SetupWizard:

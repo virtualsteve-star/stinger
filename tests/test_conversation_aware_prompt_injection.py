@@ -5,17 +5,18 @@ This module tests the enhanced prompt injection detection with conversation cont
 including multi-turn pattern detection, context strategies, and performance.
 """
 
-import pytest
 import asyncio
-from unittest.mock import Mock, AsyncMock, patch
 from datetime import datetime
+from unittest.mock import AsyncMock, Mock, patch
 
-from src.stinger.guardrails.prompt_injection_guardrail import (
-    PromptInjectionGuardrail,
-    InjectionResult,
-)
+import pytest
+
 from src.stinger.core.conversation import Conversation, Turn
 from src.stinger.core.guardrail_interface import GuardrailResult
+from src.stinger.guardrails.prompt_injection_guardrail import (
+    InjectionResult,
+    PromptInjectionGuardrail,
+)
 
 
 class TestConversationAwarePromptInjection:

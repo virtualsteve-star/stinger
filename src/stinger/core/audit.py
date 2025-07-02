@@ -6,14 +6,14 @@ This is NOT developer debug logging - this tracks security decisions for audit p
 """
 
 import json
-import sys
 import os
-import threading
 import queue
+import sys
+import threading
 import time
-from datetime import datetime, timezone, timedelta
-from typing import Optional, Any, Dict, List, Union
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from typing import Any, Dict, List, Optional, Union
 
 
 class AuditTrail:
@@ -506,8 +506,8 @@ def query(
         List of matching audit records
     """
     import json
-    from pathlib import Path
     from datetime import datetime, timedelta, timezone
+    from pathlib import Path
 
     try:
         log_path = Path(destination)

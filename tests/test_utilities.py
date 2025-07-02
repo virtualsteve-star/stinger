@@ -2,14 +2,15 @@
 Common test utilities and helper functions for Stinger tests.
 """
 
-import time
 import json
-import yaml
-from pathlib import Path
-from typing import Dict, Any, List, Optional, Callable
-from contextlib import contextmanager
-import tempfile
 import os
+import tempfile
+import time
+from contextlib import contextmanager
+from pathlib import Path
+from typing import Any, Callable, Dict, List, Optional
+
+import yaml
 
 
 class TestDataGenerator:

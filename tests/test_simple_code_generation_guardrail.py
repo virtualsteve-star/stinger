@@ -5,10 +5,12 @@ Tests pattern matching accuracy, configuration options, and error handling
 for the regex-based code generation detection filter.
 """
 
-import pytest
 import asyncio
-from src.stinger.guardrails.simple_code_generation_guardrail import SimpleCodeGenerationGuardrail
+
+import pytest
+
 from src.stinger.core.guardrail_interface import GuardrailType
+from src.stinger.guardrails.simple_code_generation_guardrail import SimpleCodeGenerationGuardrail
 
 
 class TestSimpleCodeGenerationFilter:

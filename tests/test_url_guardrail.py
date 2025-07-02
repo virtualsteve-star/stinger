@@ -10,9 +10,10 @@ Tests cover:
 - Performance characteristics
 """
 
-import pytest
 import asyncio
 from unittest.mock import Mock
+
+import pytest
 
 from src.stinger.guardrails.url_guardrail import URLGuardrail
 

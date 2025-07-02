@@ -5,12 +5,13 @@ This module provides a regex-based code generation detection filter that can ide
 various types of code and programming content without requiring AI.
 """
 
-import re
 import logging
-from typing import Dict, Any, Optional, List
-from ..core.guardrail_interface import GuardrailInterface, GuardrailType, GuardrailResult
-from ..core.config_validator import ValidationRule, COMMON_GUARDRAIL_RULES
+import re
+from typing import Any, Dict, List, Optional
+
+from ..core.config_validator import COMMON_GUARDRAIL_RULES, ValidationRule
 from ..core.conversation import Conversation
+from ..core.guardrail_interface import GuardrailInterface, GuardrailResult, GuardrailType
 
 logger = logging.getLogger(__name__)
 

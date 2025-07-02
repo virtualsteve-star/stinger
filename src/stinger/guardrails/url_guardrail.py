@@ -1,9 +1,10 @@
 import re
-from urllib.parse import urlparse
 from typing import List, Optional
-from ..core.guardrail_interface import GuardrailInterface, GuardrailResult, GuardrailType
-from ..core.config_validator import ValidationRule, URL_GUARDRAIL_RULES
+from urllib.parse import urlparse
+
+from ..core.config_validator import URL_GUARDRAIL_RULES, ValidationRule
 from ..core.conversation import Conversation
+from ..core.guardrail_interface import GuardrailInterface, GuardrailResult, GuardrailType
 
 
 class URLGuardrail(GuardrailInterface):

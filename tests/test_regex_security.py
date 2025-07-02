@@ -6,18 +6,19 @@ Tests cover Regular Expression Denial of Service (ReDoS) attack prevention
 and regex security validation.
 """
 
-import pytest
-import time
 import re
+import time
 from unittest.mock import patch
 
+import pytest
+
 from src.stinger.core.regex_security import (
-    RegexSecurityValidator,
     RegexSecurityConfig,
+    RegexSecurityValidator,
     SecurityError,
-    validate_regex_pattern,
     safe_compile_regex,
     safe_regex_search,
+    validate_regex_pattern,
 )
 from src.stinger.guardrails.regex_guardrail import RegexGuardrail
 

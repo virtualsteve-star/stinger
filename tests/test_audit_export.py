@@ -4,13 +4,14 @@ Tests for audit trail export functionality.
 Tests the CSV and JSON export utilities for compliance reporting.
 """
 
-import pytest
-import tempfile
-import json
 import csv
+import json
 import os
 import sys
+import tempfile
 from pathlib import Path
+
+import pytest
 
 # Add src to path for testing
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
