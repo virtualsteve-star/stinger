@@ -342,7 +342,7 @@ class TestPerformance:
         # Skip on Windows due to string formatting differences
         if sys.platform == "win32":
             pytest.skip("Windows string formatting differs")
-            
+
         with patch("src.stinger.guardrails.prompt_injection_guardrail.APIKeyManager"):
             with patch("src.stinger.guardrails.prompt_injection_guardrail.OpenAIAdapter"):
                 guardrail_instance = PromptInjectionGuardrail("test", performance_config)
