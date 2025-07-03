@@ -47,12 +47,15 @@ class TopicGuardrail(GuardrailInterface):
         name = config.get("name", "topic_filter")
         super().__init__(name, GuardrailType.TOPIC_FILTER, config)
 
-        self.allow_topics = config.get("allow_topics", [])
-        self.deny_topics = config.get("deny_topics", [])
-        self.mode = config.get("mode", "deny")
-        self.case_sensitive = config.get("case_sensitive", False)
-        self.use_regex = config.get("use_regex", False)
-        self.confidence_threshold = config.get("confidence_threshold", 0.5)
+        # Handle nested config structure from pipeline configuration
+        nested_config = config.get("config", {})
+        
+        self.allow_topics = nested_config.get("allow_topics", config.get("allow_topics", []))
+        self.deny_topics = nested_config.get("deny_topics", config.get("deny_topics", []))
+        self.mode = nested_config.get("mode", config.get("mode", "deny"))
+        self.case_sensitive = nested_config.get("case_sensitive", config.get("case_sensitive", False))
+        self.use_regex = nested_config.get("use_regex", config.get("use_regex", False))
+        self.confidence_threshold = nested_config.get("confidence_threshold", config.get("confidence_threshold", 0.5))
 
         # Compile regex patterns if needed
         self._compiled_allow_patterns: List[re.Pattern] = []

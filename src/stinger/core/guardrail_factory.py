@@ -57,7 +57,7 @@ def create_regex_filter(name: str, config: Dict[str, Any]) -> GuardrailInterface
     """Create a regex filter."""
     try:
         # Import the direct implementation for new GuardrailInterface
-        from ..guardrails.regex_filter import RegexGuardrail
+        from ..guardrails.regex_guardrail import RegexGuardrail
 
         return RegexGuardrail(config)
     except Exception as e:

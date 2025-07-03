@@ -23,6 +23,13 @@ class SimpleCodeGenerationGuardrail(GuardrailInterface):
         super().__init__(name, GuardrailType.CODE_GENERATION, config)
 
         self.code_patterns = {
+            "code_requests": [
+                r"\b(write|create|generate|code|implement|build)\s+.*?(function|script|program|query|class|api|endpoint)\b",
+                r"\b(write|create|generate|code|implement|build)\s+a\s+\w+\s+(function|script|program|query|class|api|endpoint)\b",
+                r"\b(generate|create|write)\s+(sql|javascript|python|java|code|script)\b",
+                r"\bcode\s+a\s+solution\b",
+                r"\bimplement\s+a\s+\w+\b",
+            ],
             "code_blocks": [
                 r"```[\w]*\n.*?\n```",  # Markdown code blocks
                 r"`.*?`",  # Inline code
@@ -54,9 +61,12 @@ class SimpleCodeGenerationGuardrail(GuardrailInterface):
             ],
         }
 
-        self.enabled_categories = config.get("categories", list(self.code_patterns.keys()))
-        self.confidence_threshold = config.get("confidence_threshold", 0.6)
-        self.min_keywords = config.get("min_keywords", 3)
+        # Handle nested config structure from pipeline configuration
+        nested_config = config.get("config", {})
+        
+        self.enabled_categories = nested_config.get("categories", config.get("categories", list(self.code_patterns.keys())))
+        self.confidence_threshold = nested_config.get("confidence_threshold", config.get("confidence_threshold", 0.6))
+        self.min_keywords = nested_config.get("min_keywords", config.get("min_keywords", 3))
         self.on_error = config.get("on_error", "warn")
 
         # Validate enabled categories - filter out unknown categories
@@ -103,12 +113,19 @@ class SimpleCodeGenerationGuardrail(GuardrailInterface):
                         detected_code.append(category)
                         total_keywords += category_matches
                         # Calculate confidence based on category and number of matches
-                        base_confidence = 0.4 if category == "code_blocks" else 0.2
+                        if category == "code_requests":
+                            base_confidence = 0.6  # High confidence for explicit code requests
+                        elif category == "code_blocks":
+                            base_confidence = 0.4
+                        else:
+                            base_confidence = 0.2
                         confidence_scores[category] = min(
                             0.9, base_confidence + category_matches * 0.15
                         )
 
-            if detected_code and total_keywords >= self.min_keywords:
+            # Code requests are explicit, so require fewer matches
+            min_required = 1 if "code_requests" in detected_code else self.min_keywords
+            if detected_code and total_keywords >= min_required:
                 max_confidence = max(confidence_scores.values())
                 blocked = max_confidence >= self.confidence_threshold
 

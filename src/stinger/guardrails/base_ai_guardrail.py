@@ -42,8 +42,11 @@ class BaseAIGuardrail(GuardrailInterface):
         """
         super().__init__(name, guardrail_type, config)
 
+        # Handle nested config structure from pipeline configuration
+        nested_config = config.get("config", {})
+        
         # Configuration
-        self.confidence_threshold = config.get("confidence_threshold", default_confidence_threshold)
+        self.confidence_threshold = nested_config.get("confidence_threshold", config.get("confidence_threshold", default_confidence_threshold))
         self.on_error = config.get("on_error", default_on_error)
 
         # Use centralized API key manager instead of config

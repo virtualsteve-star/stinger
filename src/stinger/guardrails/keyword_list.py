@@ -21,12 +21,24 @@ class KeywordListGuardrail(GuardrailInterface):
         """Initialize keyword list filter."""
         name = config.get("name", "keyword_list")
 
+        # Prepare config for validation - if nested config exists, merge it up for validation
+        validation_config = config.copy()
+        if "config" in config:
+            nested = config["config"]
+            for key, value in nested.items():
+                if key not in validation_config:
+                    validation_config[key] = value
+
         # Initialize with validation
-        super().__init__(name, GuardrailType.KEYWORD_LIST, config)
+        super().__init__(name, GuardrailType.KEYWORD_LIST, validation_config)
 
         self.config = config  # Keep for compatibility with _load_keywords
         self.keywords = []
-        self.case_sensitive = config.get("case_sensitive", False)
+        
+        # Handle nested config structure
+        nested_config = config.get("config", {})
+        self.case_sensitive = nested_config.get("case_sensitive", config.get("case_sensitive", False))
+        
         self._load_keywords()
 
     def get_validation_rules(self) -> List[ValidationRule]:
@@ -51,13 +63,16 @@ class KeywordListGuardrail(GuardrailInterface):
 
     def _load_keywords(self):
         """Load keywords from config or file."""
-        # Get inline keywords
-        inline_keywords = self.config.get("keywords", [])
+        # Handle nested config structure
+        nested_config = self.config.get("config", {})
+        
+        # Get inline keywords from nested or flat config
+        inline_keywords = nested_config.get("keywords", self.config.get("keywords", []))
         if isinstance(inline_keywords, str):
             inline_keywords = [inline_keywords]
 
-        # Get file path for keywords
-        keywords_file = self.config.get("keywords_file")
+        # Get file path for keywords from nested or flat config
+        keywords_file = nested_config.get("keywords_file", self.config.get("keywords_file"))
 
         if keywords_file:
             try:

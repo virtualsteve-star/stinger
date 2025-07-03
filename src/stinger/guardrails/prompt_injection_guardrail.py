@@ -64,14 +64,17 @@ class PromptInjectionGuardrail(GuardrailInterface):
         # Now call parent init which will trigger validation
         super().__init__(name, GuardrailType.PROMPT_INJECTION, config)
 
+        # Handle nested config structure from pipeline configuration
+        nested_config = config.get("config", {})
+        
         # Basic configuration
-        self.risk_threshold = config.get("risk_threshold", 70)  # 0-100
-        self.block_levels = config.get("block_levels", ["high", "critical"])
-        self.warn_levels = config.get("warn_levels", ["medium"])
+        self.risk_threshold = nested_config.get("risk_threshold", config.get("risk_threshold", 70))  # 0-100
+        self.block_levels = nested_config.get("block_levels", config.get("block_levels", ["high", "critical"]))
+        self.warn_levels = nested_config.get("warn_levels", config.get("warn_levels", ["medium"]))
         self.on_error = config.get("on_error", "allow")  # 'allow', 'block', 'warn'
 
         # Pattern detection weights
-        pattern_config = config.get("pattern_detection", {})
+        pattern_config = nested_config.get("pattern_detection", config.get("pattern_detection", {}))
         self.trust_building_weight = pattern_config.get("trust_building_weight", 0.3)
         self.role_playing_weight = pattern_config.get("role_playing_weight", 0.25)
         self.context_manipulation_weight = pattern_config.get("context_manipulation_weight", 0.25)

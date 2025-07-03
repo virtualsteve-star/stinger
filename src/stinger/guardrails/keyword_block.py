@@ -9,9 +9,23 @@ class KeywordBlockGuardrail(GuardrailInterface):
     def __init__(self, config: dict):
         """Initialize keyword block filter."""
         name = config.get("name", "keyword_block")
-        super().__init__(name, GuardrailType.KEYWORD_BLOCK, config)
+        
+        # Prepare config for validation - if nested config exists, merge it up for validation
+        validation_config = config.copy()
+        if "config" in config:
+            nested = config["config"]
+            for key, value in nested.items():
+                if key not in validation_config:
+                    validation_config[key] = value
+        
+        super().__init__(name, GuardrailType.KEYWORD_BLOCK, validation_config)
 
-        self.keyword = config.get("keyword", "").lower()
+        # Handle nested config structure from pipeline configuration
+        nested_config = config.get("config", {})
+        
+        keyword = nested_config.get("keyword", config.get("keyword", ""))
+        self.keyword = keyword.lower() if keyword else ""
+        self.case_sensitive = nested_config.get("case_sensitive", config.get("case_sensitive", False))
 
     def get_validation_rules(self) -> List[ValidationRule]:
         """Get validation rules for keyword block guardrail."""

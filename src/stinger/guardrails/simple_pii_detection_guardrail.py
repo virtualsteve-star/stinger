@@ -77,8 +77,12 @@ class SimplePIIDetectionGuardrail(GuardrailInterface):
                     matches = re.findall(pattern, content, re.IGNORECASE)
                     if matches:
                         detected_pii.append(pii_type)
-                        # Calculate confidence based on number of matches
-                        confidence_scores[pii_type] = min(0.9, 0.5 + len(matches) * 0.1)
+                        # Calculate confidence based on PII type and number of matches
+                        # High confidence for unambiguous patterns like SSN, credit cards, and emails
+                        if pii_type in ["ssn", "credit_card", "email", "phone"]:
+                            confidence_scores[pii_type] = min(0.95, 0.8 + len(matches) * 0.05)
+                        else:
+                            confidence_scores[pii_type] = min(0.9, 0.5 + len(matches) * 0.1)
 
             if detected_pii:
                 max_confidence = max(confidence_scores.values())

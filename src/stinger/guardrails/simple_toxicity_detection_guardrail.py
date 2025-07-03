@@ -30,8 +30,9 @@ class SimpleToxicityDetectionGuardrail(GuardrailInterface):
             ],
             "harassment": [
                 r"\b(stalk|harass|bully|intimidate|threaten)\b",
-                r"\b(you\s+suck|you\re\s+stupid|you\re\s+worthless|you\re\s+ugly)\b",
+                r"\b(you\s+suck|you'?re?\s+stupid|you'?re?\s+worthless|you'?re?\s+ugly)\b",
                 r"\b(go\s+die|kill\s+yourself|commit\s+suicide)\b",
+                r"\b(i\s+hate\s+you|hate\s+you)\b",
             ],
             "threats": [
                 r"\b(i\s+will\s+kill|i\s+will\s+hurt|i\s+will\s+destroy)\b",
@@ -42,23 +43,39 @@ class SimpleToxicityDetectionGuardrail(GuardrailInterface):
                 r"\b(sexual|nude|porn|explicit)\b.*\b(harass|assault|abuse)\b",
                 r"\b(rape|molest|grope|fondle)\b",
                 r"\b(sexy|hot|beautiful)\b.*\b(send\s+pics|show\s+me)\b",
+                r"\b(porn\s+site|porn\s+video|xxx|adult\s+content)\b",
             ],
             "violence": [
                 r"\b(punch|hit|beat|attack|fight|violence)\b",
                 r"\b(gun|shoot|bomb|explode|terrorist)\b",
                 r"\b(murder|assassinate|execute|lynch)\b",
+                r"\b(let's\s+fight|wanna\s+fight|fight\s+me)\b",
             ],
         }
 
-        self.enabled_categories = config.get("categories", list(self.toxicity_patterns.keys()))
-        self.confidence_threshold = config.get("confidence_threshold", 0.7)
+        # Handle nested config structure from pipeline configuration
+        nested_config = config.get("config", {})
+        
+        self.enabled_categories = nested_config.get("categories", config.get("categories", list(self.toxicity_patterns.keys())))
+        self.confidence_threshold = nested_config.get("confidence_threshold", config.get("confidence_threshold", 0.7))
         self.on_error = config.get("on_error", "block")
 
-        # Validate enabled categories - filter out unknown categories
+        # Category name mappings for common variations
+        category_mappings = {
+            "hate": "hate_speech",
+            "sexual": "sexual_harassment",
+            "threat": "threats",
+        }
+        
+        # Validate enabled categories - filter out unknown categories and map common variations
         valid_categories = []
         for category in self.enabled_categories:
+            # Check for direct match
             if category in self.toxicity_patterns:
                 valid_categories.append(category)
+            # Check for mapped variation
+            elif category in category_mappings and category_mappings[category] in self.toxicity_patterns:
+                valid_categories.append(category_mappings[category])
             else:
                 logger.warning(f"Unknown toxicity category '{category}' in filter '{name}'")
 
@@ -95,8 +112,13 @@ class SimpleToxicityDetectionGuardrail(GuardrailInterface):
 
                     if category_matches > 0:
                         detected_toxicity.append(category)
-                        # Calculate confidence based on number of matches
-                        confidence_scores[category] = min(0.95, 0.3 + category_matches * 0.2)
+                        # Calculate confidence based on category and number of matches
+                        # Higher base confidence for more serious categories
+                        if category in ["hate_speech", "harassment", "threats", "sexual_harassment"]:
+                            base_confidence = 0.6
+                        else:
+                            base_confidence = 0.3
+                        confidence_scores[category] = min(0.95, base_confidence + category_matches * 0.15)
 
             if detected_toxicity:
                 max_confidence = max(confidence_scores.values())

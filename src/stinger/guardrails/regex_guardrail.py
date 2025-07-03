@@ -12,13 +12,24 @@ class RegexGuardrail(GuardrailInterface):
         """Initialize regex filter."""
         name = config.get("name", "regex_filter")
 
-        # Initialize with validation
-        super().__init__(name, GuardrailType.REGEX_FILTER, config)
+        # Prepare config for validation - if nested config exists, merge it up for validation
+        validation_config = config.copy()
+        if "config" in config:
+            nested = config["config"]
+            for key, value in nested.items():
+                if key not in validation_config:
+                    validation_config[key] = value
 
-        self.patterns = config.get("patterns", [])
-        self.action = config.get("action", "block")  # 'block', 'allow', 'warn'
-        self.flags = config.get("flags", 0)
-        self.case_sensitive = config.get("case_sensitive", True)
+        # Initialize with validation
+        super().__init__(name, GuardrailType.REGEX_FILTER, validation_config)
+
+        # Handle nested config structure from pipeline configuration
+        nested_config = config.get("config", {})
+        
+        self.patterns = nested_config.get("patterns", config.get("patterns", []))
+        self.action = nested_config.get("action", config.get("action", "block"))  # 'block', 'allow', 'warn'
+        self.flags = nested_config.get("flags", config.get("flags", 0))
+        self.case_sensitive = nested_config.get("case_sensitive", config.get("case_sensitive", True))
 
         # Initialize security validator
         self.security_validator = RegexSecurityValidator()

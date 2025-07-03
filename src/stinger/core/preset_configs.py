@@ -232,8 +232,8 @@ class PresetConfigs:
                         "enabled": True,
                         "on_error": "block",
                         "config": {
-                            "categories": ["hate_speech", "harassment", "bullying"],
-                            "confidence_threshold": 0.7,
+                            "categories": ["hate_speech", "harassment", "violence", "sexual_harassment"],
+                            "confidence_threshold": 0.6,
                         },
                     },
                     {
@@ -306,6 +306,16 @@ class PresetConfigs:
                         "enabled": True,
                         "on_error": "warn",
                         "config": {"max_length": 2000, "min_length": 1},
+                    },
+                    {
+                        "name": "prompt_injection",
+                        "type": "prompt_injection",
+                        "enabled": True,
+                        "on_error": "block",
+                        "config": {
+                            "risk_threshold": 60,
+                            "block_levels": ["medium", "high", "critical"]
+                        },
                     },
                 ],
                 "output": [

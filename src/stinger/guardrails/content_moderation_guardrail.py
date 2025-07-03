@@ -23,12 +23,15 @@ class ContentModerationGuardrail(GuardrailInterface):
         """Initialize the content moderation filter."""
         super().__init__(name, GuardrailType.CONTENT_MODERATION, config)
 
+        # Handle nested config structure from pipeline configuration
+        nested_config = config.get("config", {})
+        
         # Configuration
-        self.confidence_threshold = config.get("confidence_threshold", 0.7)
-        self.block_categories = config.get(
-            "block_categories", ["hate", "harassment", "self_harm", "sexual", "violence"]
+        self.confidence_threshold = nested_config.get("confidence_threshold", config.get("confidence_threshold", 0.7))
+        self.block_categories = nested_config.get(
+            "block_categories", config.get("block_categories", ["hate", "harassment", "self_harm", "sexual", "violence"])
         )
-        self.warn_categories = config.get("warn_categories", [])
+        self.warn_categories = nested_config.get("warn_categories", config.get("warn_categories", []))
         self.on_error = config.get("on_error", "allow")  # 'allow', 'block', 'warn'
 
         # API setup

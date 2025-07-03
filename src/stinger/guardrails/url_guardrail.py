@@ -13,12 +13,19 @@ class URLGuardrail(GuardrailInterface):
         name = config.get("name", "url_filter")
         super().__init__(name, GuardrailType.URL_FILTER, config)
 
-        self.blocked_domains = config.get("blocked_domains", [])
-        self.allowed_domains = config.get("allowed_domains", [])
-        self.action = config.get("action", "block")
+        # Handle nested config structure from pipeline configuration
+        nested_config = config.get("config", {})
+        
+        self.blocked_domains = nested_config.get("blocked_domains", config.get("blocked_domains", []))
+        self.allowed_domains = nested_config.get("allowed_domains", config.get("allowed_domains", []))
+        self.action = nested_config.get("action", config.get("action", "block"))
 
-        # Improved URL regex pattern that handles ports
-        self.url_pattern = re.compile(r'https?://[^\s<>"{}|\\^`\[\]]+', re.IGNORECASE)
+        # Improved URL regex pattern that handles ports and domains without protocol
+        # Matches: http://example.com, https://example.com, example.com, sub.example.com
+        self.url_pattern = re.compile(
+            r'(?:https?://)?(?:www\.)?([a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)+)(?:[/?#][^\s]*)?',
+            re.IGNORECASE
+        )
 
     def get_validation_rules(self) -> List[ValidationRule]:
         """Get validation rules for URL guardrail."""
@@ -40,8 +47,8 @@ class URLGuardrail(GuardrailInterface):
             )
 
         # Extract URLs from content
-        urls = self.url_pattern.findall(content)
-        if not urls:
+        matches = list(self.url_pattern.finditer(content))
+        if not matches:
             return GuardrailResult(
                 blocked=False,
                 confidence=0.0,
@@ -55,30 +62,24 @@ class URLGuardrail(GuardrailInterface):
         blocked_urls = []
         allowed_urls = []
 
-        for url in urls:
-            try:
-                parsed = urlparse(url)
-                # Extract domain without port for comparison
-                domain = parsed.netloc.split(":")[0].lower()
+        for match in matches:
+            full_match = match.group(0)
+            domain = match.group(1).lower()  # The domain is captured in group 1
+            
+            # Check blocked domains first
+            if any(domain == blocked or domain.endswith('.' + blocked) for blocked in self.blocked_domains):
+                blocked_urls.append(full_match)
+                continue
 
-                # Check blocked domains first
-                if domain in self.blocked_domains:
-                    blocked_urls.append(url)
-                    continue
-
-                # Check allowed domains (if specified)
-                if self.allowed_domains:
-                    if domain in self.allowed_domains:
-                        allowed_urls.append(url)
-                    else:
-                        blocked_urls.append(url)
+            # Check allowed domains (if specified)
+            if self.allowed_domains:
+                if any(domain == allowed or domain.endswith('.' + allowed) for allowed in self.allowed_domains):
+                    allowed_urls.append(full_match)
                 else:
-                    # No allowed domains specified, so all non-blocked are allowed
-                    allowed_urls.append(url)
-
-            except Exception as e:
-                # Invalid URL, treat as blocked
-                blocked_urls.append(url)
+                    blocked_urls.append(full_match)
+            else:
+                # No allowed domains specified, so all non-blocked are allowed
+                allowed_urls.append(full_match)
 
         if blocked_urls:
             reason = f"Blocked URLs found: {', '.join(blocked_urls[:3])}"
@@ -92,7 +93,7 @@ class URLGuardrail(GuardrailInterface):
                 details={
                     "blocked_urls": blocked_urls,
                     "allowed_urls": allowed_urls,
-                    "total_urls": len(urls),
+                    "total_urls": len(matches),
                 },
                 guardrail_name=self.name,
                 guardrail_type=self.guardrail_type,
@@ -103,7 +104,7 @@ class URLGuardrail(GuardrailInterface):
             blocked=False,
             confidence=1.0,
             reason=f"All URLs allowed: {len(allowed_urls)} found",
-            details={"blocked_urls": [], "allowed_urls": allowed_urls, "total_urls": len(urls)},
+            details={"blocked_urls": [], "allowed_urls": allowed_urls, "total_urls": len(matches)},
             guardrail_name=self.name,
             guardrail_type=self.guardrail_type,
             risk_level="low",
