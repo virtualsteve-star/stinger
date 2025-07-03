@@ -2,7 +2,7 @@
 
 A powerful, easy-to-use Python framework for safeguarding LLM applications with comprehensive content filtering and moderation capabilities.
 
-> **Note:** PyPI installation (`pip install stinger`) is coming soon! For now, install from source (see below).
+> **Alpha Release Available!** Install with `pip install stinger-guardrails-alpha`
 
 ## ✨ Features
 
@@ -16,9 +16,13 @@ A powerful, easy-to-use Python framework for safeguarding LLM applications with 
 
 ## 🚀 Quick Start
 
-### Installation (from source)
+### Installation
 
 ```bash
+# Install the alpha release
+pip install stinger-guardrails-alpha
+
+# Or install from source for development
 pip install .
 ```
 

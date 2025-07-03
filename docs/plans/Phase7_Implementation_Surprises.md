@@ -32,7 +32,7 @@
 | 7C    | -     | -        | -     | -       | -     |
 | 7D    | -     | -        | -     | -       | -     |
 | 7E    | -     | -        | -     | -       | -     |
-| 7F    | -     | -        | -     | -       | -     |
+| 7F    | 0     | 0        | 1     | 0       | 1     |
 
 ---
 
@@ -125,7 +125,22 @@
 
 ## 🎯 **Phase 7F: Release Preparation**
 
-*[Surprises will be added as encountered]*
+### **Surprise #006:** Critical PII Detection Bug Discovered During Final Testing
+- **Date:** 2025-07-02
+- **Phase/Task:** Final QA Testing Before Alpha Release
+- **Severity:** 🔴 Major
+- **Description:** During final testing, discovered that PII detection was completely non-functional - credit card numbers were being allowed instead of blocked. This is a critical security failure that calls into question our entire test strategy.
+- **Expected vs Reality:** Expected 436 passing tests to validate security features, found core PII detection broken despite all tests passing
+- **Impact:** 
+  1. **Security Critical:** Core security feature non-functional
+  2. **Test Strategy Failure:** Comprehensive test suite missed fundamental bug
+  3. **Configuration Validation Gap:** Nested config structures not properly tested
+  4. **Integration Testing Gap:** Pipeline-to-guardrail integration not validated
+  5. **Demo/CLI Testing Gap:** Demo showing incorrect results not caught
+- **Root Cause:** SimplePIIDetectionGuardrail constructor wasn't handling nested config structure properly. Pipeline config has confidence_threshold under 'config' key, but constructor was looking at top level, using default 0.8 instead of configured 0.6.
+- **Resolution:** Fixed constructor to handle nested config structure. PII detection now correctly blocks credit card numbers.
+- **Plan Updates:** Emergency QA audit required before alpha release - see Phase 7H plan
+- **Status:** ✅ Bug Fixed - Emergency Audit Required
 
 ---
 
@@ -148,15 +163,24 @@
 ## 🔄 **Plan Updates Required**
 
 ### **Checklist Updates:**
-- [ ] [Update needed based on surprise]
+- [x] Add emergency QA audit to Phase 7F
+- [ ] Complete guardrail configuration audit
+- [ ] Complete integration testing audit  
+- [ ] Complete test suite enhancement
+- [ ] Make go/no-go decision for alpha release
 
 ### **Implementation Plan Updates:**
-- [ ] [Update needed based on surprise]
+- [ ] Add configuration validation tests to test suite
+- [ ] Add end-to-end security tests
+- [ ] Add demo/CLI functionality tests
+- [ ] Update guardrail constructors if similar issues found
 
 ### **Timeline Adjustments:**
-- [ ] [Timeline change needed]
+- [ ] **CRITICAL:** Delay alpha release until QA audit complete (3-5 days minimum)
+- [ ] Add 3-5 days for emergency audit to Phase 7 timeline
+- [ ] Reassess release readiness after audit findings
 
 ---
 
-**Last Updated:** [DATE]  
-**Next Review:** [DATE]
+**Last Updated:** 2025-07-02  
+**Next Review:** 2025-07-03

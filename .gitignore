@@ -87,6 +87,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+test_env/
 
 # Spyder project settings
 .spyderproject
@@ -127,3 +128,6 @@ api_keys/
 # Logs
 logs/*
 !logs/.gitkeep
+
+# Test installations
+test_install/

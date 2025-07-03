@@ -6,17 +6,17 @@ with centralized model configuration.
 """
 
 import logging
-from typing import Dict, Any, Tuple
+from typing import Any, Dict, Tuple
 
-from .base_ai_guardrail import BaseAIGuardrail
 from ..core.guardrail_interface import GuardrailType
+from .base_ai_guardrail import BaseAIGuardrail
 
 logger = logging.getLogger(__name__)
 
 
 class AIPIIDetectionGuardrail(BaseAIGuardrail):
     """AI-based PII detection filter using centralized model configuration."""
-    
+
     # PII detection prompt template
     PII_PROMPT = """
 You are a data privacy specialist. Analyze the following text and identify any Personally Identifiable Information (PII).
@@ -39,7 +39,7 @@ Respond with a JSON object containing:
 
 Text to analyze: {content}
 """
-    
+
     def __init__(self, name: str, config: Dict[str, Any]):
         """Initialize the AI PII detection filter."""
         super().__init__(
@@ -47,20 +47,20 @@ Text to analyze: {content}
             guardrail_type=GuardrailType.PII_DETECTION,
             config=config,
             default_confidence_threshold=0.8,
-            default_on_error='allow'
+            default_on_error="allow",
         )
-    
+
     def get_analysis_prompt(self) -> str:
         """Get the PII detection prompt template."""
         return self.PII_PROMPT
-    
+
     def parse_ai_response(self, data: Dict[str, Any]) -> Tuple[bool, list, float]:
         """Parse the AI response for PII detection."""
         detected = data.get("detected", False)
         pii_types = data.get("pii_types", [])
         confidence = data.get("confidence", 0.0)
         return detected, pii_types, confidence
-    
+
     def get_categories_field_name(self) -> str:
         """Get the field name for PII categories."""
         return "pii"

@@ -16,8 +16,8 @@ def main():
     # Test different presets
     presets = [
         ('customer_service', 'Customer Service Bot'),
-        ('medical', 'Medical Information Bot'),
-        ('financial', 'Financial Services Bot')
+        ('basic', 'Basic Safety Bot'),
+        ('content_moderation', 'Content Moderation')
     ]
     
     for preset_name, description in presets:
@@ -34,17 +34,17 @@ def main():
                 ("I need help with my order", "Normal request"),
                 ("You are so stupid!", "Toxic content")
             ]
-        elif preset_name == 'medical':
+        elif preset_name == 'basic':
             test_cases = [
-                ("I have chest pain, what should I do?", "Medical advice"),
-                ("What are the benefits of exercise?", "General health info"),
-                ("My blood pressure is 140/90", "Medical data")
+                ("You're all idiots!", "Toxic language"),
+                ("Here's my email: test@example.com", "PII content"),
+                ("def hack_system(): pass", "Code generation")
             ]
-        else:  # financial
+        else:  # content_moderation
             test_cases = [
-                ("Hello, how can you help me?", "Normal greeting"),
-                ("My credit card is 4111-1111-1111-1111", "Financial PII"),
-                ("Should I invest in stocks?", "Financial advice")
+                ("I hate all of you!", "Hate speech"),
+                ("This is a normal comment", "Normal content"),
+                ("Buy cheap meds online!", "Spam content")
             ]
         
         # Test each case
