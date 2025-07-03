@@ -14,6 +14,7 @@ import pytest
 from src.stinger.core.api_key_manager import APIKeyManager, SecurityError
 
 
+@pytest.mark.efficacy
 class TestAPIKeyManagerSecurity:
     """Security-focused tests for API key management."""
 
@@ -42,6 +43,7 @@ class TestAPIKeyManagerSecurity:
                     manager_fresh = APIKeyManager()
                     assert manager_fresh.get_openai_key() == test_key
 
+    @pytest.mark.ci
     def test_key_export_production_block(self):
         """Test key export blocked in production."""
         # Skip on Windows due to environment handling differences
@@ -78,6 +80,7 @@ class TestAPIKeyManagerSecurity:
                 if pytest_module:
                     sys.modules["pytest"] = pytest_module
 
+    @pytest.mark.ci
     def test_key_export_development_allowed(self):
         """Test key export allowed in development."""
         with patch("src.stinger.core.api_key_manager.ENCRYPTION_AVAILABLE", True), patch(
@@ -97,6 +100,7 @@ class TestAPIKeyManagerSecurity:
                 exported_key = manager.export_encryption_key()
                 assert exported_key == test_key
 
+    @pytest.mark.ci
     def test_environment_detection_methods(self):
         """Test various environment detection methods."""
         with patch("src.stinger.core.api_key_manager.ENCRYPTION_AVAILABLE", True), patch(
@@ -137,6 +141,7 @@ class TestAPIKeyManagerSecurity:
                     if pytest_module:
                         sys.modules["pytest"] = pytest_module
 
+    @pytest.mark.ci
     def test_no_encryption_key_export_fails(self):
         """Test export fails when no encryption key available."""
         # Create manager without encryption
@@ -149,6 +154,7 @@ class TestAPIKeyManagerSecurity:
                 with pytest.raises(SecurityError, match="No encryption key available"):
                     manager.export_encryption_key()
 
+    @pytest.mark.ci
     def test_caller_info_logging(self):
         """Test that caller information is logged for security events."""
         with patch("src.stinger.core.api_key_manager.ENCRYPTION_AVAILABLE", True), patch(
@@ -166,6 +172,7 @@ class TestAPIKeyManagerSecurity:
             assert isinstance(caller_info, str)
             assert len(caller_info) > 0
 
+    @pytest.mark.efficacy
     def test_environment_variable_only_mode(self):
         """Test that manager works with environment variables when encryption unavailable."""
         with patch("src.stinger.core.api_key_manager.ENCRYPTION_AVAILABLE", False):
@@ -178,6 +185,7 @@ class TestAPIKeyManagerSecurity:
                 assert manager.get_openai_key() == test_key
                 assert manager.encryption_key is None
 
+    @pytest.mark.ci
     def test_encrypted_storage_requires_encryption(self):
         """Test that encrypted storage operations fail safely without encryption."""
         with patch("src.stinger.core.api_key_manager.ENCRYPTION_AVAILABLE", False):
@@ -187,6 +195,7 @@ class TestAPIKeyManagerSecurity:
             result = manager.save_to_secure_storage("test_service", "test_key")
             assert result == False
 
+    @pytest.mark.ci
     def test_secure_initialization_with_existing_key(self):
         """Test initialization with existing encryption key."""
         with patch("src.stinger.core.api_key_manager.ENCRYPTION_AVAILABLE", True), patch(
@@ -204,6 +213,7 @@ class TestAPIKeyManagerSecurity:
             # Should not have called generate_key since we provided one
             mock_fernet.generate_key.assert_not_called()
 
+    @pytest.mark.ci
     def test_security_error_inheritance(self):
         """Test that SecurityError is proper exception type."""
         assert issubclass(SecurityError, Exception)

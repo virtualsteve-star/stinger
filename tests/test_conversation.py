@@ -17,9 +17,11 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 from stinger import Conversation, Turn
 
 
+@pytest.mark.performance
 class TestTurn:
     """Test the Turn dataclass."""
 
+    @pytest.mark.efficacy
     def test_turn_creation(self):
         """Test basic turn creation."""
         turn = Turn(
@@ -33,6 +35,7 @@ class TestTurn:
         assert isinstance(turn.timestamp, datetime)
         assert turn.metadata == {}
 
+    @pytest.mark.efficacy
     def test_turn_with_response(self):
         """Test turn creation with response."""
         turn = Turn(
@@ -48,6 +51,7 @@ class TestTurn:
         assert turn.speaker == "user_123"
         assert turn.listener == "gpt-4"
 
+    @pytest.mark.efficacy
     def test_turn_with_metadata(self):
         """Test turn creation with metadata."""
         metadata = {"user_id": "123", "session_id": "abc"}
@@ -61,6 +65,7 @@ class TestTurn:
 
         assert turn.metadata == metadata
 
+    @pytest.mark.performance
     def test_turn_timestamp_conversion(self):
         """Test timestamp conversion from int/float."""
         timestamp_int = int(time.time())
@@ -70,6 +75,7 @@ class TestTurn:
         assert abs(turn.timestamp.timestamp() - timestamp_int) < 1
 
 
+@pytest.mark.efficacy
 class TestConversation:
     """Test the Conversation class."""
 
@@ -86,6 +92,7 @@ class TestConversation:
         assert conv.last_activity == conv.created_at
         assert conv.rate_limit == {}
 
+    @pytest.mark.efficacy
     def test_conversation_creation_with_uuid(self):
         """Test conversation creation with auto-generated UUID."""
         conv = Conversation.human_ai("user_123", "gpt-4")
@@ -94,6 +101,7 @@ class TestConversation:
         assert len(conv.conversation_id) > 0
         assert conv.initiator == "user_123"
 
+    @pytest.mark.efficacy
     def test_conversation_creation_with_metadata(self):
         """Test conversation creation with metadata."""
         metadata = {"session_id": "abc", "ip_address": "192.168.1.1"}
@@ -103,6 +111,7 @@ class TestConversation:
 
         assert conv.metadata == metadata
 
+    @pytest.mark.efficacy
     def test_conversation_creation_with_rate_limit(self):
         """Test conversation creation with rate limits."""
         rate_limit = {"turns_per_minute": 10, "turns_per_hour": 100}
@@ -112,6 +121,7 @@ class TestConversation:
 
         assert conv.rate_limit == rate_limit
 
+    @pytest.mark.efficacy
     def test_add_prompt(self):
         """Test adding a prompt."""
         conv = Conversation.human_ai("user_123", "gpt-4", conversation_id="test_123")
@@ -125,6 +135,7 @@ class TestConversation:
         assert isinstance(turn.timestamp, datetime)
         assert conv.last_activity == turn.timestamp
 
+    @pytest.mark.efficacy
     def test_add_response(self):
         """Test adding a response to existing prompt."""
         conv = Conversation.human_ai("user_123", "gpt-4", conversation_id="test_123")
@@ -137,6 +148,7 @@ class TestConversation:
         assert turn.speaker == "user_123"
         assert turn.listener == "gpt-4"
 
+    @pytest.mark.efficacy
     def test_add_exchange(self):
         """Test adding a complete exchange."""
         conv = Conversation.human_ai("user_123", "gpt-4", conversation_id="test_123")
@@ -148,6 +160,7 @@ class TestConversation:
         assert turn.speaker == "user_123"
         assert turn.listener == "gpt-4"
 
+    @pytest.mark.efficacy
     def test_add_turn_with_metadata(self):
         """Test adding a turn with metadata."""
         conv = Conversation.human_ai("user_123", "gpt-4", conversation_id="test_123")
@@ -156,6 +169,7 @@ class TestConversation:
 
         assert turn.metadata == metadata
 
+    @pytest.mark.efficacy
     def test_add_response_no_prompt(self):
         """Test adding a response when no prompt exists."""
         conv = Conversation.human_ai("user_123", "gpt-4", conversation_id="test_123")
@@ -163,6 +177,7 @@ class TestConversation:
         with pytest.raises(ValueError, match="No prompt-only turn exists"):
             conv.add_response("Test response")
 
+    @pytest.mark.efficacy
     def test_get_history(self):
         """Test getting conversation history."""
         conv = Conversation.human_ai("user_123", "gpt-4", conversation_id="test_123")
@@ -176,6 +191,7 @@ class TestConversation:
         assert history[1].prompt == "Third"
         assert history[1].response is None
 
+    @pytest.mark.efficacy
     def test_get_history_with_limit(self):
         """Test getting conversation history with limit."""
         conv = Conversation.human_ai("user_123", "gpt-4", conversation_id="test_123")
@@ -190,6 +206,7 @@ class TestConversation:
         assert history[1].prompt == "Fifth"
         assert history[1].response is None
 
+    @pytest.mark.efficacy
     def test_get_complete_turns(self):
         """Test getting only complete turns."""
         conv = Conversation.human_ai("user_123", "gpt-4", conversation_id="test_123")
@@ -204,6 +221,7 @@ class TestConversation:
         assert complete_turns[1].prompt == "Prompt 3"
         assert complete_turns[1].response == "Response 3"
 
+    @pytest.mark.efficacy
     def test_get_incomplete_turns(self):
         """Test getting only incomplete turns."""
         conv = Conversation.human_ai("user_123", "gpt-4", conversation_id="test_123")
@@ -216,6 +234,7 @@ class TestConversation:
         assert incomplete_turns[0].prompt == "Prompt 2"
         assert incomplete_turns[0].response is None
 
+    @pytest.mark.efficacy
     def test_get_turn_count(self):
         """Test getting turn count."""
         conv = Conversation.human_ai("user_123", "gpt-4", conversation_id="test_123")
@@ -227,6 +246,7 @@ class TestConversation:
         conv.add_response("Second")
         assert conv.get_turn_count() == 1  # Still 1 because response was added to existing turn
 
+    @pytest.mark.efficacy
     def test_get_complete_turn_count(self):
         """Test getting complete turn count."""
         conv = Conversation.human_ai("user_123", "gpt-4", conversation_id="test_123")
@@ -238,11 +258,13 @@ class TestConversation:
         conv.add_prompt("Third")
         assert conv.get_complete_turn_count() == 1  # Still 1 because third turn is incomplete
 
+    @pytest.mark.efficacy
     def test_get_duration(self):
         """Test getting conversation duration."""
         conv = Conversation.human_ai("user_123", "gpt-4", conversation_id="test_123")
         assert conv.get_duration() == 0.0
 
+    @pytest.mark.efficacy
     def test_rate_limit_not_exceeded(self):
         """Test rate limit when not exceeded."""
         rate_limit = {"turns_per_minute": 5}
@@ -256,6 +278,7 @@ class TestConversation:
 
         assert not conv.check_rate_limit()
 
+    @pytest.mark.efficacy
     def test_rate_limit_exceeded_minute(self):
         """Test rate limit exceeded for minute limit."""
         rate_limit = {"turns_per_minute": 2}
@@ -269,6 +292,7 @@ class TestConversation:
 
         assert conv.check_rate_limit()
 
+    @pytest.mark.efficacy
     def test_rate_limit_exceeded_hour(self):
         """Test rate limit exceeded for hour limit."""
         rate_limit = {"turns_per_hour": 3}
@@ -282,6 +306,7 @@ class TestConversation:
 
         assert conv.check_rate_limit()
 
+    @pytest.mark.efficacy
     def test_rate_limit_mixed_limits(self):
         """Test rate limit with both minute and hour limits."""
         rate_limit = {"turns_per_minute": 2, "turns_per_hour": 5}
@@ -295,6 +320,7 @@ class TestConversation:
 
         assert conv.check_rate_limit()
 
+    @pytest.mark.efficacy
     def test_rate_limit_reset(self):
         """Test rate limit reset functionality."""
         rate_limit = {"turns_per_minute": 2}
@@ -312,6 +338,7 @@ class TestConversation:
         conv.reset_rate_limit()
         assert not conv.check_rate_limit()
 
+    @pytest.mark.efficacy
     def test_set_rate_limit(self):
         """Test setting rate limit after creation."""
         conv = Conversation.human_ai("user_123", "gpt-4", conversation_id="test_123")
@@ -321,6 +348,7 @@ class TestConversation:
         conv.set_rate_limit(new_rate_limit)
         assert conv.rate_limit == new_rate_limit
 
+    @pytest.mark.efficacy
     def test_rate_limit_action_log(self):
         """Test rate limit with log action."""
         rate_limit = {"turns_per_minute": 1}
@@ -334,6 +362,7 @@ class TestConversation:
         # Should not raise exception, just log
         conv.check_rate_limit(action="log")
 
+    @pytest.mark.efficacy
     def test_rate_limit_action_warn(self):
         """Test rate limit with warn action."""
         rate_limit = {"turns_per_minute": 1}
@@ -347,6 +376,7 @@ class TestConversation:
         # Should not raise exception, just warn
         conv.check_rate_limit(action="warn")
 
+    @pytest.mark.efficacy
     def test_to_dict(self):
         """Test conversation serialization to dictionary."""
         conv = Conversation.human_ai("user_123", "gpt-4", conversation_id="test_123")
@@ -363,6 +393,7 @@ class TestConversation:
         assert conv_dict["turns"][0]["prompt"] == "Hello"
         assert conv_dict["turns"][0]["response"] == "Hi there"
 
+    @pytest.mark.efficacy
     def test_from_dict(self):
         """Test conversation creation from dictionary."""
         original_conv = Conversation.human_ai("user_123", "gpt-4", conversation_id="test_123")
@@ -382,6 +413,7 @@ class TestConversation:
         restored_history = [turn.prompt for turn in restored_conv.get_history()]
         assert original_history == restored_history
 
+    @pytest.mark.efficacy
     def test_from_dict_with_metadata(self):
         """Test conversation creation from dictionary with metadata."""
         metadata = {"session_id": "abc", "ip": "192.168.1.1"}
@@ -396,6 +428,7 @@ class TestConversation:
         assert restored_conv.metadata == metadata
         assert restored_conv.get_history()[0].metadata == {"confidence": 0.95}
 
+    @pytest.mark.efficacy
     def test_string_representation(self):
         """Test string representation of conversation."""
         conv = Conversation.human_ai("user_123", "gpt-4", conversation_id="test_123")
@@ -407,6 +440,7 @@ class TestConversation:
         assert "test_123" in str_repr
         assert "1 turns" in str_repr  # add_prompt + add_response = 1 turn
 
+    @pytest.mark.efficacy
     def test_repr_representation(self):
         """Test detailed string representation of conversation."""
         conv = Conversation.human_ai("user_123", "gpt-4", conversation_id="test_123")
@@ -419,6 +453,7 @@ class TestConversation:
         assert "gpt-4" in repr_str
         assert "turns=1" in repr_str
 
+    @pytest.mark.efficacy
     def test_empty_conversation(self):
         """Test behavior of empty conversation."""
         conv = Conversation.human_ai("user_123", "gpt-4", conversation_id="test_123")
@@ -431,6 +466,7 @@ class TestConversation:
         assert conv.get_complete_turns() == []
         assert not conv.check_rate_limit()
 
+    @pytest.mark.efficacy
     def test_cleanup_rate_limit_entries(self):
         """Test cleanup of old rate limit entries."""
         rate_limit = {"turns_per_minute": 5}
@@ -446,9 +482,11 @@ class TestConversation:
         assert len(conv.rate_limit_turns) <= 10
 
 
+@pytest.mark.efficacy
 class TestConversationEdgeCases:
     """Test edge cases and error conditions."""
 
+    @pytest.mark.ci
     def test_conversation_with_none_values(self):
         """Test conversation creation with None values."""
         # Use participants parameter for None values
@@ -476,6 +514,7 @@ class TestConversationEdgeCases:
     # which is the desired behavior. Testing edge cases that bypass security
     # validation is not appropriate for a production security system.
 
+    @pytest.mark.efficacy
     def test_add_prompt_with_empty_content(self):
         """Test adding prompt with empty content."""
         conv = Conversation.human_ai("user_123", "gpt-4", conversation_id="test_123")
@@ -483,6 +522,7 @@ class TestConversationEdgeCases:
         turn = conv.add_prompt("")
         assert turn.prompt == ""
 
+    @pytest.mark.efficacy
     def test_rate_limit_with_zero_limits(self):
         """Test rate limit with zero limits."""
         rate_limit = {"turns_per_minute": 0}
@@ -493,6 +533,7 @@ class TestConversationEdgeCases:
         conv.add_prompt("First")
         assert conv.check_rate_limit()  # Should be exceeded immediately
 
+    @pytest.mark.efficacy
     def test_rate_limit_with_negative_limits(self):
         """Test rate limit with negative limits."""
         rate_limit = {"turns_per_minute": -1}
@@ -503,6 +544,7 @@ class TestConversationEdgeCases:
         conv.add_prompt("First")
         assert conv.check_rate_limit()  # Should be exceeded immediately
 
+    @pytest.mark.efficacy
     def test_serialization_with_complex_metadata(self):
         """Test serialization with complex metadata."""
         metadata = {"nested": {"key": "value"}, "list": [1, 2, 3], "boolean": True, "number": 42.5}

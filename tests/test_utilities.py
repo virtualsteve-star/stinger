@@ -14,6 +14,7 @@ import pytest
 import yaml
 
 
+@pytest.mark.ci
 class TestDataGenerator:
     """Generate test data for various scenarios."""
 
@@ -95,6 +96,7 @@ class GuardrailTestHelper:
         elapsed = time.time() - start
         assert elapsed < max_time, f"Check took {elapsed:.3f}s, max allowed: {max_time}s"
 
+    @pytest.mark.ci
     @staticmethod
     def test_guardrail_consistency(guardrail, sample: str, iterations: int = 10):
         """Test that guardrail gives consistent results."""
@@ -246,6 +248,7 @@ class PipelineTestHelper:
 
         return {"input": input_count, "output": output_count, "total": input_count + output_count}
 
+    @pytest.mark.ci
     @staticmethod
     def test_pipeline_with_samples(pipeline, samples: Dict[str, List[str]]):
         """Test pipeline with categorized samples."""

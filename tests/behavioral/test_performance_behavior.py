@@ -26,6 +26,7 @@ from src.stinger.guardrails.simple_toxicity_detection_guardrail import (
 class TestSingleRequestPerformance:
     """Test individual request performance meets requirements"""
 
+    @pytest.mark.performance
     def test_pii_detection_speed(self):
         """PII detection should be fast for single requests"""
         config = {
@@ -53,6 +54,7 @@ class TestSingleRequestPerformance:
             print(f"PII {size} text: {elapsed*1000:.2f}ms (max: {max_time*1000}ms)")
             assert elapsed < max_time, f"PII detection too slow for {size} text"
 
+    @pytest.mark.performance
     def test_toxicity_detection_speed(self):
         """Toxicity detection should be fast"""
         config = {
@@ -75,6 +77,7 @@ class TestSingleRequestPerformance:
         print(f"Toxicity single request: {elapsed*1000:.2f}ms")
         assert elapsed < 0.1, "Toxicity detection should be under 100ms"
 
+    @pytest.mark.performance
     def test_pipeline_overhead(self):
         """Pipeline should add minimal overhead"""
         config = {
@@ -127,6 +130,7 @@ class TestSingleRequestPerformance:
             os.unlink(config_file)
 
 
+@pytest.mark.performance
 class TestBatchPerformance:
     """Test performance with multiple requests"""
 
@@ -157,6 +161,7 @@ class TestBatchPerformance:
         blocked_count = sum(1 for r in individual_results if r.blocked)
         assert blocked_count == len(test_texts), "Should detect all PII"
 
+    @pytest.mark.performance
     def test_concurrent_request_handling(self):
         """Concurrent requests should not degrade performance severely"""
         config = {"name": "concurrent_test", "config": {"confidence_threshold": 0.7}}
@@ -196,6 +201,7 @@ class TestBatchPerformance:
         assert conc_avg < seq_avg * 3, "Concurrent performance degraded too much"
 
 
+@pytest.mark.performance
 class TestMemoryEfficiency:
     """Test memory usage remains reasonable"""
 
@@ -224,6 +230,7 @@ class TestMemoryEfficiency:
         # No assertion - this test documents behavior
         print("Memory leak test completed - manual inspection needed")
 
+    @pytest.mark.performance
     def test_large_input_handling(self):
         """Large inputs should be handled efficiently"""
         config = {"name": "large_input", "config": {"confidence_threshold": 0.7}}
@@ -244,6 +251,7 @@ class TestMemoryEfficiency:
         assert elapsed < 1.0, "Large text should process in under 1 second"
 
 
+@pytest.mark.performance
 class TestPerformanceUnderLoad:
     """Test performance characteristics under various loads"""
 
@@ -295,6 +303,7 @@ class TestPerformanceUnderLoad:
 
             os.unlink(config_file)
 
+    @pytest.mark.performance
     def test_performance_degradation_curve(self):
         """Document how performance degrades with load"""
         config = {"name": "degradation_test", "config": {"confidence_threshold": 0.7}}

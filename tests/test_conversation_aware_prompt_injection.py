@@ -18,6 +18,7 @@ from src.stinger.guardrails.prompt_injection_guardrail import (
 )
 
 
+@pytest.mark.efficacy
 class TestConversationAwarePromptInjection:
     """Test suite for conversation-aware prompt injection detection."""
 
@@ -77,6 +78,7 @@ class TestConversationAwarePromptInjection:
         )
         return conversation
 
+    @pytest.mark.efficacy
     def test_configuration_validation(self, basic_config):
         """Test configuration validation."""
         # Valid configuration should work
@@ -84,6 +86,7 @@ class TestConversationAwarePromptInjection:
         assert guardrail_instance.conversation_awareness_enabled == True
         assert guardrail_instance.context_strategy == "mixed"
 
+    @pytest.mark.efficacy
     def test_invalid_context_strategy(self, basic_config):
         """Test invalid context strategy validation."""
         # Invalid context strategy should raise error
@@ -92,6 +95,7 @@ class TestConversationAwarePromptInjection:
         with pytest.raises(ValueError, match="Invalid context_strategy"):
             PromptInjectionGuardrail("test", invalid_config)
 
+    @pytest.mark.efficacy
     def test_invalid_numeric_limits(self, basic_config):
         """Test invalid numeric limits validation."""
         # Invalid numeric limits should raise error
@@ -100,6 +104,7 @@ class TestConversationAwarePromptInjection:
         with pytest.raises(ValueError, match="max_context_turns must be positive"):
             PromptInjectionGuardrail("test", invalid_config)
 
+    @pytest.mark.efficacy
     def test_context_preparation(self, guardrail_instance, sample_conversation):
         """Test conversation context preparation."""
         # Skip on Windows due to string formatting differences
@@ -122,6 +127,7 @@ class TestConversationAwarePromptInjection:
         assert "user_123 (human):" in context
         assert "gpt-4 (ai_model):" in context
 
+    @pytest.mark.ci
     def test_context_strategies(self, guardrail_instance, sample_conversation):
         """Test different context strategies."""
         # Test recent strategy
@@ -141,6 +147,7 @@ class TestConversationAwarePromptInjection:
         mixed_turns = guardrail_instance._get_relevant_context(sample_conversation)
         assert len(mixed_turns) <= guardrail_instance.max_context_turns
 
+    @pytest.mark.ci
     def test_suspicious_indicator_detection(self, guardrail_instance):
         """Test suspicious indicator detection."""
         # Should detect suspicious indicators
@@ -152,6 +159,7 @@ class TestConversationAwarePromptInjection:
         assert guardrail_instance._has_suspicious_indicators("Hello, how are you?") == False
         assert guardrail_instance._has_suspicious_indicators("What's the weather like?") == False
 
+    @pytest.mark.ci
     def test_context_truncation(self, guardrail_instance):
         """Test context truncation for long conversations."""
         # Create a very long context
@@ -165,6 +173,7 @@ class TestConversationAwarePromptInjection:
             len(truncated) <= guardrail_instance.max_context_tokens * 4 + 100
         )  # Allow some buffer
 
+    @pytest.mark.ci
     def test_enhanced_prompt_building(self, guardrail_instance, sample_conversation):
         """Test enhanced prompt building."""
         prompt = guardrail_instance._build_enhanced_prompt(sample_conversation, "Test prompt")
@@ -178,6 +187,7 @@ class TestConversationAwarePromptInjection:
         assert "CONVERSATION CONTEXT" in prompt
         assert "Current User Input: Test prompt" in prompt
 
+    @pytest.mark.ci
     def test_multi_turn_analysis_parsing(self, guardrail_instance):
         """Test parsing of multi-turn analysis from AI response."""
         # Mock injection result with comment
@@ -190,6 +200,7 @@ class TestConversationAwarePromptInjection:
         assert analysis["pattern_detected"] == "trust_building"
         assert "friendly tone" in analysis["trust_building_indicators"]
 
+    @pytest.mark.ci
     def test_combined_risk_assessment(self, guardrail_instance, sample_conversation):
         """Test combined risk assessment."""
         # Mock injection result
@@ -214,6 +225,7 @@ class TestConversationAwarePromptInjection:
         assert combined_risk["pattern_detected"] == "trust_building"
         assert "multi_turn_pattern: trust_building" in combined_risk["indicators"]
 
+    @pytest.mark.efficacy
     @pytest.mark.asyncio
     async def test_single_turn_analysis(self, guardrail_instance):
         """Test single turn analysis (legacy behavior)."""
@@ -237,6 +249,7 @@ class TestConversationAwarePromptInjection:
         assert "high risk" in result.reason.lower()
         assert result.details["conversation_awareness_used"] == False
 
+    @pytest.mark.efficacy
     @pytest.mark.asyncio
     async def test_conversation_analysis(self, guardrail_instance, sample_conversation):
         """Test conversation-aware analysis."""
@@ -261,6 +274,7 @@ class TestConversationAwarePromptInjection:
         assert result.details["context_strategy_used"] == "mixed"
         assert result.details["context_turns_analyzed"] > 0
 
+    @pytest.mark.efficacy
     @pytest.mark.asyncio
     async def test_backward_compatibility(self, guardrail_instance):
         """Test backward compatibility with single-turn analysis."""
@@ -281,6 +295,7 @@ class TestConversationAwarePromptInjection:
         assert result.blocked == False
         assert result.details["conversation_awareness_used"] == False
 
+    @pytest.mark.efficacy
     def test_edge_cases(self, guardrail_instance):
         """Test edge cases and error handling."""
         # Empty conversation
@@ -295,6 +310,7 @@ class TestConversationAwarePromptInjection:
         context = guardrail_instance._prepare_conversation_context(single_turn, "Test")
         assert "Turn 1:" in context
 
+    @pytest.mark.ci
     def test_configuration_switching(self, guardrail_instance, sample_conversation):
         """Test switching between different configurations."""
         # Test switching context strategies
@@ -308,6 +324,7 @@ class TestConversationAwarePromptInjection:
         # Should fall back to single-turn analysis
         assert guardrail_instance.conversation_awareness_enabled == False
 
+    @pytest.mark.ci
     def test_get_config(self, guardrail_instance):
         """Test configuration retrieval."""
         config = guardrail_instance.get_config()
@@ -319,6 +336,7 @@ class TestConversationAwarePromptInjection:
         assert config["legacy_mode"] == False
 
 
+@pytest.mark.performance
 class TestPerformance:
     """Performance tests for conversation-aware prompt injection."""
 
@@ -335,6 +353,7 @@ class TestPerformance:
             },
         }
 
+    @pytest.mark.performance
     def test_long_conversation_performance(self, performance_config):
         """Test performance with very long conversations."""
         # Skip on Windows due to string formatting differences
@@ -367,6 +386,7 @@ class TestPerformance:
                     or "Turn 10:" in context
                 )  # Should show up to 10 turns
 
+    @pytest.mark.performance
     def test_context_strategy_performance(self, performance_config):
         """Compare performance of different context strategies."""
         with patch("src.stinger.guardrails.prompt_injection_guardrail.APIKeyManager"):

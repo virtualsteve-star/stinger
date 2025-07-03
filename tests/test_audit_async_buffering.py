@@ -19,6 +19,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 from stinger.core import audit
 
 
+@pytest.mark.performance
 class TestAsyncBuffering:
     """Test async buffering functionality."""
 
@@ -32,6 +33,7 @@ class TestAsyncBuffering:
                 # Can't disable in production - reset the global instance
                 audit._audit_trail = audit.AuditTrail()
 
+    @pytest.mark.ci
     def test_async_buffering_setup(self):
         """Test that async buffering is properly initialized."""
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -56,6 +58,7 @@ class TestAsyncBuffering:
             assert trail._writer_thread is None or not trail._writer_thread.is_alive()
             assert trail._shutdown_event is None
 
+    @pytest.mark.performance
     def test_async_buffering_performance(self):
         """Test that async buffering improves performance under load."""
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -121,6 +124,7 @@ class TestAsyncBuffering:
             assert len(decision_events) == 100
             assert len(response_events) == 100
 
+    @pytest.mark.efficacy
     def test_async_buffering_stats(self):
         """Test async buffering statistics tracking."""
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -152,6 +156,7 @@ class TestAsyncBuffering:
 
             audit.disable()
 
+    @pytest.mark.ci
     def test_queue_full_fallback(self):
         """Test fallback to synchronous write when queue is full."""
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -177,6 +182,7 @@ class TestAsyncBuffering:
             # Should have events from both queue and fallback
             assert len(lines) >= 15  # Some events should be written
 
+    @pytest.mark.ci
     def test_background_thread_batching(self):
         """Test that background thread properly batches writes."""
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -208,6 +214,7 @@ class TestAsyncBuffering:
             # Should have most/all events written
             assert len(lines) >= 50
 
+    @pytest.mark.ci
     def test_graceful_shutdown(self):
         """Test graceful shutdown of async buffering."""
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -235,6 +242,7 @@ class TestAsyncBuffering:
             prompt_events = [r for r in records if r["event_type"] == "user_prompt"]
             assert len(prompt_events) == 10
 
+    @pytest.mark.ci
     def test_async_buffering_error_handling(self):
         """Test error handling in async buffering."""
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -276,6 +284,7 @@ class TestAsyncBuffering:
                 os.chmod(audit_file, 0o644)
                 audit.disable()
 
+    @pytest.mark.performance
     def test_concurrent_logging(self):
         """Test concurrent logging from multiple threads."""
         with tempfile.TemporaryDirectory() as temp_dir:

@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+import pytest
+
 """
 Action Control Behavioral Tests
 
@@ -14,6 +16,7 @@ from src.stinger.guardrails.simple_toxicity_detection_guardrail import (
 )
 
 
+@pytest.mark.ci
 class TestBlockAction:
     """Test 'block' action prevents content and returns appropriate result"""
 
@@ -33,6 +36,7 @@ class TestBlockAction:
             "detected" in result.reason.lower() or "pii" in result.reason.lower()
         ), "Should explain detection"
 
+    @pytest.mark.ci
     def test_block_is_default_action(self):
         """Most guardrails should default to blocking for safety"""
         # No action specified - should default to block
@@ -44,6 +48,7 @@ class TestBlockAction:
         assert result.blocked == True, "Should default to blocking"
 
 
+@pytest.mark.ci
 class TestWarnAction:
     """Test 'warn' action allows content but flags concerns"""
 
@@ -67,6 +72,7 @@ class TestWarnAction:
         else:
             assert result.confidence > 0, "Should still detect the issue"
 
+    @pytest.mark.ci
     def test_warn_action_on_safe_content(self):
         """Warn action on safe content should pass cleanly"""
         config = {"name": "warner", "config": {"action": "warn", "confidence_threshold": 0.6}}
@@ -78,6 +84,7 @@ class TestWarnAction:
         assert result.confidence == 0.0, "No detection confidence for safe content"
 
 
+@pytest.mark.ci
 class TestAllowAction:
     """Test 'allow' action for monitoring without interference"""
 
@@ -104,6 +111,7 @@ class TestAllowAction:
         # 2. Blocking but with allow override in pipeline
         # Document which approach is used
 
+    @pytest.mark.ci
     def test_allow_for_analytics(self):
         """Allow mode useful for gathering analytics without blocking"""
         config = {"name": "analytics", "config": {"action": "allow", "confidence_threshold": 0.7}}
@@ -124,6 +132,7 @@ class TestAllowAction:
             )
 
 
+@pytest.mark.ci
 class TestActionImplementation:
     """Test how actions are actually implemented"""
 
@@ -144,6 +153,7 @@ class TestActionImplementation:
             print(f"  confidence: {result.confidence:.2f}")
             print(f"  reason: {result.reason}")
 
+    @pytest.mark.ci
     def test_action_in_simple_toxicity(self):
         """Document how SimpleToxicityDetectionGuardrail handles actions"""
         test_text = "I hate you"
@@ -162,6 +172,7 @@ class TestActionImplementation:
             print(f"  reason: {result.reason}")
 
 
+@pytest.mark.ci
 def test_action_configuration_matrix():
     """Test matrix of guardrails with different actions"""
 

@@ -16,6 +16,7 @@ from src.stinger.guardrails.simple_toxicity_detection_guardrail import (
 )
 
 
+@pytest.mark.performance
 class TestPhase5aIntegration:
     """Integration tests for Phase 5a filters."""
 
@@ -26,6 +27,7 @@ class TestPhase5aIntegration:
         register_all_factories(registry)
         return registry
 
+    @pytest.mark.ci
     def test_factory_registration(self, registry):
         """Test that all Phase 5a filter types are registered."""
         # Check that all new filter types are registered
@@ -38,6 +40,7 @@ class TestPhase5aIntegration:
         assert registry._factories[GuardrailType.TOXICITY_DETECTION] is not None
         assert registry._factories[GuardrailType.CODE_GENERATION] is not None
 
+    @pytest.mark.ci
     def test_filter_creation_from_config(self, registry):
         """Test creating filters from configuration."""
         # Test PII detection filter creation
@@ -82,6 +85,7 @@ class TestPhase5aIntegration:
         assert code_filter.name == "test_code"
         assert code_filter.guardrail_type == GuardrailType.CODE_GENERATION
 
+    @pytest.mark.ci
     @pytest.mark.asyncio
     async def test_filter_interface_compliance(self, registry):
         """Test that all filters implement the universal interface correctly."""
@@ -151,6 +155,7 @@ class TestPhase5aIntegration:
             guardrail_instance.enable()
             assert guardrail_instance.is_enabled() is True
 
+    @pytest.mark.ci
     @pytest.mark.asyncio
     async def test_filter_independence(self, registry):
         """Test that filters don't interfere with each other."""
@@ -214,6 +219,7 @@ class TestPhase5aIntegration:
         assert toxicity_result and toxicity_result.blocked is False
         assert code_result and code_result.blocked is True
 
+    @pytest.mark.ci
     @pytest.mark.asyncio
     async def test_multiple_filters_same_type(self, registry):
         """Test that multiple filters of the same type work independently."""
@@ -250,6 +256,7 @@ class TestPhase5aIntegration:
         assert result2 and result2.blocked is False
         assert "email" in result2.details["detected_pii"]
 
+    @pytest.mark.ci
     def test_configuration_validation(self, registry):
         """Test configuration validation and error handling."""
         # Test invalid filter type
@@ -283,6 +290,7 @@ class TestPhase5aIntegration:
             assert "ssn" in valid_filter.enabled_patterns
             assert "unknown_pattern" not in valid_filter.enabled_patterns
 
+    @pytest.mark.performance
     @pytest.mark.asyncio
     async def test_filter_performance(self, registry):
         """Test filter performance characteristics."""
@@ -318,6 +326,7 @@ class TestPhase5aIntegration:
         assert execution_time < 10  # Should still be under 10ms
         assert result and result.blocked is True
 
+    @pytest.mark.ci
     def test_registry_management(self, registry):
         """Test registry management with Phase 5a filters."""
         # Test getting filters by type

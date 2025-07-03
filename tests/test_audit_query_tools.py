@@ -17,6 +17,7 @@ import stinger
 from stinger.core import audit
 
 
+@pytest.mark.ci
 class TestAuditQueryTools:
     """Test audit trail query tools."""
 
@@ -30,6 +31,7 @@ class TestAuditQueryTools:
                 # Can't disable in production - reset the global instance
                 audit._audit_trail = audit.AuditTrail()
 
+    @pytest.mark.ci
     def test_query_by_conversation_id(self):
         """Test querying audit trail by conversation ID."""
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -60,6 +62,7 @@ class TestAuditQueryTools:
             assert "user_prompt" in event_types
             assert "llm_response" in event_types
 
+    @pytest.mark.ci
     def test_query_by_user_id(self):
         """Test querying audit trail by user ID."""
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -85,6 +88,7 @@ class TestAuditQueryTools:
             for result in results:
                 assert result["user_id"] == "user_123"
 
+    @pytest.mark.ci
     def test_query_by_event_type(self):
         """Test querying audit trail by event type."""
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -112,11 +116,13 @@ class TestAuditQueryTools:
             assert len(decision_results) == 1
             assert decision_results[0]["event_type"] == "guardrail_decision"
 
+    @pytest.mark.ci
     def test_query_nonexistent_file(self):
         """Test querying non-existent audit file."""
         results = audit.query(destination="/nonexistent/audit.log")
         assert results == []
 
+    @pytest.mark.ci
     def test_print_query_results(self):
         """Test printing query results in human-readable format."""
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -161,6 +167,7 @@ class TestAuditQueryTools:
             assert "What is AI?" in output
             assert "AI is artificial intelligence." in output
 
+    @pytest.mark.ci
     def test_print_query_results_empty(self):
         """Test printing empty query results."""
         import contextlib
@@ -173,6 +180,7 @@ class TestAuditQueryTools:
         output = f.getvalue()
         assert "No matching audit records found" in output
 
+    @pytest.mark.ci
     def test_pipeline_integration_with_query(self):
         """Test end-to-end pipeline integration with query tools."""
         with tempfile.TemporaryDirectory() as temp_dir:

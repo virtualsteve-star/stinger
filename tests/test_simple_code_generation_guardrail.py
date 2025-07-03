@@ -11,6 +11,7 @@ from src.stinger.core.guardrail_interface import GuardrailType
 from src.stinger.guardrails.simple_code_generation_guardrail import SimpleCodeGenerationGuardrail
 
 
+@pytest.mark.ci
 class TestSimpleCodeGenerationFilter:
     """Test cases for Simple Code Generation Filter."""
 
@@ -36,6 +37,7 @@ class TestSimpleCodeGenerationFilter:
         """Create a filter instance for testing."""
         return SimpleCodeGenerationGuardrail("test_code_filter", basic_config)
 
+    @pytest.mark.ci
     def test_filter_initialization(self, basic_config):
         """Test filter initialization with various configurations."""
         # Test basic initialization
@@ -57,6 +59,7 @@ class TestSimpleCodeGenerationFilter:
         assert guardrail_instance.min_keywords == 3  # Default
         assert guardrail_instance.on_error == "warn"  # Default
 
+    @pytest.mark.ci
     def test_category_validation(self):
         """Test category validation and unknown category handling."""
         config = {
@@ -69,6 +72,7 @@ class TestSimpleCodeGenerationFilter:
         assert "programming_keywords" in guardrail_instance.enabled_categories
         assert "unknown_category" not in guardrail_instance.enabled_categories
 
+    @pytest.mark.ci
     @pytest.mark.asyncio
     async def test_code_blocks_detection(self, guardrail_instance):
         """Test code block pattern detection."""
@@ -91,6 +95,7 @@ class TestSimpleCodeGenerationFilter:
                 assert result.confidence >= expected_confidence
                 assert "code_blocks" in result.details["detected_code"]
 
+    @pytest.mark.ci
     @pytest.mark.asyncio
     async def test_programming_keywords_detection(self, guardrail_instance):
         """Test programming keyword pattern detection."""
@@ -112,6 +117,7 @@ class TestSimpleCodeGenerationFilter:
                 assert result.confidence >= expected_confidence
                 assert "programming_keywords" in result.details["detected_code"]
 
+    @pytest.mark.ci
     @pytest.mark.asyncio
     async def test_code_injection_detection(self, guardrail_instance):
         """Test code injection pattern detection."""
@@ -134,6 +140,7 @@ class TestSimpleCodeGenerationFilter:
                 assert result.confidence >= expected_confidence
                 assert "code_injection" in result.details["detected_code"]
 
+    @pytest.mark.ci
     @pytest.mark.asyncio
     async def test_file_operations_detection(self, guardrail_instance):
         """Test file operation pattern detection."""
@@ -160,6 +167,7 @@ class TestSimpleCodeGenerationFilter:
                 assert result.confidence == pytest.approx(0.5)
                 assert "file_operations" in result.details["detected_code"]
 
+    @pytest.mark.ci
     @pytest.mark.asyncio
     async def test_system_commands_detection(self, guardrail_instance):
         """Test system command pattern detection."""
@@ -181,6 +189,7 @@ class TestSimpleCodeGenerationFilter:
                 assert result.confidence >= expected_confidence
                 assert "system_commands" in result.details["detected_code"]
 
+    @pytest.mark.ci
     @pytest.mark.asyncio
     async def test_multiple_code_detection(self, guardrail_instance):
         """Test detection of multiple code types in same content."""
@@ -195,6 +204,7 @@ class TestSimpleCodeGenerationFilter:
         assert "file_operations" in result.details["detected_code"]
         assert len(result.details["detected_code"]) >= 4
 
+    @pytest.mark.ci
     @pytest.mark.asyncio
     async def test_minimum_keywords_threshold(self):
         """Test minimum keywords threshold behavior."""
@@ -224,6 +234,7 @@ class TestSimpleCodeGenerationFilter:
         result = await high_filter.analyze("function test() { return; }")
         assert result.blocked is True  # Enough keywords
 
+    @pytest.mark.ci
     @pytest.mark.asyncio
     async def test_confidence_threshold(self):
         """Test confidence threshold behavior."""
@@ -253,6 +264,7 @@ class TestSimpleCodeGenerationFilter:
         result = await high_filter.analyze("```code```")
         assert result.blocked is False
 
+    @pytest.mark.ci
     @pytest.mark.asyncio
     async def test_disabled_filter(self):
         """Test disabled filter behavior."""
@@ -264,6 +276,7 @@ class TestSimpleCodeGenerationFilter:
         assert result.confidence == 0.0
         assert "disabled" in result.reason
 
+    @pytest.mark.ci
     @pytest.mark.asyncio
     async def test_no_code_detection(self, guardrail_instance):
         """Test content with no code."""
@@ -275,6 +288,7 @@ class TestSimpleCodeGenerationFilter:
         assert "No code generation detected" in result.reason
         assert result.details["detected_code"] == []
 
+    @pytest.mark.ci
     @pytest.mark.asyncio
     async def test_false_positive_avoidance(self, guardrail_instance):
         """Test that similar but non-code content is not flagged."""
@@ -291,6 +305,7 @@ class TestSimpleCodeGenerationFilter:
             # These should not be detected as code
             assert result.blocked is False
 
+    @pytest.mark.ci
     def test_configuration_methods(self, guardrail_instance):
         """Test configuration getter and setter methods."""
         # Test get_config
@@ -317,6 +332,7 @@ class TestSimpleCodeGenerationFilter:
         assert guardrail_instance.min_keywords == 5
         assert guardrail_instance.on_error == "block"
 
+    @pytest.mark.ci
     def test_availability_check(self, guardrail_instance):
         """Test availability checking."""
         assert guardrail_instance.is_available() is True
@@ -327,6 +343,7 @@ class TestSimpleCodeGenerationFilter:
         guardrail_instance.enable()
         assert guardrail_instance.is_available() is True
 
+    @pytest.mark.ci
     @pytest.mark.asyncio
     async def test_error_handling(self):
         """Test error handling in filter."""

@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
+import pytest
+
 """
+
 Integration Tests for Pipeline → Guardrail Flow
 
 Tests that configuration flows correctly through the pipeline to guardrails.
@@ -28,6 +31,7 @@ def create_pipeline_from_config(config: dict) -> GuardrailPipeline:
         os.unlink(config_file)
 
 
+@pytest.mark.ci
 class TestPipelineConfigFlow:
     """Test configuration flows correctly from pipeline to guardrails"""
 
@@ -71,6 +75,7 @@ class TestPipelineConfigFlow:
         if hasattr(guardrail, "custom_param"):
             assert guardrail.custom_param == "test_value", "Custom param not extracted"
 
+    @pytest.mark.ci
     def test_all_guardrail_config_extraction(self):
         """Test ALL guardrails extract nested config correctly"""
         guardrail_configs = [
@@ -160,6 +165,7 @@ class TestPipelineConfigFlow:
                         actual == expected
                     ), f"{config['type']}: max_length not extracted! Got {actual}, expected {expected}"
 
+    @pytest.mark.ci
     def test_pipeline_stage_assignment(self):
         """Test guardrails are assigned to correct pipeline stages"""
         config = {
@@ -211,6 +217,7 @@ class TestPipelineConfigFlow:
         assert "both_guard" in input_names, "Both stage guardrail not in input"
         assert "both_guard" in output_names, "Both stage guardrail not in output"
 
+    @pytest.mark.ci
     def test_config_validation_errors(self):
         """Test pipeline handles invalid configs gracefully"""
         invalid_configs = [
@@ -235,6 +242,7 @@ class TestPipelineConfigFlow:
             except Exception as e:
                 print(f"Config {config} raised: {type(e).__name__}: {e}")
 
+    @pytest.mark.ci
     def test_enabled_disabled_states(self):
         """Test enabled/disabled configuration works"""
         config = {
@@ -274,6 +282,7 @@ class TestPipelineConfigFlow:
         assert enabled_guard_details.get("blocked") == True, "Enabled guard should block"
 
 
+@pytest.mark.ci
 class TestConfigMerging:
     """Test configuration merging and defaults"""
 
@@ -310,6 +319,7 @@ class TestConfigMerging:
             print(f"Default confidence threshold: {guardrail.confidence_threshold}")
             assert guardrail.confidence_threshold > 0, "Should have positive default"
 
+    @pytest.mark.ci
     def test_partial_config_override(self):
         """Test partial config overrides work"""
         # Create through pipeline
@@ -347,6 +357,7 @@ class TestConfigMerging:
             assert guardrail.confidence_threshold > 0, "Should have default threshold"
 
 
+@pytest.mark.performance
 class TestRealWorldConfigScenarios:
     """Test real-world configuration scenarios"""
 
@@ -391,6 +402,7 @@ pipeline:
         if hasattr(pii_guard, "confidence_threshold"):
             assert pii_guard.confidence_threshold == 0.75, "YAML config not applied"
 
+    @pytest.mark.ci
     def test_environment_variable_substitution(self):
         """Test if config supports environment variables"""
         import os

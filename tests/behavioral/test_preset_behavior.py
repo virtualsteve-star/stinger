@@ -31,6 +31,7 @@ def create_pipeline_from_preset_config(preset_config):
         os.unlink(config_file)
 
 
+@pytest.mark.ci
 class TestMedicalPresetBehavior:
     """Test medical preset protects patient data and allows medical discussion"""
 
@@ -61,6 +62,7 @@ class TestMedicalPresetBehavior:
         pipeline = create_pipeline_from_preset_config(preset_config)
         return pipeline
 
+    @pytest.mark.ci
     def test_blocks_patient_pii(self, medical_pipeline):
         """Medical preset MUST block patient PII"""
         pii_cases = [
@@ -75,6 +77,7 @@ class TestMedicalPresetBehavior:
             result = medical_pipeline.check_input(text)
             assert result["blocked"] == should_block, f"Medical preset failed: {description}"
 
+    @pytest.mark.ci
     def test_allows_medical_discussion(self, medical_pipeline):
         """Medical preset MUST allow medical terms"""
         medical_terms = [
@@ -89,6 +92,7 @@ class TestMedicalPresetBehavior:
             result = medical_pipeline.check_input(text)
             assert result["blocked"] == should_block, f"Medical preset blocked: {description}"
 
+    @pytest.mark.ci
     def test_blocks_non_medical_requests(self, medical_pipeline):
         """Medical preset should block inappropriate requests"""
         inappropriate = [
@@ -102,6 +106,7 @@ class TestMedicalPresetBehavior:
             print(f"Medical context - {description}: blocked={result['blocked']}")
 
 
+@pytest.mark.ci
 class TestFinancialPresetBehavior:
     """Test financial preset protects financial data"""
 
@@ -151,6 +156,7 @@ class TestFinancialPresetBehavior:
         pipeline = create_pipeline_from_preset_config(preset_config)
         return pipeline
 
+    @pytest.mark.ci
     def test_blocks_financial_pii(self, financial_pipeline):
         """Financial preset MUST block financial PII"""
         financial_pii = [
@@ -164,6 +170,7 @@ class TestFinancialPresetBehavior:
             result = financial_pipeline.check_input(text)
             assert result["blocked"] == should_block, f"Financial preset failed: {description}"
 
+    @pytest.mark.ci
     def test_blocks_injection_attempts(self, financial_pipeline):
         """Financial preset MUST block injection attempts"""
         injections = [
@@ -176,6 +183,7 @@ class TestFinancialPresetBehavior:
             result = financial_pipeline.check_input(text)
             assert result["blocked"] == should_block, f"Financial injection: {description}"
 
+    @pytest.mark.ci
     def test_allows_financial_discussion(self, financial_pipeline):
         """Financial preset should allow legitimate financial talk"""
         legitimate = [
@@ -189,6 +197,7 @@ class TestFinancialPresetBehavior:
             assert result["blocked"] == should_block, f"Financial blocked legitimate: {description}"
 
 
+@pytest.mark.ci
 class TestEducationalPresetBehavior:
     """Test educational preset is appropriate for students"""
 
@@ -233,6 +242,7 @@ class TestEducationalPresetBehavior:
         pipeline = create_pipeline_from_preset_config(preset_config)
         return pipeline
 
+    @pytest.mark.ci
     def test_blocks_inappropriate_content(self, educational_pipeline):
         """Educational preset MUST block inappropriate content"""
         inappropriate = [
@@ -245,6 +255,7 @@ class TestEducationalPresetBehavior:
             result = educational_pipeline.check_input(text)
             assert result["blocked"] == should_block, f"Educational failed: {description}"
 
+    @pytest.mark.ci
     def test_allows_educational_content(self, educational_pipeline):
         """Educational preset should allow learning"""
         educational = [
@@ -259,6 +270,7 @@ class TestEducationalPresetBehavior:
             assert result["blocked"] == should_block, f"Educational blocked: {description}"
 
 
+@pytest.mark.ci
 class TestCustomerServicePresetBehavior:
     """Test customer service preset balances security and helpfulness"""
 
@@ -302,6 +314,7 @@ class TestCustomerServicePresetBehavior:
         pipeline = create_pipeline_from_preset_config(preset_config)
         return pipeline
 
+    @pytest.mark.ci
     def test_handles_frustrated_customers(self, cs_pipeline):
         """CS preset should handle frustrated but not abusive customers"""
         customer_messages = [
@@ -320,6 +333,7 @@ class TestCustomerServicePresetBehavior:
             # Note: Actual blocking depends on implementation
             print(f"CS - {description}: blocked={result['blocked']} (expected={expected_block})")
 
+    @pytest.mark.ci
     def test_warns_on_pii(self, cs_pipeline):
         """CS preset should warn but not block PII"""
         # Customers might need to share order numbers, etc.
@@ -328,6 +342,7 @@ class TestCustomerServicePresetBehavior:
         # Should warn but not block in CS context
 
 
+@pytest.mark.ci
 def test_preset_interaction_consistency():
     """Test that all presets handle common scenarios consistently"""
 

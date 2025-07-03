@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+import pytest
+
 """
 Security Bypass Attempt Tests
 
@@ -16,6 +18,7 @@ from src.stinger.guardrails.simple_toxicity_detection_guardrail import (
 from src.stinger.guardrails.url_guardrail import URLGuardrail
 
 
+@pytest.mark.ci
 class TestPIIBypassAttempts:
     """Test PII detection against obfuscation attempts"""
 
@@ -51,6 +54,7 @@ class TestPIIBypassAttempts:
             print(f"{description}: '{text}' -> blocked={result.blocked}")
             # Note: Actual detection depends on implementation sophistication
 
+    @pytest.mark.ci
     def test_credit_card_obfuscation(self):
         """Test credit card detection with obfuscation"""
         config = {
@@ -78,6 +82,7 @@ class TestPIIBypassAttempts:
             result = asyncio.run(guardrail.analyze(text))
             print(f"CC {description}: blocked={result.blocked}")
 
+    @pytest.mark.ci
     def test_homoglyph_attacks(self):
         """Test detection of lookalike character substitutions"""
         config = {"name": "homoglyph_test", "config": {"confidence_threshold": 0.6}}
@@ -96,6 +101,7 @@ class TestPIIBypassAttempts:
             print(f"Homoglyph - {description}: blocked={result.blocked}")
 
 
+@pytest.mark.efficacy
 class TestPromptInjectionBypass:
     """Test prompt injection detection against sophisticated attempts"""
 
@@ -132,6 +138,7 @@ class TestPromptInjectionBypass:
             result = asyncio.run(guardrail.analyze(text))
             print(f"Injection {description}: blocked={result.blocked} (expected={should_block})")
 
+    @pytest.mark.efficacy
     def test_context_manipulation(self):
         """Test attempts to manipulate context"""
         config = {"name": "context_test", "config": {"risk_threshold": 60}}
@@ -157,6 +164,7 @@ class TestPromptInjectionBypass:
             print(f"Context - {description}: blocked={result.blocked}")
 
 
+@pytest.mark.ci
 class TestToxicityBypass:
     """Test toxicity detection against circumvention"""
 
@@ -191,6 +199,7 @@ class TestToxicityBypass:
             result = asyncio.run(guardrail.analyze(text))
             print(f"Toxicity {description}: blocked={result.blocked}")
 
+    @pytest.mark.ci
     def test_implied_toxicity(self):
         """Test detection of implied harmful content"""
         config = {"name": "implied_test", "config": {"confidence_threshold": 0.5}}
@@ -208,6 +217,7 @@ class TestToxicityBypass:
             print(f"Implied - {description}: blocked={result.blocked}")
 
 
+@pytest.mark.ci
 class TestURLBypass:
     """Test URL filtering bypass attempts"""
 
@@ -247,6 +257,7 @@ class TestURLBypass:
             result = asyncio.run(guardrail.analyze(text))
             print(f"URL {description}: blocked={result.blocked}")
 
+    @pytest.mark.ci
     def test_homograph_domains(self):
         """Test detection of lookalike domains"""
         config = {
@@ -268,6 +279,7 @@ class TestURLBypass:
             print(f"Homograph - {description}: blocked={result.blocked}")
 
 
+@pytest.mark.ci
 def test_combined_bypass_attempts():
     """Test combinations of bypass techniques"""
 

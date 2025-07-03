@@ -18,6 +18,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 from stinger.core import audit
 
 
+@pytest.mark.ci
 class TestAuditExport:
     """Test audit trail export functionality."""
 
@@ -31,6 +32,7 @@ class TestAuditExport:
                 # Can't disable in production - reset the global instance
                 audit._audit_trail = audit.AuditTrail()
 
+    @pytest.mark.ci
     def test_export_csv_basic(self):
         """Test basic CSV export functionality."""
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -86,6 +88,7 @@ class TestAuditExport:
             assert "guardrail_decision" in event_types
             assert "llm_response" in event_types
 
+    @pytest.mark.ci
     def test_export_json_basic(self):
         """Test basic JSON export functionality."""
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -131,6 +134,7 @@ class TestAuditExport:
             assert "user_prompt" in event_types
             assert "llm_response" in event_types
 
+    @pytest.mark.ci
     def test_export_csv_with_filters(self):
         """Test CSV export with filtering."""
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -165,6 +169,7 @@ class TestAuditExport:
             user1_events = [row for row in rows if row["user_id"] == "user1"]
             assert len(user1_events) == 2
 
+    @pytest.mark.ci
     def test_export_json_with_filters(self):
         """Test JSON export with filtering."""
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -201,6 +206,7 @@ class TestAuditExport:
             assert records[0]["guardrail_name"] == "test_filter"
             assert records[0]["decision"] == "block"
 
+    @pytest.mark.ci
     def test_export_auto_filename(self):
         """Test export with auto-generated filenames."""
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -231,6 +237,7 @@ class TestAuditExport:
             finally:
                 os.chdir(original_dir)
 
+    @pytest.mark.ci
     def test_export_empty_audit_log(self):
         """Test export when audit log is empty."""
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -265,6 +272,7 @@ class TestAuditExport:
             assert export_data["total_records"] == 0
             assert len(export_data["records"]) == 0
 
+    @pytest.mark.ci
     def test_export_nonexistent_audit_log(self):
         """Test export when audit log doesn't exist."""
         with tempfile.TemporaryDirectory() as temp_dir:

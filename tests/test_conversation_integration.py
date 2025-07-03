@@ -16,9 +16,11 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 from stinger import Conversation, GuardrailPipeline
 
 
+@pytest.mark.efficacy
 class TestConversationPipelineIntegration:
     """Test conversation integration with GuardrailPipeline."""
 
+    @pytest.mark.ci
     def test_pipeline_without_conversation(self):
         """Test that pipeline works without conversation (backward compatibility)."""
         try:
@@ -39,6 +41,7 @@ class TestConversationPipelineIntegration:
         assert result["conversation_id"] is None
         assert result["pipeline_type"] == "input"
 
+    @pytest.mark.efficacy
     def test_pipeline_with_conversation(self):
         """Test that pipeline works with conversation."""
         try:
@@ -66,6 +69,7 @@ class TestConversationPipelineIntegration:
         assert conv.get_turn_count() == 1
         assert conv.get_history()[0].prompt == "Hello, world!"
 
+    @pytest.mark.efficacy
     def test_pipeline_output_with_conversation(self):
         """Test that pipeline output works with conversation."""
         try:
@@ -93,6 +97,7 @@ class TestConversationPipelineIntegration:
         assert conv.get_turn_count() == 1
         assert conv.get_history()[0].response == "Here's your response"
 
+    @pytest.mark.efficacy
     def test_multi_turn_conversation(self):
         """Test multi-turn conversation with pipeline."""
         try:
@@ -137,6 +142,7 @@ class TestConversationPipelineIntegration:
         assert history[3].prompt == ""
         assert history[3].response == "I understand you're having login issues"
 
+    @pytest.mark.efficacy
     def test_conversation_rate_limiting_in_pipeline(self):
         """Test rate limiting in pipeline context."""
         try:
@@ -165,6 +171,7 @@ class TestConversationPipelineIntegration:
         result4 = pipeline.check_input("Fourth message", conversation=conv)
         assert result4["blocked"]
 
+    @pytest.mark.efficacy
     def test_conversation_metadata_preservation(self):
         """Test that conversation metadata is preserved through pipeline."""
         try:
@@ -185,6 +192,7 @@ class TestConversationPipelineIntegration:
         assert conv.metadata == metadata
         assert conv.initiator == "test_user"
 
+    @pytest.mark.efficacy
     def test_conversation_logging_context(self):
         """Test that conversation context appears in logs."""
         try:
@@ -203,6 +211,7 @@ class TestConversationPipelineIntegration:
         assert result["conversation_id"] == "logging_test"
         assert result["pipeline_type"] == "input"
 
+    @pytest.mark.efficacy
     def test_conversation_serialization_roundtrip(self):
         """Test conversation serialization and restoration with pipeline."""
         try:
@@ -228,6 +237,7 @@ class TestConversationPipelineIntegration:
         assert conv_restored.conversation_id == "serialization_test"
         assert conv_restored.initiator == "test_user"
 
+    @pytest.mark.efficacy
     def test_multiple_conversations(self):
         """Test that multiple conversations work independently."""
         try:
@@ -251,6 +261,7 @@ class TestConversationPipelineIntegration:
         assert conv1.get_history()[0].prompt == "Hello from user1"
         assert conv2.get_history()[0].prompt == "Hello from user2"
 
+    @pytest.mark.efficacy
     def test_conversation_with_pii_detection(self):
         """Test conversation with PII detection."""
         try:
@@ -272,6 +283,7 @@ class TestConversationPipelineIntegration:
         assert conv.get_turn_count() == 1
         assert conv.get_history()[0].prompt == "My SSN is 123-45-6789"
 
+    @pytest.mark.efficacy
     def test_conversation_with_toxicity_detection(self):
         """Test conversation with toxicity detection."""
         try:
@@ -292,6 +304,7 @@ class TestConversationPipelineIntegration:
         # Check that turn was still added to conversation
         assert conv.get_turn_count() == 1
 
+    @pytest.mark.ci
     def test_conversation_backward_compatibility(self):
         """Test that existing code continues to work without conversation."""
         try:
@@ -322,6 +335,7 @@ class TestConversationPipelineIntegration:
         assert "output_guardrails" in status
 
 
+@pytest.mark.efficacy
 class TestConversationEdgeCases:
     """Test edge cases in conversation integration."""
 
@@ -338,6 +352,7 @@ class TestConversationEdgeCases:
         with pytest.raises(ValueError, match="Content cannot be None"):
             pipeline.check_input(None, conversation=conv)
 
+    @pytest.mark.efficacy
     def test_conversation_with_empty_content(self):
         """Test conversation with empty content."""
         try:
@@ -353,6 +368,7 @@ class TestConversationEdgeCases:
         assert conv.get_turn_count() == 1
         assert conv.get_history()[0].prompt == ""
 
+    @pytest.mark.efficacy
     def test_conversation_with_long_content(self):
         """Test conversation with very long content."""
         try:
@@ -373,6 +389,7 @@ class TestConversationEdgeCases:
         assert conv.get_turn_count() == 1
         assert conv.get_history()[0].prompt == long_content
 
+    @pytest.mark.efficacy
     def test_conversation_with_special_characters(self):
         """Test conversation with special characters."""
         try:

@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+import pytest
+
 """
 Behavioral Tests for PII Detection Guardrail
 
@@ -11,9 +13,11 @@ import asyncio
 from src.stinger.guardrails.simple_pii_detection_guardrail import SimplePIIDetectionGuardrail
 
 
+@pytest.mark.performance
 class TestPIIDetectionBehavior:
     """Test PII detection actually blocks sensitive data"""
 
+    @pytest.mark.ci
     def test_blocks_obvious_pii(self):
         """Test guardrail blocks content it should ALWAYS block"""
         # Default configuration
@@ -36,6 +40,7 @@ class TestPIIDetectionBehavior:
             result = asyncio.run(guardrail.analyze(text))
             assert result.blocked == should_block, f"Failed: {description}. Text: '{text}'"
 
+    @pytest.mark.ci
     def test_medium_confidence_pii(self):
         """Test PII that should be detected but at medium confidence"""
         # Lower threshold to catch medium confidence PII
@@ -57,6 +62,7 @@ class TestPIIDetectionBehavior:
                 0.5 <= result.confidence <= 0.7
             ), f"IP should have medium confidence, got {result.confidence}"
 
+    @pytest.mark.ci
     def test_confidence_threshold_controls_behavior(self):
         """Test that threshold actually changes blocking behavior"""
         # Strict configuration (low threshold)
@@ -85,6 +91,7 @@ class TestPIIDetectionBehavior:
                 f"Text: '{text}' - Strict: {strict_result.blocked}, Lenient: {lenient_result.blocked}"
             )
 
+    @pytest.mark.ci
     def test_pattern_selection_works(self):
         """Test that enabled patterns control what's detected"""
         # Only detect SSN
@@ -106,6 +113,7 @@ class TestPIIDetectionBehavior:
         result = asyncio.run(ssn_only.analyze("Email: test@example.com"))
         assert result.blocked == False, "Should NOT block email when only ssn enabled"
 
+    @pytest.mark.ci
     def test_robustness_against_variations(self):
         """Test PII detection handles format variations"""
         config = {"name": "pii", "config": {"confidence_threshold": 0.8}}
@@ -137,6 +145,7 @@ class TestPIIDetectionBehavior:
             result = asyncio.run(guardrail.analyze(text))
             assert result.blocked == should_block, f"Failed: {description}. Text: '{text}'"
 
+    @pytest.mark.ci
     def test_context_independence(self):
         """Test PII is blocked regardless of context"""
         config = {"name": "pii", "config": {"confidence_threshold": 0.8}}
@@ -155,6 +164,7 @@ class TestPIIDetectionBehavior:
             result = asyncio.run(guardrail.analyze(text))
             assert result.blocked == True, f"Should block PII even in context: '{text}'"
 
+    @pytest.mark.ci
     def test_already_redacted_content(self):
         """Test that already redacted content is allowed"""
         config = {"name": "pii", "config": {"confidence_threshold": 0.8}}
@@ -173,6 +183,7 @@ class TestPIIDetectionBehavior:
             result = asyncio.run(guardrail.analyze(text))
             assert result.blocked == False, f"Should allow already redacted: '{text}'"
 
+    @pytest.mark.ci
     def test_action_configuration(self):
         """Test that action config controls block/warn/allow behavior"""
         # Test block action (default)
@@ -204,6 +215,7 @@ class TestPIIDetectionBehavior:
         # Behavior depends on implementation - document actual behavior
         print(f"Allow action result: blocked={result.blocked}")
 
+    @pytest.mark.ci
     def test_disabled_guardrail(self):
         """Test that disabled guardrail doesn't block"""
         disabled_config = {"name": "pii", "enabled": False, "config": {"confidence_threshold": 0.8}}
@@ -214,6 +226,7 @@ class TestPIIDetectionBehavior:
         # Behavior depends on implementation
         print(f"Disabled guardrail blocks: {result.blocked}")
 
+    @pytest.mark.performance
     def test_performance_acceptable(self):
         """Test that PII detection performs adequately"""
         import time
@@ -237,6 +250,7 @@ class TestPIIDetectionBehavior:
         assert avg_time < 0.05, f"Batch analysis too slow: {avg_time}s average"
 
 
+@pytest.mark.ci
 def test_medical_pii_scenario():
     """Test PII detection in medical context"""
     config = {

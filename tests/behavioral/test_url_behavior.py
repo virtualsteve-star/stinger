@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+import pytest
+
 """
 Behavioral Tests for URL Guardrail
 
@@ -10,6 +12,7 @@ import asyncio
 from src.stinger.guardrails.url_guardrail import URLGuardrail
 
 
+@pytest.mark.ci
 class TestURLGuardrailBehavior:
     """Test URL guardrail blocks/allows domains correctly"""
 
@@ -42,6 +45,7 @@ class TestURLGuardrailBehavior:
             result = asyncio.run(guardrail.analyze(text))
             assert result.blocked == should_block, f"Failed: {description}. Text: '{text}'"
 
+    @pytest.mark.ci
     def test_allowed_domains_only(self):
         """Test allowlist mode - only allowed domains pass"""
         config = {
@@ -68,6 +72,7 @@ class TestURLGuardrailBehavior:
             result = asyncio.run(guardrail.analyze(text))
             assert result.blocked == should_block, f"Failed: {description}. Text: '{text}'"
 
+    @pytest.mark.ci
     def test_both_lists_interaction(self):
         """Test interaction when both blocked and allowed lists are set"""
         config = {
@@ -96,6 +101,7 @@ class TestURLGuardrailBehavior:
         result = asyncio.run(guardrail.analyze("Visit random.com"))
         print(f"Domain in neither list - blocked: {result.blocked}")
 
+    @pytest.mark.ci
     def test_subdomain_handling(self):
         """Test how subdomains are handled"""
         config = {
@@ -116,6 +122,7 @@ class TestURLGuardrailBehavior:
             result = asyncio.run(guardrail.analyze(f"Visit {domain}"))
             print(f"'{domain}' - blocked: {result.blocked}")
 
+    @pytest.mark.ci
     def test_url_detection_patterns(self):
         """Test various URL patterns are detected"""
         config = {
@@ -145,6 +152,7 @@ class TestURLGuardrailBehavior:
             result = asyncio.run(guardrail.analyze(text))
             assert result.blocked == expected, f"Failed: {description}"
 
+    @pytest.mark.ci
     def test_action_configuration(self):
         """Test different action configurations"""
         # Warn action
@@ -165,6 +173,7 @@ class TestURLGuardrailBehavior:
         result = asyncio.run(allow_guard.analyze("Visit tracked.com"))
         print(f"Allow action - blocked: {result.blocked}")
 
+    @pytest.mark.ci
     def test_empty_configuration(self):
         """Test behavior with empty domain lists"""
         config = {
@@ -177,6 +186,7 @@ class TestURLGuardrailBehavior:
         result = asyncio.run(guardrail.analyze("Visit google.com"))
         print(f"Empty lists - blocked: {result.blocked}")
 
+    @pytest.mark.ci
     def test_case_sensitivity(self):
         """Test domain matching case sensitivity"""
         config = {
@@ -197,6 +207,7 @@ class TestURLGuardrailBehavior:
             print(f"'{domain}' vs 'Evil.COM' - blocked: {result.blocked}")
 
 
+@pytest.mark.ci
 def test_financial_url_scenario():
     """Test URL filtering in financial context"""
     config = {

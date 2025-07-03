@@ -15,6 +15,7 @@ from src.stinger.core.guardrail_interface import GuardrailFactory, GuardrailRegi
 # Use the actual register_all_factories from the module
 
 
+@pytest.mark.ci
 class TestGuardrailInterface:
     """Test the universal guardrail interface system."""
 
@@ -27,6 +28,7 @@ class TestGuardrailInterface:
         assert GuardrailType.KEYWORD_BLOCK in types
         assert GuardrailType.REGEX_FILTER in types
 
+    @pytest.mark.ci
     def test_guardrail_registry(self):
         """Test guardrail registry functionality."""
         registry = GuardrailRegistry()
@@ -48,6 +50,7 @@ class TestGuardrailInterface:
         assert len(registry.get_all_guardrails()) == 0
 
 
+@pytest.mark.ci
 class TestGuardrailFactory:
     """Test the guardrail factory system."""
 
@@ -63,6 +66,7 @@ class TestGuardrailFactory:
         assert GuardrailType.URL_FILTER in registry._factories
         assert GuardrailType.PASS_THROUGH in registry._factories
 
+    @pytest.mark.ci
     def test_factory_creation(self):
         """Test creating guardrails from configuration."""
         registry = GuardrailRegistry()
@@ -82,6 +86,7 @@ class TestGuardrailFactory:
         assert guardrail.get_name() == "test_filter"
         assert guardrail.get_type() == GuardrailType.KEYWORD_BLOCK
 
+    @pytest.mark.ci
     def test_factory_invalid_config(self):
         """Test factory with invalid configuration."""
         registry = GuardrailRegistry()
@@ -108,15 +113,18 @@ class TestGuardrailFactory:
             factory.create_from_config(config)
 
 
+@pytest.mark.performance
 class TestAPIKeyManager:
     """Test the API key management system."""
 
+    @pytest.mark.ci
     def test_api_key_manager_initialization(self):
         """Test API key manager initialization."""
         manager = APIKeyManager()
         assert manager is not None
         assert isinstance(manager._keys, dict)
 
+    @pytest.mark.performance
     def test_environment_variable_loading(self):
         """Test loading API keys from environment variables."""
         with patch.dict(
@@ -126,6 +134,7 @@ class TestAPIKeyManager:
             key = manager.get_openai_key()
             assert key == "sk-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 
+    @pytest.mark.ci
     def test_key_validation(self):
         """Test API key validation."""
         manager = APIKeyManager()
@@ -142,6 +151,7 @@ class TestAPIKeyManager:
         short_key = "sk-test"
         assert manager.validate_key("openai", short_key) is False
 
+    @pytest.mark.ci
     def test_health_check(self):
         """Test health check functionality."""
         manager = APIKeyManager()
@@ -152,6 +162,7 @@ class TestAPIKeyManager:
 # Legacy filter adapters removed - all filters now use GuardrailInterface directly
 
 
+@pytest.mark.efficacy
 class TestGuardrailFactoryAndAPIFilters:
     """Test the Guardrail Factory and API-based Filters."""
 
@@ -190,6 +201,7 @@ class TestGuardrailFactoryAndAPIFilters:
         except ImportError:
             pytest.skip("Guardrail Factory and API-based Filters not available")
 
+    @pytest.mark.efficacy
     @pytest.mark.asyncio
     async def test_content_moderation_filter_available(self, mock_openai_key):
         """Test content moderation filter when OpenAI is available."""
@@ -233,6 +245,7 @@ class TestGuardrailFactoryAndAPIFilters:
         except ImportError:
             pytest.skip("Guardrail Factory and API-based Filters not available")
 
+    @pytest.mark.efficacy
     @pytest.mark.asyncio
     async def test_prompt_injection_filter_unavailable(self, mock_openai_key):
         """Test prompt injection filter when OpenAI is unavailable."""
@@ -266,6 +279,7 @@ class TestGuardrailFactoryAndAPIFilters:
         except ImportError:
             pytest.skip("Guardrail Factory and API-based Filters not available")
 
+    @pytest.mark.efficacy
     @pytest.mark.asyncio
     async def test_prompt_injection_filter_available(self, mock_openai_key):
         """Test prompt injection filter when OpenAI is available."""

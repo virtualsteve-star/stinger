@@ -35,6 +35,7 @@ def limiter():
     return GlobalRateLimiter(config=CONFIG)
 
 
+@pytest.mark.ci
 def test_admin_exempt(limiter):
     for _ in range(20):
         result = limiter.check_rate_limit("admin_key", role="admin")
@@ -42,6 +43,7 @@ def test_admin_exempt(limiter):
         limiter.record_request("admin_key")
 
 
+@pytest.mark.ci
 def test_support_role_limit(limiter):
     # Should allow 3 per minute
     for i in range(3):
@@ -54,6 +56,7 @@ def test_support_role_limit(limiter):
     assert "per-minute" in result["reason"]
 
 
+@pytest.mark.ci
 def test_premium_role_limit(limiter):
     # Should allow 4 per minute
     for i in range(4):
@@ -66,6 +69,7 @@ def test_premium_role_limit(limiter):
     assert "per-minute" in result["reason"]
 
 
+@pytest.mark.ci
 def test_guest_role_limit(limiter):
     # Should allow 2 per minute
     for i in range(2):
@@ -78,6 +82,7 @@ def test_guest_role_limit(limiter):
     assert "per-minute" in result["reason"]
 
 
+@pytest.mark.ci
 def test_default_limit(limiter):
     # Should allow 5 per minute (default)
     for i in range(5):
@@ -90,15 +95,18 @@ def test_default_limit(limiter):
     assert "per-minute" in result["reason"]
 
 
+@pytest.mark.performance
 class TestRateLimitTracker:
     """Test the RateLimitTracker class."""
 
+    @pytest.mark.ci
     def test_tracker_creation(self):
         """Test tracker creation."""
         tracker = RateLimitTracker("test_key")
         assert tracker.key == "test_key"
         assert tracker.requests == []
 
+    @pytest.mark.ci
     def test_add_request(self):
         """Test adding requests."""
         tracker = RateLimitTracker("test_key")
@@ -113,6 +121,7 @@ class TestRateLimitTracker:
         assert len(tracker.requests) == 2
         assert tracker.requests[1] == timestamp
 
+    @pytest.mark.ci
     def test_check_limit_not_exceeded(self):
         """Test rate limit when not exceeded."""
         tracker = RateLimitTracker("test_key")
@@ -125,6 +134,7 @@ class TestRateLimitTracker:
         # Check limit of 5 requests per minute
         assert not tracker.check_limit(5, 60)
 
+    @pytest.mark.ci
     def test_check_limit_exceeded(self):
         """Test rate limit when exceeded."""
         tracker = RateLimitTracker("test_key")
@@ -137,6 +147,7 @@ class TestRateLimitTracker:
         # Check limit of 5 requests per minute
         assert tracker.check_limit(5, 60)
 
+    @pytest.mark.ci
     def test_check_limit_with_old_requests(self):
         """Test rate limit with old requests outside window."""
         tracker = RateLimitTracker("test_key")
@@ -151,6 +162,7 @@ class TestRateLimitTracker:
         # Check limit of 1 request per minute
         assert not tracker.check_limit(1, 60)  # Should not be exceeded
 
+    @pytest.mark.ci
     def test_get_current_count(self):
         """Test getting current request count."""
         tracker = RateLimitTracker("test_key")
@@ -163,6 +175,7 @@ class TestRateLimitTracker:
         # Should only count requests within 60-second window
         assert tracker.get_current_count(60) == 2
 
+    @pytest.mark.ci
     def test_get_remaining_requests(self):
         """Test getting remaining requests."""
         tracker = RateLimitTracker("test_key")
@@ -174,6 +187,7 @@ class TestRateLimitTracker:
         # Limit of 5 requests per minute, 2 used
         assert tracker.get_remaining_requests(5, 60) == 3
 
+    @pytest.mark.performance
     def test_get_reset_time(self):
         """Test getting reset time."""
         tracker = RateLimitTracker("test_key")
@@ -186,6 +200,7 @@ class TestRateLimitTracker:
         expected_reset = now - 30 + 60
         assert abs(reset_time - expected_reset) < 1  # Allow 1 second tolerance
 
+    @pytest.mark.ci
     def test_cleanup_old_entries(self):
         """Test cleanup of old entries."""
         tracker = RateLimitTracker("test_key")
@@ -202,6 +217,7 @@ class TestRateLimitTracker:
         assert tracker.requests[0] == now - 30
 
 
+@pytest.mark.ci
 class TestGlobalRateLimiter:
     """Test the GlobalRateLimiter class."""
 
@@ -209,6 +225,7 @@ class TestGlobalRateLimiter:
         """Set up test method."""
         self.limiter = GlobalRateLimiter()
 
+    @pytest.mark.ci
     def test_limiter_creation(self):
         """Test limiter creation."""
         assert self.limiter.backend == "memory"
@@ -217,6 +234,7 @@ class TestGlobalRateLimiter:
         assert "requests_per_hour" in self.limiter.default_limits
         assert "requests_per_day" in self.limiter.default_limits
 
+    @pytest.mark.ci
     def test_check_rate_limit_not_exceeded(self):
         """Test rate limit check when not exceeded."""
         result = self.limiter.check_rate_limit("test_key")
@@ -228,6 +246,7 @@ class TestGlobalRateLimiter:
         assert "requests_per_hour" in result["details"]
         assert "requests_per_day" in result["details"]
 
+    @pytest.mark.ci
     def test_check_rate_limit_exceeded(self):
         """Test rate limit check when exceeded."""
         # Add many requests to exceed the limit
@@ -240,6 +259,7 @@ class TestGlobalRateLimiter:
         assert "requests_per_minute" in result["exceeded_limits"]
         assert result["details"]["requests_per_minute"]["remaining"] == 0
 
+    @pytest.mark.ci
     def test_check_rate_limit_with_custom_limits(self):
         """Test rate limit check with custom limits."""
         custom_limits = {"requests_per_minute": 2}
@@ -253,6 +273,7 @@ class TestGlobalRateLimiter:
         assert result["exceeded"]
         assert "requests_per_minute" in result["exceeded_limits"]
 
+    @pytest.mark.ci
     def test_record_request(self):
         """Test recording requests."""
         self.limiter.record_request("test_key")
@@ -261,6 +282,7 @@ class TestGlobalRateLimiter:
         tracker = self.limiter._get_tracker("test_key")
         assert len(tracker.requests) == 1
 
+    @pytest.mark.ci
     def test_get_status(self):
         """Test getting status without recording request."""
         # Add some requests
@@ -274,6 +296,7 @@ class TestGlobalRateLimiter:
         assert status["details"]["requests_per_minute"]["current"] == 3
         assert status["details"]["requests_per_minute"]["remaining"] == 57  # 60 - 3
 
+    @pytest.mark.ci
     def test_reset_limits(self):
         """Test resetting limits for a key."""
         # Add some requests
@@ -285,6 +308,7 @@ class TestGlobalRateLimiter:
         # Check that the tracker was removed
         assert "test_key" not in self.limiter.trackers
 
+    @pytest.mark.ci
     def test_set_default_limits(self):
         """Test setting default limits."""
         new_limits = {"requests_per_minute": 100}
@@ -292,6 +316,7 @@ class TestGlobalRateLimiter:
 
         assert self.limiter.default_limits["requests_per_minute"] == 100
 
+    @pytest.mark.ci
     def test_get_all_keys(self):
         """Test getting all tracked keys."""
         # Add requests for multiple keys
@@ -302,6 +327,7 @@ class TestGlobalRateLimiter:
         assert "key1" in keys
         assert "key2" in keys
 
+    @pytest.mark.ci
     def test_thread_safety(self):
         """Test thread safety of the rate limiter."""
 
@@ -328,6 +354,7 @@ class TestGlobalRateLimiter:
             status = self.limiter.get_status(f"key{i}")
             assert status["details"]["requests_per_minute"]["current"] == 10
 
+    @pytest.mark.ci
     def test_cleanup_old_entries(self):
         """Test cleanup of old entries."""
         # Add old requests with different timestamps
@@ -347,6 +374,7 @@ class TestGlobalRateLimiter:
         assert len(tracker.requests) == 3
 
 
+@pytest.mark.efficacy
 class TestGlobalRateLimiterIntegration:
     """Test integration with pipeline."""
 
@@ -355,6 +383,7 @@ class TestGlobalRateLimiterIntegration:
         # Create a simple pipeline for testing
         self.pipeline = GuardrailPipeline()  # Use default config
 
+    @pytest.mark.ci
     def test_pipeline_with_global_rate_limiting(self):
         """Test pipeline integration with global rate limiting."""
         # Add many requests to exceed the limit
@@ -368,6 +397,7 @@ class TestGlobalRateLimiterIntegration:
         assert "Global rate limit exceeded" in result["reasons"][0]
         assert "global_rate_limit" in result["details"]
 
+    @pytest.mark.ci
     def test_pipeline_without_global_rate_limiting(self):
         """Test pipeline without global rate limiting."""
         # Process request without API key
@@ -375,6 +405,7 @@ class TestGlobalRateLimiterIntegration:
 
         assert not result["blocked"]
 
+    @pytest.mark.efficacy
     def test_pipeline_with_conversation_and_global_rate_limiting(self):
         """Test pipeline with both conversation and global rate limiting."""
         # Create conversation with rate limit
@@ -394,6 +425,7 @@ class TestGlobalRateLimiterIntegration:
         assert "Global rate limit exceeded" in result["reasons"][0]
 
 
+@pytest.mark.ci
 class TestGlobalRateLimiterFunctions:
     """Test global rate limiter functions."""
 
@@ -402,6 +434,7 @@ class TestGlobalRateLimiterFunctions:
         limiter = get_global_rate_limiter()
         assert isinstance(limiter, GlobalRateLimiter)
 
+    @pytest.mark.ci
     def test_set_global_rate_limiter(self):
         """Test setting global rate limiter instance."""
         custom_limiter = GlobalRateLimiter(backend="memory")
@@ -411,6 +444,7 @@ class TestGlobalRateLimiterFunctions:
         assert retrieved_limiter is custom_limiter
 
 
+@pytest.mark.ci
 class TestGlobalRateLimiterEdgeCases:
     """Test edge cases and error conditions."""
 
@@ -424,6 +458,7 @@ class TestGlobalRateLimiterEdgeCases:
         # Should not crash, should log warning
         assert not result["exceeded"]
 
+    @pytest.mark.ci
     def test_zero_limits(self):
         """Test behavior with zero limits."""
         limiter = GlobalRateLimiter()
@@ -434,6 +469,7 @@ class TestGlobalRateLimiterEdgeCases:
         # Should be exceeded immediately
         assert result["exceeded"]
 
+    @pytest.mark.ci
     def test_negative_limits(self):
         """Test behavior with negative limits."""
         limiter = GlobalRateLimiter()
@@ -444,6 +480,7 @@ class TestGlobalRateLimiterEdgeCases:
         # Should be exceeded immediately
         assert result["exceeded"]
 
+    @pytest.mark.ci
     def test_empty_key(self):
         """Test behavior with empty key."""
         limiter = GlobalRateLimiter()
@@ -453,6 +490,7 @@ class TestGlobalRateLimiterEdgeCases:
         # Should work without crashing
         assert not result["exceeded"]
 
+    @pytest.mark.ci
     def test_none_key(self):
         """Test behavior with None key."""
         limiter = GlobalRateLimiter()
@@ -464,6 +502,7 @@ class TestGlobalRateLimiterEdgeCases:
         assert not result["exceeded"]
 
 
+@pytest.mark.performance
 class TestGlobalRateLimiterPerformance:
     """Test performance characteristics."""
 
@@ -481,6 +520,7 @@ class TestGlobalRateLimiterPerformance:
         # Should complete quickly
         assert end_time - start_time < 1.0  # Less than 1 second
 
+    @pytest.mark.performance
     def test_many_requests_performance(self):
         """Test performance with many requests per key."""
         limiter = GlobalRateLimiter()
@@ -495,6 +535,7 @@ class TestGlobalRateLimiterPerformance:
         # Should complete quickly
         assert end_time - start_time < 1.0  # Less than 1 second
 
+    @pytest.mark.performance
     def test_concurrent_access_performance(self):
         """Test performance under concurrent access."""
         limiter = GlobalRateLimiter()

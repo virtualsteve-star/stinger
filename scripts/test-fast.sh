@@ -5,4 +5,4 @@ echo "🚀 Running fast CI tests..."
 echo "These tests verify basic functionality without AI calls"
 echo ""
 
-pytest -m "ci" -n auto --durations=10
+pytest -m "ci" --durations=10

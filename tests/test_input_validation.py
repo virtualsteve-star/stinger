@@ -31,6 +31,7 @@ from src.stinger.core.input_validation import (
 )
 
 
+@pytest.mark.ci
 class TestValidationLimits:
     """Test validation limits configuration."""
 
@@ -44,6 +45,7 @@ class TestValidationLimits:
         assert limits.MAX_MEMORY_USAGE_MB == 500
         assert limits.MAX_FILTERS_PER_PIPELINE == 20
 
+    @pytest.mark.ci
     def test_custom_limits(self):
         """Test custom validation limits."""
         limits = ValidationLimits(
@@ -54,6 +56,7 @@ class TestValidationLimits:
         assert limits.MAX_CONVERSATION_TURNS == 25
         assert limits.MAX_MEMORY_USAGE_MB == 250
 
+    @pytest.mark.ci
     def test_invalid_limits(self):
         """Test that invalid limits raise errors."""
         with pytest.raises(ValueError, match="MAX_INPUT_LENGTH must be positive"):
@@ -66,6 +69,7 @@ class TestValidationLimits:
             ValidationLimits(MAX_MEMORY_USAGE_MB=0)
 
 
+@pytest.mark.ci
 class TestInputContentValidation:
     """Test input content validation."""
 
@@ -81,6 +85,7 @@ class TestInputContentValidation:
             "Test content " * 300, "response"
         )  # 3KB response with variety
 
+    @pytest.mark.ci
     def test_content_size_limits(self):
         """Test content size limit enforcement."""
         limits = ValidationLimits(
@@ -100,6 +105,7 @@ class TestInputContentValidation:
         with pytest.raises(ValidationError, match="Response too large"):
             validator.validate_input_content("C" * 500, "response")
 
+    @pytest.mark.ci
     def test_content_type_validation(self):
         """Test content type validation."""
         validator = InputValidator()
@@ -110,6 +116,7 @@ class TestInputContentValidation:
         with pytest.raises(ValidationError, match="prompt must be a string"):
             validator.validate_input_content([], "prompt")
 
+    @pytest.mark.ci
     def test_malicious_patterns(self):
         """Test detection of malicious content patterns."""
         validator = InputValidator()
@@ -129,9 +136,11 @@ class TestInputContentValidation:
             validator.validate_input_content(repetitive_content, "input")
 
 
+@pytest.mark.performance
 class TestConversationValidation:
     """Test conversation limit validation."""
 
+    @pytest.mark.ci
     def test_valid_conversation(self):
         """Test that valid conversations pass validation."""
         validator = InputValidator()
@@ -144,6 +153,7 @@ class TestConversationValidation:
 
         validator.validate_conversation_limits(conversation_data)
 
+    @pytest.mark.ci
     def test_turn_count_limit(self):
         """Test turn count limit enforcement."""
         limits = ValidationLimits(MAX_CONVERSATION_TURNS=25)
@@ -154,6 +164,7 @@ class TestConversationValidation:
         with pytest.raises(ValidationError, match="Too many conversation turns"):
             validator.validate_conversation_limits(conversation_data)
 
+    @pytest.mark.performance
     def test_memory_limit(self):
         """Test conversation memory limit enforcement."""
         limits = ValidationLimits(MAX_CONVERSATION_MEMORY_MB=50)
@@ -164,6 +175,7 @@ class TestConversationValidation:
         with pytest.raises(ValidationError, match="Conversation memory too large"):
             validator.validate_conversation_limits(conversation_data)
 
+    @pytest.mark.ci
     def test_age_limit(self):
         """Test conversation age limit enforcement."""
         limits = ValidationLimits(MAX_CONVERSATION_AGE_HOURS=12)
@@ -179,9 +191,11 @@ class TestConversationValidation:
             validator.validate_conversation_limits(conversation_data)
 
 
+@pytest.mark.performance
 class TestSystemResourceValidation:
     """Test system resource validation."""
 
+    @pytest.mark.performance
     @patch("src.stinger.core.input_validation.PSUTIL_AVAILABLE", True)
     @patch("src.stinger.core.input_validation.psutil")
     def test_memory_usage_validation(self, mock_psutil):
@@ -206,6 +220,7 @@ class TestSystemResourceValidation:
     # monitoring with a try/catch that silently passes on any psutil failures.
     # This is appropriate for production but not suitable for deterministic unit testing.
 
+    @pytest.mark.ci
     @patch("src.stinger.core.input_validation.PSUTIL_AVAILABLE", False)
     def test_resource_validation_without_psutil(self):
         """Test resource validation when psutil is not available."""
@@ -215,6 +230,7 @@ class TestSystemResourceValidation:
         validator.validate_system_resources()
 
 
+@pytest.mark.ci
 class TestPipelineConfigurationValidation:
     """Test pipeline configuration validation."""
 
@@ -232,6 +248,7 @@ class TestPipelineConfigurationValidation:
 
         validator.validate_pipeline_configuration(config)
 
+    @pytest.mark.ci
     def test_too_many_filters(self):
         """Test filter count limit enforcement."""
         limits = ValidationLimits(MAX_FILTERS_PER_PIPELINE=5)
@@ -242,6 +259,7 @@ class TestPipelineConfigurationValidation:
         with pytest.raises(ValidationError, match="Too many guardrails"):
             validator.validate_pipeline_configuration(config)
 
+    @pytest.mark.ci
     def test_too_many_regex_patterns(self):
         """Test regex pattern count limit enforcement."""
         limits = ValidationLimits(MAX_REGEX_PATTERNS=5)
@@ -253,6 +271,7 @@ class TestPipelineConfigurationValidation:
             validator.validate_pipeline_configuration(config)
 
 
+@pytest.mark.ci
 class TestFileValidation:
     """Test file upload validation."""
 
@@ -266,6 +285,7 @@ class TestFileValidation:
 
         validator.validate_file_upload(config_file, "config")
 
+    @pytest.mark.ci
     def test_file_not_found(self, tmp_path):
         """Test handling of non-existent files."""
         validator = InputValidator()
@@ -275,6 +295,7 @@ class TestFileValidation:
         with pytest.raises(ValidationError, match="file not found"):
             validator.validate_file_upload(non_existent, "config")
 
+    @pytest.mark.ci
     def test_file_too_large(self, tmp_path):
         """Test file size limit enforcement."""
         limits = ValidationLimits(MAX_CONFIG_FILE_SIZE_KB=1)  # 1KB limit
@@ -287,6 +308,7 @@ class TestFileValidation:
         with pytest.raises(ValidationError, match="file too large"):
             validator.validate_file_upload(large_file, "config")
 
+    @pytest.mark.ci
     def test_invalid_file_type(self, tmp_path):
         """Test file type validation."""
         validator = InputValidator()
@@ -299,9 +321,11 @@ class TestFileValidation:
             validator.validate_file_upload(invalid_file, "config")
 
 
+@pytest.mark.efficacy
 class TestKeywordListValidation:
     """Test keyword list validation."""
 
+    @pytest.mark.ci
     def test_valid_keyword_list(self):
         """Test validation of valid keyword lists."""
         validator = InputValidator()
@@ -309,6 +333,7 @@ class TestKeywordListValidation:
         keywords = ["hello", "world", "test", "validation"]
         validator.validate_keyword_list(keywords)
 
+    @pytest.mark.efficacy
     def test_too_many_keywords(self):
         """Test keyword count limit enforcement."""
         limits = ValidationLimits(MAX_KEYWORD_LIST_SIZE=100)
@@ -319,6 +344,7 @@ class TestKeywordListValidation:
         with pytest.raises(ValidationError, match="Too many keywords"):
             validator.validate_keyword_list(keywords)
 
+    @pytest.mark.ci
     def test_keyword_too_long(self):
         """Test individual keyword length limits."""
         validator = InputValidator()
@@ -329,6 +355,7 @@ class TestKeywordListValidation:
             validator.validate_keyword_list(keywords)
 
 
+@pytest.mark.ci
 class TestRateLimitValidation:
     """Test request rate limit validation."""
 
@@ -344,6 +371,7 @@ class TestRateLimitValidation:
         for _ in range(5):
             validator.validate_request_rate()
 
+    @pytest.mark.ci
     def test_excessive_request_rate(self):
         """Test rate limit enforcement."""
         limits = ValidationLimits(MAX_REQUESTS_PER_MINUTE=10)
@@ -360,6 +388,7 @@ class TestRateLimitValidation:
             validator.validate_request_rate()
 
 
+@pytest.mark.ci
 class TestConvenienceFunctions:
     """Test module-level convenience functions."""
 
@@ -370,23 +399,27 @@ class TestConvenienceFunctions:
         with pytest.raises(ValidationError):
             validate_input_content("A" * 200000, "test")  # Too large
 
+    @pytest.mark.ci
     def test_validate_conversation_limits_function(self):
         """Test convenience function for conversation validation."""
         conversation_data = {"turn_count": 5, "memory_usage_mb": 10, "created_time": time.time()}
 
         validate_conversation_limits(conversation_data)
 
+    @pytest.mark.ci
     def test_validate_system_resources_function(self):
         """Test convenience function for system resource validation."""
         # Should not raise under normal conditions
         validate_system_resources()
 
+    @pytest.mark.ci
     def test_validate_pipeline_configuration_function(self):
         """Test convenience function for pipeline validation."""
         config = {"guardrails": [{"type": "test"}]}
         validate_pipeline_configuration(config)
 
 
+@pytest.mark.ci
 class TestValidatorStateManagement:
     """Test validator state and counter management."""
 
@@ -403,6 +436,7 @@ class TestValidatorStateManagement:
         assert validator._request_count == 0
         assert validator._start_time > time.time() - 10  # Recent
 
+    @pytest.mark.ci
     def test_usage_statistics(self):
         """Test usage statistics retrieval."""
         validator = InputValidator()
@@ -421,6 +455,7 @@ class TestValidatorStateManagement:
         assert "uptime_minutes" in usage
 
 
+@pytest.mark.ci
 class TestRepetitionDetection:
     """Test excessive repetition detection."""
 
@@ -431,6 +466,7 @@ class TestRepetitionDetection:
         normal_text = "This is a normal text with varied characters and words."
         assert not validator._has_excessive_repetition(normal_text)
 
+    @pytest.mark.ci
     def test_excessive_repetition(self):
         """Test detection of excessive character repetition."""
         validator = InputValidator()
@@ -439,6 +475,7 @@ class TestRepetitionDetection:
         repetitive_text = "A" * 900 + "B" * 100
         assert validator._has_excessive_repetition(repetitive_text)
 
+    @pytest.mark.ci
     def test_short_content_skip(self):
         """Test that short content skips repetition check."""
         validator = InputValidator()

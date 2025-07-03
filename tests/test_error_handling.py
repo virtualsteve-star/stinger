@@ -19,6 +19,7 @@ from src.stinger.core.error_handling import (
 )
 
 
+@pytest.mark.ci
 class TestEnvironmentDetection:
     """Test production environment detection."""
 
@@ -37,6 +38,7 @@ class TestEnvironmentDetection:
             handler = ProductionErrorHandler()
             assert handler.is_production() is True
 
+    @pytest.mark.ci
     def test_development_environment_detection(self):
         """Test development environment detection."""
         with patch.dict(os.environ, {"DEBUG": "1", "DEVELOPMENT": "1"}, clear=True):
@@ -47,6 +49,7 @@ class TestEnvironmentDetection:
             handler = ProductionErrorHandler()
             assert handler.is_production() is False
 
+    @pytest.mark.ci
     def test_cloud_provider_detection(self):
         """Test cloud provider environment detection."""
         # Heroku
@@ -64,6 +67,7 @@ class TestEnvironmentDetection:
             handler = ProductionErrorHandler()
             assert handler.is_production() is True
 
+    @pytest.mark.ci
     def test_default_environment_detection(self):
         """Test default to development when environment is unclear."""
         with patch.dict(os.environ, {}, clear=True):
@@ -71,6 +75,7 @@ class TestEnvironmentDetection:
             assert handler.is_production() is False
 
 
+@pytest.mark.ci
 class TestErrorMessageSanitization:
     """Test error message sanitization functionality."""
 
@@ -85,6 +90,7 @@ class TestErrorMessageSanitization:
             assert "Database connection failed: host not found" in message
             assert "database operation failed" in message
 
+    @pytest.mark.ci
     def test_production_error_messages(self):
         """Test that production sanitizes error messages."""
         with patch.dict(os.environ, {"ENVIRONMENT": "production"}, clear=True):
@@ -98,6 +104,7 @@ class TestErrorMessageSanitization:
             assert "Error ID:" in message
             assert len(message.split("Error ID: ")[1].split("]")[0]) == 8  # 8-char error ID
 
+    @pytest.mark.ci
     def test_error_type_inclusion(self):
         """Test optional error type inclusion."""
         with patch.dict(os.environ, {"ENVIRONMENT": "production"}, clear=True):
@@ -109,6 +116,7 @@ class TestErrorMessageSanitization:
             assert "ValueError" in message
             assert "operation failed (ValueError)" in message
 
+    @pytest.mark.ci
     def test_error_id_generation(self):
         """Test error ID generation and tracking."""
         with patch.dict(os.environ, {"ENVIRONMENT": "production"}, clear=True):
@@ -132,6 +140,7 @@ class TestErrorMessageSanitization:
             assert handler.get_error_by_id(id2) == "Test error"
 
 
+@pytest.mark.ci
 class TestPathSanitization:
     """Test file path sanitization."""
 
@@ -145,6 +154,7 @@ class TestPathSanitization:
 
             assert sanitized == path  # Full path in development
 
+    @pytest.mark.ci
     def test_production_path_sanitization(self):
         """Test that production only shows filenames."""
         with patch.dict(os.environ, {"ENVIRONMENT": "production"}, clear=True):
@@ -156,6 +166,7 @@ class TestPathSanitization:
             assert sanitized == "database.yaml"  # Only filename in production
             assert "/home/user/secret" not in sanitized
 
+    @pytest.mark.ci
     def test_invalid_path_handling(self):
         """Test handling of invalid path strings."""
         with patch.dict(os.environ, {"ENVIRONMENT": "production"}, clear=True):
@@ -172,6 +183,7 @@ class TestPathSanitization:
             assert sanitized == "config.txt"  # Should return filename part
 
 
+@pytest.mark.ci
 class TestErrorDetailsSanitization:
     """Test error details dictionary sanitization."""
 
@@ -190,6 +202,7 @@ class TestErrorDetailsSanitization:
             sanitized = handler.sanitize_error_details(details)
             assert sanitized == details  # No sanitization in development
 
+    @pytest.mark.ci
     def test_production_details_sanitization(self):
         """Test that production sanitizes sensitive details."""
         with patch.dict(os.environ, {"ENVIRONMENT": "production"}, clear=True):
@@ -221,6 +234,7 @@ class TestErrorDetailsSanitization:
             assert sanitized["stack_trace"] == "[redacted]"
 
 
+@pytest.mark.ci
 class TestStringSanitization:
     """Test low-level string sanitization functions."""
 
@@ -235,6 +249,7 @@ class TestStringSanitization:
             assert "/home/user/secret/file.txt" not in sanitized
             assert "[path]" in sanitized
 
+    @pytest.mark.ci
     def test_windows_path_removal(self):
         """Test removal of Windows file paths."""
         with patch.dict(os.environ, {"ENVIRONMENT": "production"}, clear=True):
@@ -246,6 +261,7 @@ class TestStringSanitization:
             assert "C:\\Users\\admin\\secret\\config.ini" not in sanitized
             assert "[path]" in sanitized
 
+    @pytest.mark.ci
     def test_stack_trace_sanitization(self):
         """Test stack trace information sanitization."""
         with patch.dict(os.environ, {"ENVIRONMENT": "production"}, clear=True):
@@ -257,6 +273,7 @@ class TestStringSanitization:
             assert "/app/src/secret_module.py" not in sanitized
             assert "File [path], line [number]" in sanitized
 
+    @pytest.mark.ci
     def test_sensitive_data_removal(self):
         """Test removal of sensitive data patterns."""
         with patch.dict(os.environ, {"ENVIRONMENT": "production"}, clear=True):
@@ -278,6 +295,7 @@ class TestStringSanitization:
                 assert "bearer-abc123xyz" not in sanitized
 
 
+@pytest.mark.ci
 class TestConvenienceFunctions:
     """Test module-level convenience functions."""
 
@@ -295,6 +313,7 @@ class TestConvenienceFunctions:
             assert "test operation failed" in message
             assert "Error ID:" in message
 
+    @pytest.mark.ci
     def test_sanitize_path_function(self):
         """Test convenience function for path sanitization."""
         # Reset global state
@@ -307,6 +326,7 @@ class TestConvenienceFunctions:
             sanitized = sanitize_path(path)
             assert sanitized == "config.yaml"
 
+    @pytest.mark.ci
     def test_sanitize_error_details_function(self):
         """Test convenience function for error details sanitization."""
         # Reset global state
@@ -319,6 +339,7 @@ class TestConvenienceFunctions:
             sanitized = sanitize_error_details(details)
             assert sanitized["sensitive"] == "[redacted]"
 
+    @pytest.mark.ci
     def test_is_production_function(self):
         """Test convenience function for production detection."""
         # Reset global state for production test
@@ -336,6 +357,7 @@ class TestConvenienceFunctions:
             assert is_production() is False
 
 
+@pytest.mark.ci
 class TestErrorLogging:
     """Test error logging functionality."""
 
@@ -362,6 +384,7 @@ class TestErrorLogging:
                 assert log_call[1]["extra"]["is_production"] is True
 
 
+@pytest.mark.ci
 class TestIntegrationWithExistingCode:
     """Test integration with existing codebase error handling."""
 
@@ -370,6 +393,7 @@ class TestIntegrationWithExistingCode:
         # This would test the actual audit.py integration
         # but requires the audit module to be importable
 
+    @pytest.mark.ci
     def test_prompt_injection_filter_error_handling(self):
         """Test that prompt injection filter uses safe error handling."""
         # This would test the actual filter integration

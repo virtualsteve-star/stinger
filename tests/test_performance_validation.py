@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
+import pytest
+
 """
+
 Performance validation test for async buffering.
 
 This test validates that async buffering meets the enterprise performance requirements
@@ -20,6 +23,7 @@ from stinger.core import audit
 from stinger.core.conversation import Conversation
 
 
+@pytest.mark.performance
 def test_high_volume_performance():
     """Test that async buffering handles high volume with zero pipeline impact."""
     print("🚀 Testing high-volume performance (1000+ requests/second target)...")
@@ -128,6 +132,7 @@ def test_high_volume_performance():
         print(f"   ✅ Async buffering performance test PASSED")
 
 
+@pytest.mark.performance
 def test_zero_blocking_validation():
     """Test that audit logging adds minimal latency to pipeline operations."""
     print("\n🔬 Testing zero-blocking validation...")
@@ -188,6 +193,7 @@ def test_zero_blocking_validation():
         print(f"   ✅ Zero-blocking validation test PASSED")
 
 
+@pytest.mark.performance
 def test_async_buffer_efficiency():
     """Test that async buffering efficiently handles bursts of activity."""
     print("\n⚡ Testing async buffer efficiency...")

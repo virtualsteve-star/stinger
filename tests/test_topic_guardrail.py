@@ -16,6 +16,7 @@ import pytest
 from stinger.guardrails.topic_guardrail import TopicGuardrail
 
 
+@pytest.mark.ci
 class TestTopicFilter:
     """Test the TopicGuardrail class."""
 
@@ -37,6 +38,7 @@ class TestTopicFilter:
         assert guardrail_obj.deny_topics == ["denied1", "denied2"]
         assert guardrail_obj.mode == "deny"
 
+    @pytest.mark.ci
     def test_filter_creation_with_defaults(self):
         """Test filter creation with default values."""
         config = {"name": "test_filter"}
@@ -50,6 +52,7 @@ class TestTopicFilter:
         assert guardrail_obj.use_regex is False
         assert guardrail_obj.confidence_threshold == 0.5
 
+    @pytest.mark.ci
     @pytest.mark.asyncio
     async def test_deny_mode_blocked(self):
         """Test deny mode when content should be blocked."""
@@ -63,6 +66,7 @@ class TestTopicFilter:
         assert "politics" in result.reason
         assert result.confidence > 0
 
+    @pytest.mark.ci
     @pytest.mark.asyncio
     async def test_deny_mode_allowed(self):
         """Test deny mode when content should be allowed."""
@@ -75,6 +79,7 @@ class TestTopicFilter:
         assert result.blocked == False
         assert "denied topics" not in result.reason
 
+    @pytest.mark.ci
     @pytest.mark.asyncio
     async def test_allow_mode_blocked(self):
         """Test allow mode when content should be blocked."""
@@ -92,6 +97,7 @@ class TestTopicFilter:
         assert "allowed topics" in result.reason
         assert result.confidence == 1.0
 
+    @pytest.mark.ci
     @pytest.mark.asyncio
     async def test_allow_mode_allowed(self):
         """Test allow mode when content should be allowed."""
@@ -108,6 +114,7 @@ class TestTopicFilter:
         assert result.blocked == False
         assert "customer service" in result.reason
 
+    @pytest.mark.ci
     @pytest.mark.asyncio
     async def test_both_mode_deny_priority(self):
         """Test both mode with deny taking priority."""
@@ -127,6 +134,7 @@ class TestTopicFilter:
         assert result.blocked == True
         assert "politics" in result.reason
 
+    @pytest.mark.ci
     @pytest.mark.asyncio
     async def test_both_mode_allow_check(self):
         """Test both mode with allow list check."""
@@ -144,6 +152,7 @@ class TestTopicFilter:
         assert result.blocked == True
         assert "allowed topics" in result.reason
 
+    @pytest.mark.ci
     @pytest.mark.asyncio
     async def test_both_mode_allowed(self):
         """Test both mode when content should be allowed."""
@@ -161,6 +170,7 @@ class TestTopicFilter:
         assert result.blocked == False
         assert "Content matches allowed topics" in result.reason
 
+    @pytest.mark.ci
     @pytest.mark.asyncio
     async def test_case_sensitive_matching(self):
         """Test case sensitive matching."""
@@ -181,6 +191,7 @@ class TestTopicFilter:
         result = await guardrail_obj.analyze("I want to discuss POLITICS")
         assert result.blocked == True
 
+    @pytest.mark.ci
     @pytest.mark.asyncio
     async def test_case_insensitive_matching(self):
         """Test case insensitive matching."""
@@ -200,6 +211,7 @@ class TestTopicFilter:
         result = await guardrail_obj.analyze("I want to discuss Politics")
         assert result.blocked == True
 
+    @pytest.mark.ci
     @pytest.mark.asyncio
     async def test_regex_matching(self):
         """Test regex pattern matching."""
@@ -220,6 +232,7 @@ class TestTopicFilter:
         result = await guardrail_obj.analyze("This is spammy content")
         assert result.blocked == False
 
+    @pytest.mark.ci
     @pytest.mark.asyncio
     async def test_confidence_threshold(self):
         """Test confidence threshold filtering."""
@@ -237,6 +250,7 @@ class TestTopicFilter:
         assert result.blocked == False
         assert "Confidence" in result.reason
 
+    @pytest.mark.ci
     @pytest.mark.asyncio
     async def test_disabled_filter(self):
         """Test disabled filter behavior."""
@@ -253,6 +267,7 @@ class TestTopicFilter:
         assert result.blocked == False
         assert "disabled" in result.reason
 
+    @pytest.mark.ci
     @pytest.mark.asyncio
     async def test_empty_content(self):
         """Test behavior with empty content."""
@@ -264,6 +279,7 @@ class TestTopicFilter:
         assert result.blocked == False
         assert "Empty content" in result.reason
 
+    @pytest.mark.ci
     def test_guardrail_interface_compatibility(self):
         """Test GuardrailInterface compatibility."""
         config = {"name": "interface_test", "mode": "deny", "deny_topics": ["politics"]}
@@ -275,6 +291,7 @@ class TestTopicFilter:
         assert result["blocked"] is True
         assert "politics" in result["reasons"][0]
 
+    @pytest.mark.ci
     def test_get_config(self):
         """Test configuration retrieval."""
         config = {
@@ -299,6 +316,7 @@ class TestTopicFilter:
         assert retrieved_config["use_regex"] is True
         assert retrieved_config["confidence_threshold"] == 0.8
 
+    @pytest.mark.ci
     def test_update_config(self):
         """Test configuration updates."""
         config = {"name": "update_test", "mode": "deny", "deny_topics": ["old_topic"]}
@@ -319,6 +337,7 @@ class TestTopicFilter:
         assert guardrail_obj.mode == "allow"
         assert guardrail_obj.allow_topics == ["allowed_topic"]
 
+    @pytest.mark.ci
     def test_get_guardrail_type(self):
         """Test guardrail type."""
         config = {"name": "type_test"}
@@ -327,6 +346,7 @@ class TestTopicFilter:
         guardrail_type = guardrail_obj.get_guardrail_type()
         assert guardrail_type.value == "content_moderation"
 
+    @pytest.mark.ci
     def test_is_available(self):
         """Test availability check."""
         config = {"name": "available_test"}
@@ -334,6 +354,7 @@ class TestTopicFilter:
 
         assert guardrail_obj.is_available() is True
 
+    @pytest.mark.ci
     def test_get_health_status(self):
         """Test health status."""
         config = {
@@ -354,6 +375,7 @@ class TestTopicFilter:
         assert health["compiled_patterns"] == 3
 
 
+@pytest.mark.ci
 class TestTopicFilterEdgeCases:
     """Test edge cases and error conditions."""
 
@@ -373,6 +395,7 @@ class TestTopicFilterEdgeCases:
         result = await guardrail_obj.analyze("This contains valid_pattern")
         assert result.blocked == True
 
+    @pytest.mark.ci
     @pytest.mark.asyncio
     async def test_empty_topic_lists(self):
         """Test behavior with empty topic lists."""
@@ -384,6 +407,7 @@ class TestTopicFilterEdgeCases:
         assert result.blocked == False
         assert "No topic restrictions" in result.reason
 
+    @pytest.mark.ci
     @pytest.mark.asyncio
     async def test_duplicate_topics(self):
         """Test behavior with duplicate topics."""
@@ -398,6 +422,7 @@ class TestTopicFilterEdgeCases:
         result = await guardrail_obj.analyze("I want to discuss politics")
         assert result.blocked == True
 
+    @pytest.mark.ci
     @pytest.mark.asyncio
     async def test_very_long_content(self):
         """Test behavior with very long content."""
@@ -411,6 +436,7 @@ class TestTopicFilterEdgeCases:
         result = await guardrail_obj.analyze(long_content)
         assert result.blocked == True
 
+    @pytest.mark.ci
     @pytest.mark.asyncio
     async def test_special_characters(self):
         """Test behavior with special characters."""
@@ -421,6 +447,7 @@ class TestTopicFilterEdgeCases:
         result = await guardrail_obj.analyze("I want to discuss politics! @#$%^&*()")
         assert result.blocked == True
 
+    @pytest.mark.ci
     @pytest.mark.asyncio
     async def test_unicode_content(self):
         """Test behavior with unicode content."""
@@ -432,6 +459,7 @@ class TestTopicFilterEdgeCases:
         assert result.blocked == True
 
 
+@pytest.mark.performance
 class TestTopicFilterPerformance:
     """Test performance characteristics."""
 
@@ -464,6 +492,7 @@ class TestTopicFilterPerformance:
         # Should complete quickly
         assert end_time - start_time < 1.0  # Less than 1 second
 
+    @pytest.mark.performance
     @pytest.mark.asyncio
     async def test_complex_regex_performance(self):
         """Test performance with complex regex patterns."""

@@ -16,6 +16,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 from stinger import Conversation
 
 
+@pytest.mark.efficacy
 class TestConversationAPISimplification:
     """Test the simplified Conversation API."""
 
@@ -52,6 +53,7 @@ class TestConversationAPISimplification:
         assert human_human.initiator_type == "human"
         assert human_human.responder_type == "human"
 
+    @pytest.mark.efficacy
     def test_simplified_constructor(self):
         """Test the simplified constructor works correctly."""
 
@@ -79,6 +81,7 @@ class TestConversationAPISimplification:
         assert conv_with_model.model_info.get("model_version") == "gpt-4-1106-preview"
         assert conv_with_model.model_info.get("provider") == "openai"
 
+    @pytest.mark.efficacy
     def test_backward_compatibility(self):
         """Test that the old API still works."""
 
@@ -103,6 +106,7 @@ class TestConversationAPISimplification:
         assert conv.responder_type == "ai_model"
         assert conv.model_info.get("model_id") == "gpt-4"
 
+    @pytest.mark.efficacy
     def test_add_exchange_method(self):
         """Test the new add_exchange method."""
 
@@ -125,6 +129,7 @@ class TestConversationAPISimplification:
         assert turn2.speaker == turn.speaker
         assert turn2.listener == turn.listener
 
+    @pytest.mark.efficacy
     def test_factory_methods_with_kwargs(self):
         """Test factory methods work with additional kwargs."""
 
@@ -140,6 +145,7 @@ class TestConversationAPISimplification:
         conv = Conversation.human_ai("user_123", "gpt-4", conversation_id="test_conv_123")
         assert conv.conversation_id == "test_conv_123"
 
+    @pytest.mark.efficacy
     def test_model_info_in_factory_methods(self):
         """Test that model_info is handled correctly in factory methods."""
 
@@ -156,6 +162,7 @@ class TestConversationAPISimplification:
         assert conv.model_info.get("provider") == "anthropic"
         assert conv.model_info.get("temperature") == 0.7
 
+    @pytest.mark.efficacy
     def test_serialization_with_new_api(self):
         """Test that conversations created with new API serialize correctly."""
 
@@ -186,6 +193,7 @@ class TestConversationAPISimplification:
         assert original_history == restored_history
 
 
+@pytest.mark.efficacy
 class TestConversationAPIBackwardCompatibility:
     """Test backward compatibility with existing code."""
 
@@ -215,6 +223,7 @@ class TestConversationAPIBackwardCompatibility:
         assert conv.metadata == {"test": "data"}
         assert conv.rate_limit == {"turns_per_minute": 10}
 
+    @pytest.mark.efficacy
     def test_old_methods_still_work(self):
         """Test that old methods still work as expected."""
 
@@ -232,6 +241,7 @@ class TestConversationAPIBackwardCompatibility:
         conv.add_response("I'm good!")
         assert conv.get_complete_turns()[-1].response == "I'm good!"
 
+    @pytest.mark.efficacy
     def test_mixed_usage(self):
         """Test mixing old and new API methods."""
 

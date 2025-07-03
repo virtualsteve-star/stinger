@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+import pytest
+
 """
 Behavioral Tests for Toxicity Detection Guardrail
 
@@ -12,6 +14,7 @@ from src.stinger.guardrails.simple_toxicity_detection_guardrail import (
 )
 
 
+@pytest.mark.ci
 class TestToxicityDetectionBehavior:
     """Test toxicity detection actually blocks harmful content"""
 
@@ -45,6 +48,7 @@ class TestToxicityDetectionBehavior:
             result = asyncio.run(guardrail.analyze(text))
             assert result.blocked == should_block, f"Failed: {description}. Text: '{text}'"
 
+    @pytest.mark.ci
     def test_category_selection(self):
         """Test that enabled categories control detection"""
         # Only detect hate speech (correct category name)
@@ -83,6 +87,7 @@ class TestToxicityDetectionBehavior:
         # Document actual behavior
         print(f"Harassment with threat-only config: blocked={result.blocked}")
 
+    @pytest.mark.ci
     def test_confidence_threshold_impact(self):
         """Test threshold affects what gets blocked"""
         # Very strict (low threshold)
@@ -106,6 +111,7 @@ class TestToxicityDetectionBehavior:
             lenient_result = asyncio.run(lenient.analyze(text))
             print(f"'{text}' - Strict: {strict_result.blocked}, Lenient: {lenient_result.blocked}")
 
+    @pytest.mark.ci
     def test_context_sensitivity(self):
         """Test toxicity detection considers context"""
         config = {"name": "toxicity", "config": {"confidence_threshold": 0.7}}
@@ -125,6 +131,7 @@ class TestToxicityDetectionBehavior:
             result = asyncio.run(guardrail.analyze(text))
             print(f"{description}: '{text}' - blocked={result.blocked}")
 
+    @pytest.mark.ci
     def test_obfuscation_attempts(self):
         """Test detection of obfuscated toxicity"""
         config = {"name": "toxicity", "config": {"confidence_threshold": 0.7}}
@@ -145,6 +152,7 @@ class TestToxicityDetectionBehavior:
             # Document actual behavior - may not catch all obfuscations
             print(f"{description}: '{text}' - blocked={result.blocked} (expected={expected})")
 
+    @pytest.mark.ci
     def test_multilingual_toxicity(self):
         """Test toxicity in different languages/scripts"""
         config = {"name": "toxicity", "config": {"confidence_threshold": 0.7}}
@@ -162,6 +170,7 @@ class TestToxicityDetectionBehavior:
             result = asyncio.run(guardrail.analyze(text))
             print(f"{description} - blocked={result.blocked}")
 
+    @pytest.mark.ci
     def test_action_configuration(self):
         """Test block/warn/allow actions"""
         # Block action
@@ -190,6 +199,7 @@ class TestToxicityDetectionBehavior:
         result = asyncio.run(allow_guard.analyze("you're stupid"))  # Matches fixed pattern
         print(f"Allow action - blocked: {result.blocked}")
 
+    @pytest.mark.ci
     def test_severity_levels(self):
         """Test different severity levels of toxicity"""
         config = {"name": "toxicity", "config": {"confidence_threshold": 0.7}}
@@ -215,6 +225,7 @@ class TestToxicityDetectionBehavior:
             print(f"{description}: blocked={result.blocked}")
 
 
+@pytest.mark.ci
 def test_customer_service_toxicity_scenario():
     """Test toxicity in customer service context"""
     # Customer service should be more lenient

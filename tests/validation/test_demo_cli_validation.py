@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
+import pytest
+
 """
+
 Demo and CLI Validation Tests
 
 Tests that user-facing demos and CLI commands produce correct security behavior.
@@ -10,6 +13,7 @@ import subprocess
 import sys
 
 
+@pytest.mark.ci
 class TestCLIDemoBehavior:
     """Test CLI demo shows correct security behavior"""
 
@@ -57,6 +61,7 @@ class TestCLIDemoBehavior:
             except Exception as e:
                 print(f"Could not run demo: {e}")
 
+    @pytest.mark.ci
     def test_demo_allows_safe_content(self):
         """Demo should show safe content is allowed"""
         # Demo always runs same hardcoded example, so we test check-prompt instead
@@ -87,6 +92,7 @@ class TestCLIDemoBehavior:
             except Exception as e:
                 print(f"Check test skipped: {e}")
 
+    @pytest.mark.ci
     def test_demo_output_format(self):
         """Test demo output is user-friendly and informative"""
         try:
@@ -112,6 +118,7 @@ class TestCLIDemoBehavior:
             print(f"Demo format test skipped: {e}")
 
 
+@pytest.mark.ci
 class TestCLICheckCommand:
     """Test 'stinger check' command works correctly"""
 
@@ -143,6 +150,7 @@ class TestCLICheckCommand:
             except Exception as e:
                 print(f"Check command test skipped: {e}")
 
+    @pytest.mark.ci
     def test_check_json_output(self):
         """Test check command output format"""
         # Note: The CLI doesn't have --format json option, it prints formatted text
@@ -171,6 +179,7 @@ class TestCLICheckCommand:
             print(f"Check output test skipped: {e}")
 
 
+@pytest.mark.ci
 class TestInteractiveCLI:
     """Test interactive CLI mode behavior"""
 
@@ -179,12 +188,14 @@ class TestInteractiveCLI:
         # Skip this test - stinger doesn't have interactive mode
         print("Interactive mode test skipped: Not implemented in current CLI")
 
+    @pytest.mark.ci
     def test_interactive_mode_analysis(self):
         """Test interactive mode analyzes input correctly"""
         # Skip this test - stinger doesn't have interactive mode
         print("Interactive analysis test skipped: Not implemented in current CLI")
 
 
+@pytest.mark.ci
 class TestWebDemoEndpoints:
     """Test web demo API endpoints return correct results"""
 
@@ -205,6 +216,7 @@ class TestWebDemoEndpoints:
         except ImportError:
             print("Web demo not available for testing")
 
+    @pytest.mark.ci
     def test_web_demo_analyze_endpoint(self):
         """Test web demo analyze endpoint"""
         try:
@@ -235,6 +247,7 @@ class TestWebDemoEndpoints:
             print(f"Web demo endpoint test skipped: {e}")
 
 
+@pytest.mark.ci
 class TestDemoConsistency:
     """Test all demos show consistent behavior"""
 

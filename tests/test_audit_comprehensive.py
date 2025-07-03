@@ -1,3 +1,5 @@
+import pytest
+
 """
 Comprehensive end-to-end tests for security audit trail system.
 
@@ -17,6 +19,7 @@ from stinger.core import audit
 from stinger.core.conversation import Conversation
 
 
+@pytest.mark.efficacy
 def test_comprehensive_security_audit_trail():
     """Comprehensive test of the complete security audit trail system."""
     with tempfile.TemporaryDirectory() as temp_dir:
@@ -196,6 +199,7 @@ def test_comprehensive_security_audit_trail():
         print(f"   - Forensic query tools working correctly")
 
 
+@pytest.mark.performance
 def test_performance_requirements():
     """Test that audit trail meets performance requirements."""
     with tempfile.TemporaryDirectory() as temp_dir:

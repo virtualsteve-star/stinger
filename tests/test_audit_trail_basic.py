@@ -19,6 +19,7 @@ import stinger
 from stinger.core import audit
 
 
+@pytest.mark.efficacy
 class TestAuditTrailBasic:
     """Test basic audit trail functionality."""
 
@@ -32,6 +33,7 @@ class TestAuditTrailBasic:
                 # Can't disable in production - reset the global instance
                 audit._audit_trail = audit.AuditTrail()
 
+    @pytest.mark.ci
     def test_zero_config_enable(self):
         """Test that audit.enable() works with no configuration."""
         # Should work without any arguments
@@ -42,6 +44,7 @@ class TestAuditTrailBasic:
         # Clean up
         audit.disable()
 
+    @pytest.mark.ci
     def test_enable_with_stdout_destination(self):
         """Test enabling audit with stdout destination."""
         audit.enable("stdout")
@@ -52,6 +55,7 @@ class TestAuditTrailBasic:
         # Clean up
         audit.disable()
 
+    @pytest.mark.ci
     def test_enable_with_file_destination(self):
         """Test enabling audit with file destination."""
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -65,6 +69,7 @@ class TestAuditTrailBasic:
             # Clean up
             audit.disable()
 
+    @pytest.mark.ci
     def test_enable_with_redact_pii(self):
         """Test enabling audit with PII redaction."""
         audit.enable("stdout", redact_pii=True)
@@ -75,6 +80,7 @@ class TestAuditTrailBasic:
         # Clean up
         audit.disable()
 
+    @pytest.mark.ci
     def test_disable_in_development(self):
         """Test that disable works in development environment."""
         with patch.dict(os.environ, {"ENVIRONMENT": "development"}):
@@ -84,6 +90,7 @@ class TestAuditTrailBasic:
             audit.disable()
             assert audit.is_enabled() == False
 
+    @pytest.mark.ci
     def test_cannot_disable_in_production(self):
         """Test that disable raises error in production environment."""
         with patch.dict(os.environ, {"ENVIRONMENT": "production"}):
@@ -93,6 +100,7 @@ class TestAuditTrailBasic:
             with pytest.raises(RuntimeError, match="Cannot disable audit trail in production"):
                 audit.disable()
 
+    @pytest.mark.ci
     def test_smart_environment_detection_dev(self):
         """Test smart environment detection in development."""
         with patch.dict(os.environ, {"ENVIRONMENT": "development"}):
@@ -104,6 +112,7 @@ class TestAuditTrailBasic:
 
             audit.disable()
 
+    @pytest.mark.ci
     def test_smart_environment_detection_prod(self):
         """Test smart environment detection in production."""
         with patch.dict(os.environ, {"ENVIRONMENT": "production"}):
@@ -116,6 +125,7 @@ class TestAuditTrailBasic:
             # Can't disable in prod, so reset manually
             audit._audit_trail = audit.AuditTrail()
 
+    @pytest.mark.ci
     def test_log_prompt_basic(self):
         """Test basic prompt logging functionality."""
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -149,6 +159,7 @@ class TestAuditTrailBasic:
             assert prompt_record["request_id"] == "req_789"
             assert "timestamp" in prompt_record
 
+    @pytest.mark.efficacy
     def test_log_response_basic(self):
         """Test basic response logging functionality."""
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -183,6 +194,7 @@ class TestAuditTrailBasic:
             assert response_record["model_used"] == "gpt-4.1-nano"
             assert response_record["processing_time_ms"] == 150
 
+    @pytest.mark.ci
     def test_log_guardrail_decision_basic(self):
         """Test basic guardrail decision logging functionality."""
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -220,6 +232,7 @@ class TestAuditTrailBasic:
             assert decision_record["confidence"] == 0.95
             assert decision_record["rule_triggered"] == "violence_detection"
 
+    @pytest.mark.ci
     def test_pii_redaction_basic(self):
         """Test basic PII redaction functionality."""
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -249,6 +262,7 @@ class TestAuditTrailBasic:
             assert "john@example.com" not in prompt_text
             assert "555-123-4567" not in prompt_text
 
+    @pytest.mark.ci
     def test_stinger_audit_import(self):
         """Test that audit can be imported from main stinger package."""
         # Should be able to access audit module
@@ -257,6 +271,7 @@ class TestAuditTrailBasic:
         assert hasattr(stinger.audit, "disable")
         assert hasattr(stinger.audit, "is_enabled")
 
+    @pytest.mark.ci
     def test_file_creation(self):
         """Test that audit log file and directories are created automatically."""
         with tempfile.TemporaryDirectory() as temp_dir:

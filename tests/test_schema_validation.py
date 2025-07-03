@@ -7,6 +7,7 @@ from src.stinger.core.config import ConfigLoader
 from src.stinger.utils.exceptions import ConfigurationError
 
 
+@pytest.mark.ci
 class TestSchemaValidation:
     """Test YAML schema validation functionality."""
 
@@ -49,6 +50,7 @@ class TestSchemaValidation:
         finally:
             os.unlink(config_path)
 
+    @pytest.mark.ci
     def test_invalid_config_missing_type_fails_validation(self):
         """Test that a configuration missing required 'type' field fails validation."""
         invalid_config = """
@@ -80,6 +82,7 @@ class TestSchemaValidation:
         finally:
             os.unlink(config_path)
 
+    @pytest.mark.ci
     def test_invalid_config_wrong_type_fails_validation(self):
         """Test that a configuration with invalid filter type fails validation."""
         invalid_config = """
@@ -109,6 +112,7 @@ class TestSchemaValidation:
         finally:
             os.unlink(config_path)
 
+    @pytest.mark.ci
     def test_invalid_config_missing_required_fields_fails_validation(self):
         """Test that a configuration missing required fields fails validation."""
         invalid_config = """
@@ -138,6 +142,7 @@ class TestSchemaValidation:
         finally:
             os.unlink(config_path)
 
+    @pytest.mark.ci
     def test_invalid_config_wrong_data_types_fails_validation(self):
         """Test that a configuration with wrong data types fails validation."""
         invalid_config = """
@@ -168,6 +173,7 @@ class TestSchemaValidation:
         finally:
             os.unlink(config_path)
 
+    @pytest.mark.ci
     def test_empty_filters_list_passes_validation(self):
         """Test that an empty filters list is valid."""
         valid_config = """
@@ -193,6 +199,7 @@ class TestSchemaValidation:
         finally:
             os.unlink(config_path)
 
+    @pytest.mark.ci
     def test_complex_valid_config_passes_validation(self):
         """Test that a complex but valid configuration passes validation."""
         valid_config = """

@@ -22,9 +22,11 @@ from src.stinger.core.regex_security import (
 from src.stinger.guardrails.regex_guardrail import RegexGuardrail
 
 
+@pytest.mark.efficacy
 class TestRegexSecurityValidator:
     """Test the regex security validation system."""
 
+    @pytest.mark.ci
     def test_safe_patterns_allowed(self):
         """Test that safe patterns are allowed."""
         validator = RegexSecurityValidator()
@@ -42,6 +44,7 @@ class TestRegexSecurityValidator:
             is_safe, reason = validator.validate_pattern(pattern)
             assert is_safe, f"Safe pattern '{pattern}' was rejected: {reason}"
 
+    @pytest.mark.ci
     def test_dangerous_patterns_blocked(self):
         """Test that known dangerous ReDoS patterns are blocked."""
         validator = RegexSecurityValidator()
@@ -63,6 +66,7 @@ class TestRegexSecurityValidator:
             assert not is_safe, f"Dangerous pattern '{pattern}' was not blocked"
             assert "dangerous" in reason.lower() or "nested" in reason.lower()
 
+    @pytest.mark.ci
     def test_pattern_length_limits(self):
         """Test that overly long patterns are rejected."""
         validator = RegexSecurityValidator(RegexSecurityConfig(MAX_PATTERN_LENGTH=50))
@@ -77,6 +81,7 @@ class TestRegexSecurityValidator:
         assert not is_safe, "Long pattern should be rejected"
         assert "too long" in reason.lower()
 
+    @pytest.mark.ci
     def test_complexity_limits(self):
         """Test that overly complex patterns are rejected."""
         validator = RegexSecurityValidator(RegexSecurityConfig(MAX_REGEX_COMPLEXITY=20))
@@ -91,6 +96,7 @@ class TestRegexSecurityValidator:
         assert not is_safe, "Complex pattern should be rejected"
         assert "too complex" in reason.lower()
 
+    @pytest.mark.efficacy
     def test_compilation_timeout(self):
         """Test that slow-compiling patterns are rejected."""
         validator = RegexSecurityValidator(
@@ -114,6 +120,7 @@ class TestRegexSecurityValidator:
                 word in reason.lower() for word in ["slow", "timeout", "compilation", "complex"]
             )
 
+    @pytest.mark.ci
     def test_safe_compile_function(self):
         """Test the safe compile functionality."""
         # Safe pattern should compile
@@ -124,6 +131,7 @@ class TestRegexSecurityValidator:
         with pytest.raises(SecurityError, match="Unsafe regex pattern"):
             safe_compile_regex(r"(a+)+b")
 
+    @pytest.mark.ci
     def test_safe_search_timeout(self):
         """Test that regex search times out on ReDoS attacks."""
         validator = RegexSecurityValidator(RegexSecurityConfig(MAX_EXECUTION_TIME_MS=100))
@@ -143,6 +151,7 @@ class TestRegexSecurityValidator:
         except SecurityError as e:
             assert "timeout" in str(e).lower()
 
+    @pytest.mark.ci
     def test_convenience_functions(self):
         """Test the module-level convenience functions."""
         # Test validate_regex_pattern
@@ -162,6 +171,7 @@ class TestRegexSecurityValidator:
         assert match is not None
 
 
+@pytest.mark.ci
 class TestRegexFilterSecurity:
     """Test that RegexGuardrail uses security validation."""
 
@@ -173,6 +183,7 @@ class TestRegexFilterSecurity:
         guardrail_instance = RegexGuardrail(config)
         assert len(guardrail_instance.compiled_patterns) == 3
 
+    @pytest.mark.ci
     def test_dangerous_regex_filter_rejected(self):
         """Test that RegexGuardrail rejects dangerous patterns."""
         config = {"patterns": [r"hello", r"(a+)+b"], "blocked": True}  # One safe, one dangerous
@@ -181,6 +192,7 @@ class TestRegexFilterSecurity:
         with pytest.raises(ValueError, match="Invalid or unsafe regex pattern"):
             RegexGuardrail(config)
 
+    @pytest.mark.ci
     @pytest.mark.asyncio
     async def test_regex_filter_safe_execution(self):
         """Test that RegexGuardrail executes safely."""
@@ -197,6 +209,7 @@ class TestRegexFilterSecurity:
         result = await guardrail_instance.analyze("no matches here")
         assert result.blocked == False
 
+    @pytest.mark.ci
     @pytest.mark.asyncio
     async def test_regex_filter_timeout_protection(self):
         """Test that RegexGuardrail protects against execution timeouts."""
@@ -214,6 +227,7 @@ class TestRegexFilterSecurity:
             assert result.blocked == False  # No matches due to timeout
 
 
+@pytest.mark.ci
 class TestReDoSAttackSimulation:
     """Simulate actual ReDoS attacks to verify protection."""
 
@@ -234,6 +248,7 @@ class TestReDoSAttackSimulation:
         with pytest.raises(SecurityError):
             validator.safe_compile(attack_pattern)
 
+    @pytest.mark.ci
     def test_alternation_overlap_attack(self):
         """Simulate alternation overlap ReDoS attack."""
         attack_pattern = r"(a|a)*b"
@@ -245,6 +260,7 @@ class TestReDoSAttackSimulation:
         is_safe, reason = validator.validate_pattern(attack_pattern)
         assert not is_safe
 
+    @pytest.mark.ci
     def test_catastrophic_backtracking_protection(self):
         """Test protection against catastrophic backtracking."""
         # Patterns that could cause catastrophic backtracking
@@ -271,6 +287,7 @@ class TestReDoSAttackSimulation:
         # At least some of the dangerous patterns should be caught
         assert blocked_count > 0, "No dangerous patterns were blocked"
 
+    @pytest.mark.ci
     def test_complexity_scoring_accuracy(self):
         """Test that complexity scoring correctly identifies problematic patterns."""
         validator = RegexSecurityValidator()
@@ -297,6 +314,7 @@ class TestReDoSAttackSimulation:
             complexity = validator._calculate_complexity(pattern)
             assert complexity > 20, f"Complex pattern '{pattern}' scored too low: {complexity}"
 
+    @pytest.mark.ci
     def test_pattern_suggestions(self):
         """Test that the validator provides helpful suggestions for unsafe patterns."""
         validator = RegexSecurityValidator()
@@ -307,6 +325,7 @@ class TestReDoSAttackSimulation:
         assert len(suggestions) > 0
         assert any("quantifier" in suggestion.lower() for suggestion in suggestions)
 
+    @pytest.mark.ci
     def test_real_world_safe_patterns(self):
         """Test that common real-world patterns are considered safe."""
         validator = RegexSecurityValidator()

@@ -17,6 +17,7 @@ from stinger.guardrails.ai_pii_detection_guardrail import AIPIIDetectionGuardrai
 from stinger.guardrails.ai_toxicity_detection_guardrail import AIToxicityDetectionGuardrail
 
 
+@pytest.mark.efficacy
 @pytest.mark.asyncio
 async def test_ai_filters_integration():
     """Test AI filters with centralized API key management."""

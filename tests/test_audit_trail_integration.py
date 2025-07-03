@@ -20,6 +20,7 @@ from stinger.core import audit
 from stinger.core.conversation import Conversation
 
 
+@pytest.mark.ci
 class TestAuditTrailIntegration:
     """Test audit trail integration with guardrail pipeline."""
 
@@ -33,6 +34,7 @@ class TestAuditTrailIntegration:
                 # Can't disable in production - reset the global instance
                 audit._audit_trail = audit.AuditTrail()
 
+    @pytest.mark.ci
     def test_pipeline_with_audit_trail_basic(self):
         """Test basic pipeline integration with audit trail."""
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -93,6 +95,7 @@ class TestAuditTrailIntegration:
                 assert "reason" in decision
                 assert decision["decision"] in ["block", "allow", "warn", "error"]
 
+    @pytest.mark.ci
     def test_pipeline_with_conversation_audit(self):
         """Test pipeline integration with conversation context."""
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -141,6 +144,7 @@ class TestAuditTrailIntegration:
             for event in conversation_events:
                 assert event["conversation_id"] == "conv_123"
 
+    @pytest.mark.ci
     def test_audit_trail_captures_blocked_content(self):
         """Test that audit trail captures blocked content correctly."""
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -182,6 +186,7 @@ class TestAuditTrailIntegration:
                 assert "confidence" in decision
                 assert isinstance(decision["confidence"], (int, float, type(None)))
 
+    @pytest.mark.ci
     def test_audit_trail_pii_redaction_in_pipeline(self):
         """Test that PII redaction works in pipeline integration."""
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -221,6 +226,7 @@ class TestAuditTrailIntegration:
             else:
                 pytest.fail("User prompt event not found")
 
+    @pytest.mark.ci
     def test_audit_trail_disabled_no_logging(self):
         """Test that when audit trail is disabled, no logging occurs."""
         # Ensure audit trail is disabled
@@ -240,6 +246,7 @@ class TestAuditTrailIntegration:
 
         # Since audit is disabled, we can't check logs, but the pipeline should work fine
 
+    @pytest.mark.ci
     def test_pipeline_error_handling_with_audit(self):
         """Test that pipeline errors are properly logged to audit trail."""
         with tempfile.TemporaryDirectory() as temp_dir:

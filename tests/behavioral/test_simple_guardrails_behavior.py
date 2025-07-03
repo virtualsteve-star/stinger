@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+import pytest
+
 """
 Behavioral Tests for Simple Guardrails (Length, Regex, Keyword)
 
@@ -13,6 +15,7 @@ from src.stinger.guardrails.regex_guardrail import RegexGuardrail
 from src.stinger.guardrails.simple_code_generation_guardrail import SimpleCodeGenerationGuardrail
 
 
+@pytest.mark.ci
 class TestLengthGuardrailBehavior:
     """Test length limits are enforced"""
 
@@ -38,6 +41,7 @@ class TestLengthGuardrailBehavior:
         result = asyncio.run(guardrail.analyze(long_text))
         assert result.blocked == True, f"Long message ({len(long_text)} chars) should block"
 
+    @pytest.mark.ci
     def test_min_length_blocking(self):
         """Test min length is enforced"""
         config = {"name": "min_length", "config": {"min_length": 10, "action": "block"}}
@@ -55,6 +59,7 @@ class TestLengthGuardrailBehavior:
         result = asyncio.run(guardrail.analyze("This is a longer message"))
         assert result.blocked == False, "Message over minimum should pass"
 
+    @pytest.mark.ci
     def test_both_limits(self):
         """Test min and max together"""
         config = {
@@ -75,6 +80,7 @@ class TestLengthGuardrailBehavior:
             assert result.blocked == should_block, f"Failed: {description}"
 
 
+@pytest.mark.ci
 class TestRegexGuardrailBehavior:
     """Test regex patterns work correctly"""
 
@@ -108,6 +114,7 @@ class TestRegexGuardrailBehavior:
             result = asyncio.run(guardrail.analyze(text))
             assert result.blocked == should_block, f"Failed: {description}"
 
+    @pytest.mark.ci
     def test_case_sensitivity(self):
         """Test case sensitive vs insensitive"""
         # Case sensitive
@@ -134,6 +141,7 @@ class TestRegexGuardrailBehavior:
             )
 
 
+@pytest.mark.ci
 class TestKeywordBlockBehavior:
     """Test keyword blocking works"""
 
@@ -156,6 +164,7 @@ class TestKeywordBlockBehavior:
             result = asyncio.run(guardrail.analyze(text))
             assert result.blocked == should_block, f"Failed: {description}"
 
+    @pytest.mark.ci
     def test_case_sensitivity_keyword(self):
         """Test keyword case sensitivity"""
         config = {"name": "keyword_case", "config": {"keyword": "SECRET", "case_sensitive": True}}
@@ -173,6 +182,7 @@ class TestKeywordBlockBehavior:
             print(f"{description}: '{text}' - blocked={result.blocked}")
 
 
+@pytest.mark.ci
 class TestCodeGenerationBehavior:
     """Test code generation detection"""
 
@@ -201,6 +211,7 @@ class TestCodeGenerationBehavior:
             result = asyncio.run(guardrail.analyze(text))
             assert result.blocked == should_block, f"Failed: {description}"
 
+    @pytest.mark.ci
     def test_subtle_code_requests(self):
         """Test subtle code generation attempts"""
         config = {"name": "code_gen", "config": {"confidence_threshold": 0.6}}
@@ -218,6 +229,7 @@ class TestCodeGenerationBehavior:
             result = asyncio.run(guardrail.analyze(text))
             print(f"Subtle request: '{text[:40]}...' - blocked={result.blocked}")
 
+    @pytest.mark.ci
     def test_category_specific_blocking(self):
         """Test specific code categories"""
         # Only block certain types
@@ -240,6 +252,7 @@ class TestCodeGenerationBehavior:
             print(f"{category}: '{text}' - blocked={result.blocked}")
 
 
+@pytest.mark.ci
 def test_customer_service_length_limits():
     """Test length limits in customer service context"""
     # Customer service might limit very long complaints
