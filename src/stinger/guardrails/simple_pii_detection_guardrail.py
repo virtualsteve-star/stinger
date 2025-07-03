@@ -33,8 +33,11 @@ class SimplePIIDetectionGuardrail(GuardrailInterface):
             "bank_account": r"\b\d{8,17}\b",
         }
 
-        self.enabled_patterns = config.get("patterns", list(self.pii_patterns.keys()))
-        self.confidence_threshold = config.get("confidence_threshold", 0.8)
+        # Handle nested config structure from pipeline configuration
+        nested_config = config.get("config", {})
+        
+        self.enabled_patterns = nested_config.get("patterns", config.get("patterns", list(self.pii_patterns.keys())))
+        self.confidence_threshold = nested_config.get("confidence_threshold", config.get("confidence_threshold", 0.8))
         self.on_error = config.get("on_error", "block")
 
         # Validate enabled patterns - filter out unknown patterns
