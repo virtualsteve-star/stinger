@@ -190,9 +190,42 @@ pre-commit install
 # Now hooks run automatically on git commit
 ```
 
+## CI Validation Workflow (Push-Wait-Fix-Repeat)
+**CRITICAL**: After EVERY push to dev, follow this workflow to ensure CI stays green:
+
+### Automated CI Validation Process
+1. **Push to dev**: `git push origin dev`
+2. **Wait for CI**: Wait 2-5 minutes for GitHub Actions to run
+3. **Check CI status**: 
+   ```bash
+   gh run list --branch dev --limit 1
+   ```
+4. **If CI fails**, check logs and fix:
+   ```bash
+   # View failing run details
+   gh run view <run-id> --log | grep -E "(ERROR|FAILED|error:|failed:)" | head -20
+   
+   # Fix the issues, commit, and push again
+   git add -A && git commit -m "Fix CI: <description>" && git push origin dev
+   ```
+5. **Repeat until green**: Continue the cycle until all checks pass
+
+### Common CI Fixes
+- **Test failures**: Check if tests need API keys (mark as `@pytest.mark.efficacy`)
+- **Linting issues**: Run `black src/ tests/` and `isort src/ tests/`
+- **Safety check**: Update command syntax if needed
+- **Import errors**: Ensure pytest is imported before decorators
+
+### Why This Matters
+- Keeps dev branch always ready for PR to main
+- Catches issues early before they accumulate
+- Maintains team confidence in the codebase
+- Prevents "CI surprise" during critical PR reviews
+
 ## Code Review Checklist
 Before submitting any changes:
 - [ ] Ran `./scripts/local-ci-check.sh` - ALL CHECKS PASSED
+- [ ] Pushed to dev and verified CI is green (see workflow above)
 - [ ] Code follows project architecture patterns
 - [ ] Tests are meaningful and pass
 - [ ] Documentation is updated
@@ -202,7 +235,7 @@ Before submitting any changes:
 
 ## Remember
 **Quality over speed. Architecture over quick fixes. Tests that actually test.**
-**No CI surprises - check locally first!**
+**No CI surprises - check locally first, then verify in cloud!**
 
 ## Common Development Commands
 
