@@ -1,0 +1,74 @@
+# Pre-commit hooks for Stinger
+# Install with: pip install pre-commit && pre-commit install
+
+repos:
+  # Black - Python code formatter
+  - repo: https://github.com/psf/black
+    rev: 23.12.1
+    hooks:
+      - id: black
+        language_version: python3.11
+        args: ['--line-length=120']
+
+  # isort - Import statement sorter
+  - repo: https://github.com/pycqa/isort
+    rev: 5.13.2
+    hooks:
+      - id: isort
+        args: ["--profile", "black", "--line-length", "120"]
+
+  # Flake8 - Style guide enforcement
+  - repo: https://github.com/pycqa/flake8
+    rev: 7.0.0
+    hooks:
+      - id: flake8
+        # Uses .flake8 config file
+
+  # General pre-commit hooks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
+        args: ['--maxkb=1000']
+      - id: check-json
+      - id: check-merge-conflict
+      - id: debug-statements  # Check for debugger imports
+      - id: mixed-line-ending
+        args: ['--fix=lf']
+
+  # Python specific hooks
+  - repo: https://github.com/asottile/pyupgrade
+    rev: v3.15.0
+    hooks:
+      - id: pyupgrade
+        args: [--py38-plus]  # Ensure Python 3.8+ compatibility
+
+  # Security checks
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.4.0
+    hooks:
+      - id: detect-secrets
+        args: ['--baseline', '.secrets.baseline']
+        exclude: '^tests/|\.git/|\.env'
+
+# Configuration
+default_language_version:
+  python: python3.11
+
+exclude: |
+  (?x)^(
+    \.git/|
+    \.eggs/|
+    \.mypy_cache/|
+    \.pytest_cache/|
+    \.venv/|
+    build/|
+    dist/|
+    docs/_build/|
+    __pycache__/
+  )
+
+fail_fast: false

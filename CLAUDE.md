@@ -119,8 +119,34 @@ Never assume or guess dates - always verify with the system date
 - All filters and services must use the centralized manager for key access (never read keys directly from config or os.environ).
 - See docs/API_KEY_HANDLING.md for full details.
 
+## Pre-PR Checklist
+**IMPORTANT**: Before creating any PR, you MUST run local CI checks to avoid CI failures.
+
+### Quick Check (Required)
+```bash
+# Run this single command before every PR:
+./scripts/local-ci-check.sh
+```
+
+### Manual Steps (if script unavailable)
+1. **Format code**: `black src/ tests/`
+2. **Fix imports**: `isort src/ tests/`
+3. **Check style**: `flake8 src/ tests/`
+4. **Run tests**: `pytest`
+5. **Check Python 3.8**: `python3.8 -m py_compile src/stinger/core/*.py`
+
+### Pre-commit Hooks (Recommended)
+```bash
+# One-time setup
+pip install pre-commit
+pre-commit install
+
+# Now hooks run automatically on git commit
+```
+
 ## Code Review Checklist
 Before submitting any changes:
+- [ ] Ran `./scripts/local-ci-check.sh` - ALL CHECKS PASSED
 - [ ] Code follows project architecture patterns
 - [ ] Tests are meaningful and pass
 - [ ] Documentation is updated
@@ -130,6 +156,7 @@ Before submitting any changes:
 
 ## Remember
 **Quality over speed. Architecture over quick fixes. Tests that actually test.**
+**No CI surprises - check locally first!**
 
 ## Common Development Commands
 
