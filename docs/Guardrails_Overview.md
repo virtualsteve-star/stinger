@@ -217,7 +217,7 @@ These guardrails use OpenAI's GPT models for intelligent content analysis. They 
 - Handles variations and typos
 - Multi-language support
 
-**Performance**: ~200-500ms per check
+**Performance**: ~1.5s per check (measured)
 
 **Model**: Uses gpt-4.1-nano (configurable)
 
@@ -245,7 +245,7 @@ config = {
 - Context-aware (sarcasm, tone)
 - Multi-language support
 
-**Performance**: ~200-500ms per check
+**Performance**: ~0.9s per check (measured)
 
 **Example Usage**:
 ```python
@@ -271,7 +271,7 @@ config = {
 - Recognizes pseudo-code
 - Handles multiple programming languages
 
-**Performance**: ~200-500ms per check
+**Performance**: ~0.9s per check (measured)
 
 **Example Usage**:
 ```python
@@ -297,7 +297,7 @@ config = {
 - Sexual content
 - Violence/graphic content
 
-**Performance**: ~100-300ms (optimized moderation endpoint)
+**Performance**: ~0.8s (measured)
 
 **Example Usage**:
 ```python
@@ -334,7 +334,7 @@ config = {
 - `conversation_awareness`: Enable multi-turn analysis
 - `context_strategy`: "recent", "suspicious", or "mixed"
 
-**Performance**: ~300-700ms (with conversation analysis)
+**Performance**: ~3.2s (measured, with conversation analysis)
 
 **Example Usage**:
 ```python
@@ -490,7 +490,7 @@ From the behavioral performance tests:
 - **Heavy pipeline**: 5 guardrails complete in <500ms
 - **Concurrent performance**: <3x degradation under load
 
-### AI Guardrail Performance (Estimated)
+### AI Guardrail Performance (Measured)
 
 AI guardrails require API calls to OpenAI. Performance depends on:
 - Network latency
@@ -498,17 +498,26 @@ AI guardrails require API calls to OpenAI. Performance depends on:
 - Request complexity
 - Retry logic on failures
 
-| Guardrail Type | Estimated Latency | Notes |
-|----------------|-------------------|-------|
-| Content Moderation | 100-300ms | Uses optimized moderation endpoint |
-| AI PII | 200-500ms | GPT model analysis |
-| AI Toxicity | 200-500ms | GPT model analysis |
-| AI Code | 200-500ms | GPT model analysis |
-| Prompt Injection | 300-700ms | Most complex, includes conversation analysis |
+**Actual measurements** from performance testing:
+
+| Guardrail Type | Measured Latency | Notes |
+|----------------|------------------|-------|
+| Content Moderation | 818ms | Uses optimized moderation endpoint |
+| AI Toxicity | 885ms | GPT model analysis |
+| AI Code Generation | 913ms | GPT model analysis |
+| AI PII | 1,546ms | GPT model analysis (most complex) |
+| Prompt Injection | 3,190ms | Most complex, includes conversation analysis |
 | Pass Through | <0.1ms | No-op filter (negligible) |
 | Topic Filter | ~0.11ms* | Similar to keyword matching |
 
 *Topic filter not directly measured but expected similar to keyword-based filters
+
+**Performance Notes:**
+- **Content Moderation** is fastest among AI guardrails (~800ms)
+- **AI PII** takes longer due to comprehensive pattern analysis (~1.5s)
+- **Prompt Injection** is slowest due to conversation analysis (~3.2s)
+- All AI guardrails are significantly slower than regex-based alternatives
+- Performance may vary based on network conditions and API load
 
 ---
 
