@@ -69,6 +69,32 @@ This rule is non-negotiable for code safety and review process.
 - Focus on integration tests that verify the system works end-to-end
 - Test edge cases and error conditions
 
+### 5.1. NO MOCKING OF AI BEHAVIOR
+- **NEVER mock AI guardrail responses** - that's the core behavior we're testing!
+- **Why:** The entire value of Stinger is testing real AI behavior. Mocking defeats this purpose.
+- **This is an AI product!** We MUST test AI behavior before releases.
+
+### 5.2. API Keys and Test Environments
+- **GitHub CI**: May skip AI tests if no API keys (security reasons)
+- **Local Development**: MUST have API keys and run AI tests
+- **Before Push to Main**: MUST run full suite including efficacy and performance tests
+- **Release Rule**: No code goes to main without passing ALL tests locally
+
+### 5.3. Test Execution Strategy
+- **Speed Strategy:**
+  - CI tests: Non-AI components only (for GitHub Actions without keys)
+  - Efficacy tests: Real AI behavior - accept 20-30s per test
+  - Performance tests: Load and scale testing
+- **Development Workflow:**
+  - During coding: Run specific AI tests you're working on
+  - Before commit: Run CI suite (<30s) 
+  - Before PR: Run efficacy tests locally
+  - **BEFORE PUSH TO MAIN: Run FULL suite (CI + efficacy + performance)**
+- **Examples:**
+  - ✅ GOOD: Test AI-based PII detection with real OpenAI calls
+  - ❌ BAD: Mock OpenAI responses to make tests fast
+  - ✅ GOOD: Skip AI tests in GitHub CI if no keys, but REQUIRE locally
+
 ### 6. Test-Driven Development
 - Write tests first when adding new features
 - Ensure tests fail before implementing the feature

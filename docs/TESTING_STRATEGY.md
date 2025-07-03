@@ -4,31 +4,55 @@
 
 Stinger Guardrails uses a **three-tier testing strategy** to balance development speed with comprehensive validation of AI guardrail effectiveness and scalability.
 
+## Core Testing Philosophy: No Mocking of AI Behavior
+
+**IMPORTANT**: We do NOT mock AI guardrail responses in our tests. The entire value of Stinger is testing real AI behavior - mocking defeats this purpose.
+
+### Why No Mocking?
+1. **AI behavior IS what we're testing** - Mocking AI responses would be testing our mocks, not the guardrails
+2. **Real-world accuracy matters** - We need to know how AI actually responds to threats
+3. **AI models evolve** - Mocked responses become outdated as models improve
+4. **This is an AI product!** - We cannot ship without testing actual AI behavior
+
+### API Keys and Test Environments
+- **GitHub CI**: May skip AI tests if no API keys are configured (security reasons)
+- **Local Development**: MUST have OPENAI_API_KEY configured
+- **Release Rule**: NO code goes to main without passing ALL tests locally (including AI tests)
+
+### How We Handle Test Speed
+- **CI Tier**: Test non-AI components (config, pipeline, regex patterns) - genuinely fast
+- **Efficacy Tier**: Test AI behavior with real API calls - accept 20-30s per test
+- **Performance Tier**: Test scale and load - critical before releases
+- **Before Main Push**: Run FULL test suite locally (all tiers)
+
 ## Three-Tier Strategy
 
 ### Tier 1: CI Tests (Fast Development)
-**Purpose**: Verify basic functionality and quick sanity checks  
+**Purpose**: Verify basic functionality WITHOUT AI calls  
 **Performance**: <30 seconds total for all CI tests  
 **Frequency**: Run on every PR, every development cycle  
 **Location**: `tests/ci/` or marked with `@pytest.mark.ci`
 
 #### What Tier 1 Tests Cover:
-- ✅ Basic functionality verification
-- ✅ Obvious detection cases (SSN, hate speech, etc.)
-- ✅ Guardrail availability and initialization
-- ✅ Configuration validation
-- ✅ Response to benign content
-- ✅ Simple pattern matching validation
+- ✅ Configuration loading and validation
+- ✅ Pipeline construction (empty or simple guardrails)
+- ✅ Simple regex-based PII detection (NOT AI-based)
+- ✅ Simple pattern-based toxicity detection (NOT AI-based)
+- ✅ Length checks, keyword blocking
+- ✅ Import verification
+- ❌ NO AI guardrail testing (those go in Tier 2)
 
 #### Example Tier 1 Test:
 ```python
 @pytest.mark.ci
-@pytest.mark.asyncio
-async def test_ai_pii_sanity(self):
-    """Verify AI PII detection responds to obvious PII"""
-    result = await guardrail.analyze("My SSN is 123-45-6789")
-    assert result.blocked is True, "AI PII should block obvious SSN"
-    assert result.confidence > 0.5, "AI PII should have high confidence"
+def test_simple_pii_regex(self):
+    """Test regex-based PII detection (not AI)"""
+    from stinger.guardrails.simple_pii_detection_guardrail import SimplePIIDetectionGuardrail
+    guardrail = SimplePIIDetectionGuardrail("test", {"confidence_threshold": 0.7})
+    
+    # This uses regex patterns, not AI
+    result = asyncio.run(guardrail.analyze("SSN: 123-45-6789"))
+    assert result.blocked is True
 ```
 
 ### Tier 2: Efficacy Tests (Correctness Validation)
@@ -73,6 +97,47 @@ False Negatives: 7/16 (43.75%)
 - ⏱️ **Response Time Distribution**: P95, P99 latency analysis
 - 🔄 **Stress Testing**: System behavior under extreme conditions
 - 📈 **Performance Regression Detection**: Automated performance monitoring
+
+## Local Development Testing Strategy
+
+### For AI Guardrail Development
+When developing AI guardrails, you need to test real behavior frequently:
+
+```bash
+# Run a focused AI test during development (20-30s is acceptable)
+pytest tests/efficacy/test_ai_pii_detection.py::test_specific_case -v
+
+# Run a small set of AI tests for your feature
+pytest tests/efficacy/ai_guardrails -k "pii" --maxfail=1
+
+# Use --lf to rerun only failed tests
+pytest --lf
+```
+
+### Daily Development Workflow
+1. **During coding**: Run specific AI tests for what you're working on
+2. **Before commit**: Run CI suite (`pytest -m ci`) - should be <30s
+3. **Before PR**: Run focused efficacy tests for your changes
+4. **BEFORE PUSH TO MAIN**: Run FULL suite locally - ALL tests MUST pass
+
+### Release Checklist
+```bash
+# MANDATORY before pushing to main:
+export OPENAI_API_KEY="your-key-here"  # Must be set!
+
+# 1. Run ALL tests
+pytest  # This runs ci + efficacy + performance
+
+# OR run each tier to see progress:
+pytest -m ci          # Should be fast
+pytest -m efficacy    # Will take 5-10 minutes
+pytest -m performance # Will take 10-30 minutes
+
+# 2. Only push to main if ALL tests pass
+git push origin main
+```
+
+**Remember**: This is an AI product. We cannot release without testing AI behavior!
 
 ## Test Execution
 
