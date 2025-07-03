@@ -20,6 +20,7 @@
 | **6c** | **Compliance Logging** ✅ | • Structured logging for compliance and audit trails  • Configurable log levels and output formats  • Async logging with buffering for performance  • Basic health monitoring and metrics  • PII redaction and log file access controls  • Simple log export utility for compliance reporting | *All guardrail decisions logged with complete context*  <br/>*<10ms additional latency for normal operations*  <br/>*PII redaction achieves 99%+ accuracy*  <br/>*System continues operating during non-critical logging failures*  <br/>*Simple export utility works for compliance reporting* |
 | **6d** | **PyPI Publishing** 🔴 | • Package preparation and validation  • TestPyPI publishing and testing  • PyPI publishing and GitHub release  • Post-release verification and monitoring  • Release documentation and changelog | *Package successfully published to PyPI*  <br/>*Package successfully published to TestPyPI*  <br/>*Installation works in clean environments*  <br/>*All functionality verified from PyPI install*  <br/>*GitHub release created with proper documentation* |
 | **7** | **Observability & CI** | • Structured logs to SIEM  • Prometheus metrics  • GitHub Actions running full suites on PRs  • Configuration testing framework  • Automatic rollback on validation failures  • **Performance logging for guardrail filters (execution times, latency, throughput)** | *CI green across all branches*  <br/>*Dashboards show live metrics and filter execution times*  <br/>*Config changes validated before deployment*  <br/>**Performance logs available for all guardrail filters** |
+| **7H** | **Emergency QA Audit** | • Comprehensive guardrail configuration audit  • Preset configuration end-to-end validation  • Security-critical feature verification  • Demo/CLI functionality audit  • Integration test suite enhancement  • Go/no-go criteria for alpha release | *All security-critical features working correctly*  <br/>*All preset configurations validated*  <br/>*Demo/CLI functionality verified*  <br/>*Test suite enhanced with integration tests*  <br/>*No similar config handling bugs exist* |
 | **8** | **Hardening & Docs** | • Fail‑closed defaults  • Security reviews  • Developer guide & API docs  • Production deployment guide  • Incident response procedures | *Security review signed off*  <br/>*v1.0 tag published*  <br/>*Documentation complete for all personas* |
 
 > **Note:** Phases 1–3 are designed for quick iteration (~2–3 sprints). Phase 4 focuses on developer experience improvements that will accelerate development of later phases. Later phases can proceed in parallel once Phase 4 stability is proven.
@@ -174,4 +175,17 @@
 
 - Compound filters now use additive certainty scoring (not weights).
 - All rules use 'certainty' (0-100) instead of 'weight'.
+
+### Phase 7H Additions 🔴
+- **Emergency QA Audit**: Comprehensive audit triggered by critical PII detection bug discovery
+- **Guardrail Configuration Audit**: Systematic review of all guardrail constructors for nested config handling issues
+- **Preset Configuration Validation**: End-to-end testing of all preset configurations (customer_service, medical, content_moderation, educational, financial)
+- **Security-Critical Feature Verification**: Validation that PII detection, toxicity detection, prompt injection detection, code generation detection, and URL filtering actually work
+- **Demo/CLI Functionality Audit**: Verification that demo and CLI show correct results for known test cases
+- **Integration Test Suite Enhancement**: Addition of missing integration tests for configuration validation and end-to-end security testing
+- **Go/No-Go Criteria**: Clear criteria for alpha release decision based on audit findings
+- **Risk Assessment**: Comprehensive risk assessment with high/medium/low risk categorization
+- **Team Requirements**: Defined roles and responsibilities for QA lead and developers
+- **Timeline Impact**: 3-5 day minimum timeline with potential alpha release delay
+- **Deliverables**: Audit reports, enhanced test suite, fixed guardrails, updated documentation, and release decision
 

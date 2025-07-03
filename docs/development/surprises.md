@@ -90,3 +90,36 @@ The Conversation API went through multiple iterations as requirements became cle
 
 ### Lesson Learned
 Design APIs with extension points. Keep core simple but allow for metadata and future features.
+
+---
+
+## Critical Config Handling Bug (Phase 7H)
+
+### The Surprise
+During final QA testing, discovered that PII detection wasn't blocking credit card numbers. Investigation revealed that **11 out of 12 guardrails** had the same config handling bug - none of our security features were using configured values, only defaults!
+
+### Why It Happened
+- Pipeline passes config in nested structure: `{"name": "...", "config": {...}}`
+- Guardrails were looking for config values at top level
+- No integration tests validated that configured values were actually used
+- Unit tests mocked configs incorrectly, masking the issue
+
+### The Impact
+- **All preset configurations broken** - medical, financial, etc. using default values
+- **All security thresholds ignored** - using hardcoded defaults instead
+- **436 tests passed** but core functionality was broken
+- Demo and CLI showing incorrect behavior
+
+### Lesson Learned
+**Unit tests aren't enough - integration tests are critical!**
+
+1. Always test that configured values are actually used, not just that code runs
+2. Test the actual config structure that will be used in production
+3. End-to-end testing of presets with known inputs/outputs is essential
+4. A passing test suite doesn't mean the system works correctly
+
+### Prevention
+1. Config validation tests for every guardrail
+2. Integration tests that verify config passing through pipeline
+3. End-to-end tests for all presets
+4. Standardized config parsing in base classes
