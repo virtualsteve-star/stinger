@@ -7,11 +7,10 @@ including rate limiting, logging context, and conversation history.
 
 import logging
 import threading
-import time
 import uuid
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 
 from .input_validation import ValidationError, validate_conversation_limits, validate_input_content
 

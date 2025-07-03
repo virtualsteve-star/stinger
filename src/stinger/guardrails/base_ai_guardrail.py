@@ -44,9 +44,11 @@ class BaseAIGuardrail(GuardrailInterface):
 
         # Handle nested config structure from pipeline configuration
         nested_config = config.get("config", {})
-        
+
         # Configuration
-        self.confidence_threshold = nested_config.get("confidence_threshold", config.get("confidence_threshold", default_confidence_threshold))
+        self.confidence_threshold = nested_config.get(
+            "confidence_threshold", config.get("confidence_threshold", default_confidence_threshold)
+        )
         self.on_error = config.get("on_error", default_on_error)
 
         # Use centralized API key manager instead of config
@@ -81,7 +83,6 @@ class BaseAIGuardrail(GuardrailInterface):
     @abstractmethod
     def get_analysis_prompt(self) -> str:
         """Get the prompt template for AI analysis. Must be implemented by subclasses."""
-        pass
 
     @abstractmethod
     def parse_ai_response(self, data: Dict[str, Any]) -> Tuple[bool, list, float]:
@@ -94,12 +95,10 @@ class BaseAIGuardrail(GuardrailInterface):
         Returns:
             Tuple of (detected, categories_list, confidence)
         """
-        pass
 
     @abstractmethod
     def get_categories_field_name(self) -> str:
         """Get the name of the categories field for this guardrail type."""
-        pass
 
     def get_validation_rules(self) -> List[ValidationRule]:
         """Get validation rules for AI guardrails."""

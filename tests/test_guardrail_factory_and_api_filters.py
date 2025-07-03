@@ -4,7 +4,6 @@ Guardrail Factory, Registry, and API-based Filter Tests
 Tests for the extensible guardrail/filter system, including legacy adapters and OpenAI-based filters.
 """
 
-import asyncio
 from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 import pytest
@@ -272,7 +271,6 @@ class TestGuardrailFactoryAndAPIFilters:
         """Test prompt injection filter when OpenAI is available."""
         try:
             from src.stinger.guardrails.prompt_injection_guardrail import (
-                InjectionResult,
                 PromptInjectionGuardrail,
             )
 

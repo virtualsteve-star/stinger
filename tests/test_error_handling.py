@@ -369,13 +369,11 @@ class TestIntegrationWithExistingCode:
         """Test that audit log error handling uses safe messages."""
         # This would test the actual audit.py integration
         # but requires the audit module to be importable
-        pass
 
     def test_prompt_injection_filter_error_handling(self):
         """Test that prompt injection filter uses safe error handling."""
         # This would test the actual filter integration
         # but requires the filter to be importable and configured
-        pass
 
 
 if __name__ == "__main__":

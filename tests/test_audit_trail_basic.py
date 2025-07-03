@@ -8,7 +8,6 @@ import json
 import os
 import sys
 import tempfile
-from pathlib import Path
 from unittest.mock import patch
 
 import pytest
@@ -252,9 +251,6 @@ class TestAuditTrailBasic:
 
     def test_stinger_audit_import(self):
         """Test that audit can be imported from main stinger package."""
-        # This should work
-        import stinger
-
         # Should be able to access audit module
         assert hasattr(stinger, "audit")
         assert hasattr(stinger.audit, "enable")

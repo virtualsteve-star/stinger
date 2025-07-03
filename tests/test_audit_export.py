@@ -9,14 +9,12 @@ import json
 import os
 import sys
 import tempfile
-from pathlib import Path
 
 import pytest
 
 # Add src to path for testing
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
-import stinger
 from stinger.core import audit
 
 

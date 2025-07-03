@@ -6,7 +6,6 @@ and ensure system stability under high load.
 """
 
 import os
-import sys
 import time
 from dataclasses import dataclass
 from pathlib import Path
@@ -25,13 +24,9 @@ except ImportError:
 class ValidationError(Exception):
     """Raised when input validation fails."""
 
-    pass
-
 
 class ResourceExhaustionError(ValidationError):
     """Raised when resource limits would be exceeded."""
-
-    pass
 
 
 @dataclass

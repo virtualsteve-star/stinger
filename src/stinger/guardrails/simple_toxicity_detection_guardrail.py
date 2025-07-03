@@ -55,9 +55,13 @@ class SimpleToxicityDetectionGuardrail(GuardrailInterface):
 
         # Handle nested config structure from pipeline configuration
         nested_config = config.get("config", {})
-        
-        self.enabled_categories = nested_config.get("categories", config.get("categories", list(self.toxicity_patterns.keys())))
-        self.confidence_threshold = nested_config.get("confidence_threshold", config.get("confidence_threshold", 0.7))
+
+        self.enabled_categories = nested_config.get(
+            "categories", config.get("categories", list(self.toxicity_patterns.keys()))
+        )
+        self.confidence_threshold = nested_config.get(
+            "confidence_threshold", config.get("confidence_threshold", 0.7)
+        )
         self.on_error = config.get("on_error", "block")
 
         # Category name mappings for common variations
@@ -66,7 +70,7 @@ class SimpleToxicityDetectionGuardrail(GuardrailInterface):
             "sexual": "sexual_harassment",
             "threat": "threats",
         }
-        
+
         # Validate enabled categories - filter out unknown categories and map common variations
         valid_categories = []
         for category in self.enabled_categories:
@@ -74,7 +78,10 @@ class SimpleToxicityDetectionGuardrail(GuardrailInterface):
             if category in self.toxicity_patterns:
                 valid_categories.append(category)
             # Check for mapped variation
-            elif category in category_mappings and category_mappings[category] in self.toxicity_patterns:
+            elif (
+                category in category_mappings
+                and category_mappings[category] in self.toxicity_patterns
+            ):
                 valid_categories.append(category_mappings[category])
             else:
                 logger.warning(f"Unknown toxicity category '{category}' in filter '{name}'")
@@ -114,11 +121,18 @@ class SimpleToxicityDetectionGuardrail(GuardrailInterface):
                         detected_toxicity.append(category)
                         # Calculate confidence based on category and number of matches
                         # Higher base confidence for more serious categories
-                        if category in ["hate_speech", "harassment", "threats", "sexual_harassment"]:
+                        if category in [
+                            "hate_speech",
+                            "harassment",
+                            "threats",
+                            "sexual_harassment",
+                        ]:
                             base_confidence = 0.6
                         else:
                             base_confidence = 0.3
-                        confidence_scores[category] = min(0.95, base_confidence + category_matches * 0.15)
+                        confidence_scores[category] = min(
+                            0.95, base_confidence + category_matches * 0.15
+                        )
 
             if detected_toxicity:
                 max_confidence = max(confidence_scores.values())

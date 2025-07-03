@@ -49,13 +49,17 @@ class TopicGuardrail(GuardrailInterface):
 
         # Handle nested config structure from pipeline configuration
         nested_config = config.get("config", {})
-        
+
         self.allow_topics = nested_config.get("allow_topics", config.get("allow_topics", []))
         self.deny_topics = nested_config.get("deny_topics", config.get("deny_topics", []))
         self.mode = nested_config.get("mode", config.get("mode", "deny"))
-        self.case_sensitive = nested_config.get("case_sensitive", config.get("case_sensitive", False))
+        self.case_sensitive = nested_config.get(
+            "case_sensitive", config.get("case_sensitive", False)
+        )
         self.use_regex = nested_config.get("use_regex", config.get("use_regex", False))
-        self.confidence_threshold = nested_config.get("confidence_threshold", config.get("confidence_threshold", 0.5))
+        self.confidence_threshold = nested_config.get(
+            "confidence_threshold", config.get("confidence_threshold", 0.5)
+        )
 
         # Compile regex patterns if needed
         self._compiled_allow_patterns: List[re.Pattern] = []
@@ -286,41 +290,6 @@ class TopicGuardrail(GuardrailInterface):
             "deny_topics_count": len(self.deny_topics),
             "compiled_patterns": len(self._compiled_allow_patterns)
             + len(self._compiled_deny_patterns),
-        }
-
-    def analyze(self, content: str) -> Dict[str, Any]:
-        """
-        Analyze content for topic matches (GuardrailInterface compatibility).
-
-        Args:
-            content: Content to analyze
-
-        Returns:
-            Analysis results with topic matches and confidence
-        """
-        if not content:
-            return {"matches": [], "confidence": 0.0, "details": {"empty_content": True}}
-
-        # Find matches
-        allow_matches = self._find_matches(
-            content, self._compiled_allow_patterns, self.allow_topics
-        )
-        deny_matches = self._find_matches(content, self._compiled_deny_patterns, self.deny_topics)
-
-        # Calculate confidence
-        total_matches = len(allow_matches) + len(deny_matches)
-        total_topics = len(self.allow_topics) + len(self.deny_topics)
-        confidence = min(1.0, total_matches / max(total_topics, 1)) if total_topics > 0 else 0.0
-
-        return {
-            "matches": {"allow": allow_matches, "deny": deny_matches},
-            "confidence": confidence,
-            "details": {
-                "mode": self.mode,
-                "allow_topics_count": len(self.allow_topics),
-                "deny_topics_count": len(self.deny_topics),
-                "total_matches": total_matches,
-            },
         }
 
     async def analyze(

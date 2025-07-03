@@ -13,7 +13,6 @@ Tests cover:
 
 import asyncio
 import re
-from unittest.mock import Mock
 
 import pytest
 
@@ -249,7 +248,7 @@ class TestRegexFilter:
 
         for config in valid_configs:
             config["on_error"] = "allow"
-            guardrail_instance = RegexGuardrail(config)
+            RegexGuardrail(config)
             # Should not raise an exception during initialization
 
     def test_config_validation_failure(self):

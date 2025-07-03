@@ -9,7 +9,6 @@ of handling 1000+ requests/second with zero pipeline impact.
 import os
 import sys
 import tempfile
-import threading
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 

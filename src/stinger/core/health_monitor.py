@@ -5,16 +5,14 @@ This module provides comprehensive health monitoring capabilities for the Stinge
 framework, including system status, filter health, error tracking, and performance metrics.
 """
 
-import asyncio
 import logging
 import threading
 import time
 from collections import deque
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 
-from ..adapters.openai_adapter import OpenAIAdapter
 from .api_key_manager import APIKeyManager
 from .pipeline import GuardrailPipeline
 from .rate_limiter import get_global_rate_limiter

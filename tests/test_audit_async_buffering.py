@@ -10,17 +10,13 @@ import sys
 import tempfile
 import threading
 import time
-from pathlib import Path
-from unittest.mock import patch
 
 import pytest
 
 # Add src to path for testing
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
-import stinger
 from stinger.core import audit
-from stinger.core.conversation import Conversation
 
 
 class TestAsyncBuffering:
@@ -249,7 +245,7 @@ class TestAsyncBuffering:
 
             # Simulate file system error by removing file permissions
             # This tests the error handling in background writer
-            trail = audit._audit_trail
+            audit._audit_trail
 
             # Log an event normally first
             audit.log_prompt("Normal event", user_id="user1")
@@ -272,7 +268,7 @@ class TestAsyncBuffering:
                 assert audit.is_enabled()
 
                 # Check stats for dropped events due to errors
-                stats = audit.get_stats()
+                audit.get_stats()
                 # Some events may be dropped due to write failures
 
             finally:

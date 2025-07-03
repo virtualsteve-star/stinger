@@ -4,7 +4,6 @@ Shows a welcome message and guides users through initial setup.
 """
 
 import os
-import sys
 from pathlib import Path
 from typing import Optional
 

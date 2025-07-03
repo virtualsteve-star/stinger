@@ -7,7 +7,7 @@ This filter uses OpenAI's content moderation API to detect and block inappropria
 import logging
 from typing import Any, Dict, List, Optional
 
-from ..adapters.openai_adapter import ModerationResult, OpenAIAdapter
+from ..adapters.openai_adapter import OpenAIAdapter
 from ..core.api_key_manager import APIKeyManager
 from ..core.config_validator import AI_GUARDRAIL_RULES, ValidationRule
 from ..core.conversation import Conversation
@@ -25,13 +25,20 @@ class ContentModerationGuardrail(GuardrailInterface):
 
         # Handle nested config structure from pipeline configuration
         nested_config = config.get("config", {})
-        
+
         # Configuration
-        self.confidence_threshold = nested_config.get("confidence_threshold", config.get("confidence_threshold", 0.7))
-        self.block_categories = nested_config.get(
-            "block_categories", config.get("block_categories", ["hate", "harassment", "self_harm", "sexual", "violence"])
+        self.confidence_threshold = nested_config.get(
+            "confidence_threshold", config.get("confidence_threshold", 0.7)
         )
-        self.warn_categories = nested_config.get("warn_categories", config.get("warn_categories", []))
+        self.block_categories = nested_config.get(
+            "block_categories",
+            config.get(
+                "block_categories", ["hate", "harassment", "self_harm", "sexual", "violence"]
+            ),
+        )
+        self.warn_categories = nested_config.get(
+            "warn_categories", config.get("warn_categories", [])
+        )
         self.on_error = config.get("on_error", "allow")  # 'allow', 'block', 'warn'
 
         # API setup
@@ -96,7 +103,7 @@ class ContentModerationGuardrail(GuardrailInterface):
 
             # Determine if content should be blocked
             should_block = len(blocked_categories) > 0
-            should_warn = len(warned_categories) > 0 and not should_block
+            len(warned_categories) > 0 and not should_block
 
             # Create result
             reason = self._build_reason(blocked_categories, warned_categories, max_score)

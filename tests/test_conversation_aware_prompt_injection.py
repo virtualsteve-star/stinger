@@ -5,14 +5,12 @@ This module tests the enhanced prompt injection detection with conversation cont
 including multi-turn pattern detection, context strategies, and performance.
 """
 
-import asyncio
 import sys
-from datetime import datetime
 from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
 
-from src.stinger.core.conversation import Conversation, Turn
+from src.stinger.core.conversation import Conversation
 from src.stinger.core.guardrail_interface import GuardrailResult
 from src.stinger.guardrails.prompt_injection_guardrail import (
     InjectionResult,
@@ -388,7 +386,7 @@ class TestPerformance:
                     import time
 
                     start_time = time.time()
-                    turns = guardrail_instance._get_relevant_context(conversation)
+                    guardrail_instance._get_relevant_context(conversation)
                     performance_results[strategy] = time.time() - start_time
 
                 # All strategies should be reasonably fast

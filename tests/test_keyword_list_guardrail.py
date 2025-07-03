@@ -6,7 +6,6 @@ Tests all functionality including inline keywords, file loading, and error handl
 
 import os
 import tempfile
-from pathlib import Path
 
 import pytest
 

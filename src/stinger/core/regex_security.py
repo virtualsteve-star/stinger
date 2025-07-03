@@ -41,8 +41,6 @@ class RegexSecurityConfig:
 class SecurityError(Exception):
     """Raised when a security constraint is violated."""
 
-    pass
-
 
 class RegexSecurityValidator:
     """Validates regex patterns for security vulnerabilities."""

@@ -109,7 +109,6 @@ class GuardrailInterface(ABC):
         Returns:
             GuardrailResult with analysis details
         """
-        pass
 
     async def analyze_safe(self, content: str) -> GuardrailResult:
         """Analyze content with input validation and error handling."""
@@ -162,7 +161,6 @@ class GuardrailInterface(ABC):
     @abstractmethod
     def is_available(self) -> bool:
         """Check if this guardrail is available/healthy."""
-        pass
 
     def is_enabled(self) -> bool:
         """Check if this guardrail is enabled."""
@@ -179,7 +177,6 @@ class GuardrailInterface(ABC):
     @abstractmethod
     def get_config(self) -> Dict[str, Any]:
         """Get current configuration of this guardrail."""
-        pass
 
     @abstractmethod
     def get_validation_rules(self) -> List[ValidationRule]:
@@ -188,7 +185,6 @@ class GuardrailInterface(ABC):
         Returns:
             List of ValidationRule objects defining the validation schema
         """
-        pass
 
     def get_config_validator(self) -> ConfigValidator:
         """Get the configuration validator for this guardrail.
@@ -215,7 +211,6 @@ class GuardrailInterface(ABC):
     @abstractmethod
     def update_config(self, config: Dict[str, Any]) -> bool:
         """Update configuration of this guardrail."""
-        pass
 
 
 class GuardrailRegistry:

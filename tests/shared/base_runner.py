@@ -3,12 +3,11 @@ Shared base classes for integration test scenarios.
 Provides common functionality for running conversation-based tests.
 """
 
-import asyncio
 import json
 import os
 import sys
 from collections import defaultdict
-from typing import Dict, List, Optional
+from typing import Dict, List
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 
@@ -197,7 +196,7 @@ class BaseConversationSimulator:
         # Conversation breakdown
         print(f"\nConversation Breakdown:")
         for conv_id, conv_data in results["conversations"].items():
-            conv_total = len(conv_data["messages"])
+            len(conv_data["messages"])
             print(
                 f"  {conv_id}: {conv_data['allowed_count']}✅ {conv_data['warned_count']}⚠️ {conv_data['blocked_count']}🚫"
             )
@@ -221,7 +220,7 @@ class BaseConversationSimulator:
                 try:
                     result = await self.pipeline.process(test_input)
                     action = result.action
-                except Exception as e:
+                except Exception:
                     action = "error"
 
                 tag = {

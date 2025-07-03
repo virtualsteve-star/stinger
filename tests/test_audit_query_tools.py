@@ -4,11 +4,9 @@ Tests for audit trail query tools.
 Tests the development query and analysis tools.
 """
 
-import json
 import os
 import sys
 import tempfile
-from pathlib import Path
 
 import pytest
 

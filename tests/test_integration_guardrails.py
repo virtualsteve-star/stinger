@@ -5,8 +5,6 @@ Tests integration of all Phase 5a filters with the universal guardrail interface
 factory registration, and pipeline integration.
 """
 
-import asyncio
-
 import pytest
 
 from src.stinger.core.guardrail_factory import create_guardrail_from_config, register_all_factories
@@ -147,7 +145,7 @@ class TestPhase5aIntegration:
             assert isinstance(config, dict)
 
             # Test enable/disable
-            original_enabled = guardrail_instance.is_enabled()
+            guardrail_instance.is_enabled()
             guardrail_instance.disable()
             assert guardrail_instance.is_enabled() is False
             guardrail_instance.enable()

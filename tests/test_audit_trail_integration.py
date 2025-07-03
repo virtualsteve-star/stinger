@@ -9,7 +9,6 @@ import json
 import os
 import sys
 import tempfile
-from pathlib import Path
 
 import pytest
 
@@ -156,7 +155,7 @@ class TestAuditTrailIntegration:
             # Test with potentially problematic content that might trigger a filter
             test_content = "This is a test message with potentially problematic content"
 
-            input_result = pipeline.check_input(test_content)
+            pipeline.check_input(test_content)
 
             # Disable audit and check the logs
             audit.disable()
@@ -197,8 +196,8 @@ class TestAuditTrailIntegration:
             # Test with PII content
             pii_content = "My email is john@example.com and my phone is 555-123-4567"
 
-            input_result = pipeline.check_input(pii_content)
-            output_result = pipeline.check_output("Thank you for the information.")
+            pipeline.check_input(pii_content)
+            pipeline.check_output("Thank you for the information.")
 
             # Disable audit and check the logs
             audit.disable()
@@ -253,7 +252,7 @@ class TestAuditTrailIntegration:
             pipeline = stinger.create_pipeline()
 
             # Test normal operation
-            input_result = pipeline.check_input("Normal test message")
+            pipeline.check_input("Normal test message")
 
             # Disable audit and check for any error handling
             audit.disable()

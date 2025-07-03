@@ -11,15 +11,13 @@ import os
 import re
 import sys
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Dict, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, Optional
 
 import yaml
 
 
 class SecurityError(Exception):
     """Raised when security constraints are violated."""
-
-    pass
 
 
 # Optional encryption - will be added when cryptography is available

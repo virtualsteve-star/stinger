@@ -7,7 +7,6 @@ and regex security validation.
 """
 
 import re
-import time
 from unittest.mock import patch
 
 import pytest
@@ -238,7 +237,7 @@ class TestReDoSAttackSimulation:
     def test_alternation_overlap_attack(self):
         """Simulate alternation overlap ReDoS attack."""
         attack_pattern = r"(a|a)*b"
-        attack_text = "a" * 25 + "c"
+        "a" * 25 + "c"
 
         validator = RegexSecurityValidator()
 

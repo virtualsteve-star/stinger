@@ -5,8 +5,6 @@ Tests pattern matching accuracy, configuration options, and error handling
 for the regex-based toxicity detection filter.
 """
 
-import asyncio
-
 import pytest
 
 from src.stinger.core.guardrail_interface import GuardrailType

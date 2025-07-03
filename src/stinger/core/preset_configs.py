@@ -232,7 +232,12 @@ class PresetConfigs:
                         "enabled": True,
                         "on_error": "block",
                         "config": {
-                            "categories": ["hate_speech", "harassment", "violence", "sexual_harassment"],
+                            "categories": [
+                                "hate_speech",
+                                "harassment",
+                                "violence",
+                                "sexual_harassment",
+                            ],
                             "confidence_threshold": 0.6,
                         },
                     },
@@ -314,7 +319,7 @@ class PresetConfigs:
                         "on_error": "block",
                         "config": {
                             "risk_threshold": 60,
-                            "block_levels": ["medium", "high", "critical"]
+                            "block_levels": ["medium", "high", "critical"],
                         },
                     },
                 ],

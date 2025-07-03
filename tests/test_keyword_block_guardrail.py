@@ -11,7 +11,6 @@ Tests cover:
 """
 
 import asyncio
-from unittest.mock import Mock
 
 import pytest
 
@@ -90,7 +89,7 @@ class TestKeywordBlockFilter:
         # Now that validation is enforced, we expect this to fail
         with pytest.raises(ValueError, match="Required field 'keyword' is missing"):
             config = {"on_error": "allow"}  # No keyword
-            guardrail_instance = KeywordBlockGuardrail(config)
+            KeywordBlockGuardrail(config)
 
     @pytest.mark.asyncio
     async def test_empty_keyword_configured(self):
@@ -98,7 +97,7 @@ class TestKeywordBlockFilter:
         # Validation now prevents empty keywords
         with pytest.raises(ValueError, match="keyword must have length >= 1"):
             config = {"keyword": "", "on_error": "allow"}
-            guardrail_instance = KeywordBlockGuardrail(config)
+            KeywordBlockGuardrail(config)
 
     @pytest.mark.asyncio
     async def test_whitespace_keyword(self):

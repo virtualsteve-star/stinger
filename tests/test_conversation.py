@@ -6,9 +6,8 @@ Tests conversation management, rate limiting, serialization, and edge cases.
 
 import sys
 import time
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
-from unittest.mock import patch
 
 import pytest
 

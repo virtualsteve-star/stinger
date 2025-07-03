@@ -39,6 +39,26 @@ This rule is non-negotiable for code safety and review process.
 - Follow Python best practices and PEP 8 style guidelines
 - The codebase should be a pleasure to work with
 
+### 4.1. Pragmatic Linting Strategy
+- **Focus on real issues, not style preferences**
+- Use `.flake8` config to ignore style-only issues:
+  - E203, W503: Black compatibility
+  - E712: True/False comparisons (style preference)
+  - F541: f-strings without placeholders (minor)
+  - E402: Import order in tests (needed for sys.path)
+  - W293: Whitespace on blank lines (trivial)
+  - E501: Long lines (many valid reasons)
+- **Must fix actual bugs and code smells:**
+  - F401: Unused imports in src/ (real code smell)
+  - F841: Unused variables in src/ (real code smell)
+  - E722: Bare except (security risk)
+  - F811: Redefinitions (actual bugs)
+- **Per-file ignores:**
+  - Tests can have unused variables (F841)
+  - Complex functions marked as legitimately complex (C901)
+- **Benefits:** CI focuses on real issues, developers aren't blocked by pedantic style checks
+- **Philosophy:** Pragmatic quality over perfect style
+
 ## Testing Philosophy
 
 ### 5. Test Quality Over Quantity

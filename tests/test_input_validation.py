@@ -5,7 +5,6 @@ Tests for Input Validation System
 Verifies comprehensive input validation and resource protection.
 """
 
-import os
 import time
 from unittest.mock import MagicMock, patch
 

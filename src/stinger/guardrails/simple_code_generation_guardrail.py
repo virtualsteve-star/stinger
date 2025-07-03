@@ -63,9 +63,13 @@ class SimpleCodeGenerationGuardrail(GuardrailInterface):
 
         # Handle nested config structure from pipeline configuration
         nested_config = config.get("config", {})
-        
-        self.enabled_categories = nested_config.get("categories", config.get("categories", list(self.code_patterns.keys())))
-        self.confidence_threshold = nested_config.get("confidence_threshold", config.get("confidence_threshold", 0.6))
+
+        self.enabled_categories = nested_config.get(
+            "categories", config.get("categories", list(self.code_patterns.keys()))
+        )
+        self.confidence_threshold = nested_config.get(
+            "confidence_threshold", config.get("confidence_threshold", 0.6)
+        )
         self.min_keywords = nested_config.get("min_keywords", config.get("min_keywords", 3))
         self.on_error = config.get("on_error", "warn")
 

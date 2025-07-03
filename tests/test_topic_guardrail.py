@@ -10,7 +10,6 @@ This module tests the topic filtering capabilities including allow/deny lists,
 different modes, regex support, and edge cases.
 """
 
-import asyncio
 
 import pytest
 

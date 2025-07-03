@@ -25,11 +25,15 @@ class RegexGuardrail(GuardrailInterface):
 
         # Handle nested config structure from pipeline configuration
         nested_config = config.get("config", {})
-        
+
         self.patterns = nested_config.get("patterns", config.get("patterns", []))
-        self.action = nested_config.get("action", config.get("action", "block"))  # 'block', 'allow', 'warn'
+        self.action = nested_config.get(
+            "action", config.get("action", "block")
+        )  # 'block', 'allow', 'warn'
         self.flags = nested_config.get("flags", config.get("flags", 0))
-        self.case_sensitive = nested_config.get("case_sensitive", config.get("case_sensitive", True))
+        self.case_sensitive = nested_config.get(
+            "case_sensitive", config.get("case_sensitive", True)
+        )
 
         # Initialize security validator
         self.security_validator = RegexSecurityValidator()
