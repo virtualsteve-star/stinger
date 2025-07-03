@@ -60,9 +60,9 @@ async def run_test_suite(config_path: str, test_corpus_path: str, suite_name: st
         print("❌ No valid filters created!")
         return False
 
-    # Create pipeline
-    pipeline = GuardrailPipeline(guardrails)
-    print(f"✅ Pipeline created with {len(filters)} filters")
+    # Create pipeline using the config file directly
+    pipeline = GuardrailPipeline(config_path)
+    print(f"✅ Pipeline created with {len(guardrails)} filters")
 
     # Load test cases
     test_cases = load_jsonl(test_corpus_path)
@@ -80,14 +80,14 @@ async def run_test_suite(config_path: str, test_corpus_path: str, suite_name: st
         description = case.get("description", "No description")
 
         try:
-            result = await pipeline.process(test_input)
-            if result.blocked == expected:
+            result = await pipeline.check_input_async(test_input)
+            if result["blocked"] == expected:
                 print(f"✅ Test {i:2d}: PASS - {description}")
                 passed += 1
             else:
                 print(f"❌ Test {i:2d}: FAIL - {description}")
-                print(f"   Expected: {expected}, Got: {result.blocked}")
-                print(f"   Reason: {result.reason}")
+                print(f"   Expected: {expected}, Got: {result['blocked']}")
+                print(f"   Reason: {result['reasons']}")
         except Exception as e:
             print(f"💥 Test {i:2d}: ERROR - {description}")
             print(f"   Error: {str(e)}")
