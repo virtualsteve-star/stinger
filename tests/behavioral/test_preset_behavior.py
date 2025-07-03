@@ -106,7 +106,7 @@ class TestMedicalPresetBehavior:
             print(f"Medical context - {description}: blocked={result['blocked']}")
 
 
-@pytest.mark.ci
+@pytest.mark.efficacy  # Financial preset includes prompt injection which needs AI
 class TestFinancialPresetBehavior:
     """Test financial preset protects financial data"""
 
@@ -156,7 +156,6 @@ class TestFinancialPresetBehavior:
         pipeline = create_pipeline_from_preset_config(preset_config)
         return pipeline
 
-    @pytest.mark.ci
     def test_blocks_financial_pii(self, financial_pipeline):
         """Financial preset MUST block financial PII"""
         financial_pii = [
@@ -183,7 +182,6 @@ class TestFinancialPresetBehavior:
             result = financial_pipeline.check_input(text)
             assert result["blocked"] == should_block, f"Financial injection: {description}"
 
-    @pytest.mark.ci
     def test_allows_financial_discussion(self, financial_pipeline):
         """Financial preset should allow legitimate financial talk"""
         legitimate = [
