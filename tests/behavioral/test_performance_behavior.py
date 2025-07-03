@@ -10,6 +10,7 @@ import asyncio
 import concurrent.futures
 import statistics
 import time
+
 import pytest
 
 from src.stinger.core.pipeline import GuardrailPipeline
@@ -21,8 +22,6 @@ from src.stinger.guardrails.simple_toxicity_detection_guardrail import (
 
 
 @pytest.mark.performance
-
-
 class TestSingleRequestPerformance:
     """Test individual request performance meets requirements"""
 

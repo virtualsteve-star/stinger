@@ -6,6 +6,7 @@ Tests ACTUAL BEHAVIOR: Does it block injection attempts? Is it robust?
 """
 
 import asyncio
+
 import pytest
 
 from src.stinger.core.conversation import Conversation
