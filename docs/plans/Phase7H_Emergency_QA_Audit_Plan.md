@@ -1,5 +1,25 @@
 # Phase 7H: Emergency QA Audit Plan - Behavioral Validation Focus
 
+## 🚨🚨🚨 **CRITICAL EXECUTION RULE** 🚨🚨🚨
+
+### **===============================================**
+### **PHASE 7H EXECUTION: CREATE TESTS ONLY**
+### **===============================================**
+
+**🛑 DO NOT MODIFY PRODUCTION CODE 🛑**
+
+1. **CREATE** comprehensive behavioral test suite
+2. **EXAMINE** codebase to understand behavior
+3. **DO NOT FIX** any bugs found
+4. **DO NOT MODIFY** any guardrail code
+5. **DOCUMENT** all failing tests for review
+
+**We will fix bugs ONLY after test suite is reviewed and approved.**
+
+### **===============================================**
+
+---
+
 **Purpose:** Validate that ALL guardrails actually protect users as documented, not just that configs are parsed correctly.
 
 **Trigger:** Critical PII detection bug revealed that 436 passing tests didn't verify actual security functionality.
