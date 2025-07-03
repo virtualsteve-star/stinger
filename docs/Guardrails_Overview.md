@@ -334,7 +334,10 @@ config = {
 - `conversation_awareness`: Enable multi-turn analysis
 - `context_strategy`: "recent", "suspicious", or "mixed"
 
-**Performance**: ~3.2s (measured, with conversation analysis)
+**Performance**: 
+- **Regular mode**: ~2.1s (measured)
+- **Conversation-aware**: ~2.3s (measured, +10% overhead)
+- **With suspicious context**: ~1.8s (measured, faster due to early detection)
 
 **Example Usage**:
 ```python
@@ -506,7 +509,9 @@ AI guardrails require API calls to OpenAI. Performance depends on:
 | AI Toxicity | 885ms | GPT model analysis |
 | AI Code Generation | 913ms | GPT model analysis |
 | AI PII | 1,546ms | GPT model analysis (most complex) |
-| Prompt Injection | 3,190ms | Most complex, includes conversation analysis |
+| Prompt Injection (Regular) | 2,110ms | Basic prompt injection detection |
+| Prompt Injection (Conversation) | 2,319ms | +10% overhead for conversation analysis |
+| Prompt Injection (Suspicious) | 1,765ms | Faster when suspicious context detected |
 | Pass Through | <0.1ms | No-op filter (negligible) |
 | Topic Filter | ~0.11ms* | Similar to keyword matching |
 
@@ -515,7 +520,10 @@ AI guardrails require API calls to OpenAI. Performance depends on:
 **Performance Notes:**
 - **Content Moderation** is fastest among AI guardrails (~800ms)
 - **AI PII** takes longer due to comprehensive pattern analysis (~1.5s)
-- **Prompt Injection** is slowest due to conversation analysis (~3.2s)
+- **Prompt Injection** varies by mode:
+  - Regular mode: ~2.1s (basic detection)
+  - Conversation-aware: ~2.3s (+10% overhead for context analysis)
+  - With suspicious context: ~1.8s (faster due to early detection)
 - All AI guardrails are significantly slower than regex-based alternatives
 - Performance may vary based on network conditions and API load
 
