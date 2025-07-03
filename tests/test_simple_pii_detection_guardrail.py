@@ -11,6 +11,7 @@ from src.stinger.core.guardrail_interface import GuardrailType
 from src.stinger.guardrails.simple_pii_detection_guardrail import SimplePIIDetectionGuardrail
 
 
+@pytest.mark.ci  # This uses regex patterns, not AI
 class TestSimplePIIDetectionFilter:
     """Test cases for Simple PII Detection Filter."""
 
@@ -20,7 +21,7 @@ class TestSimplePIIDetectionFilter:
         return {
             "enabled": True,
             "patterns": ["ssn", "credit_card", "email", "phone", "ip_address"],
-            "confidence_threshold": 0.8,
+            "confidence_threshold": 0.9,
             "on_error": "block",
         }
 
@@ -36,7 +37,7 @@ class TestSimplePIIDetectionFilter:
         assert guardrail_instance.name == "test_filter"
         assert guardrail_instance.guardrail_type == GuardrailType.PII_DETECTION
         assert guardrail_instance.enabled is True
-        assert guardrail_instance.confidence_threshold == 0.8
+        assert guardrail_instance.confidence_threshold == 0.9
         assert guardrail_instance.on_error == "block"
 
         # Test with minimal config
@@ -245,7 +246,7 @@ class TestSimplePIIDetectionFilter:
         config = guardrail_instance.get_config()
         assert config["enabled"] is True
         assert "ssn" in config["patterns"]
-        assert config["confidence_threshold"] == 0.8
+        assert config["confidence_threshold"] == 0.9
         assert config["on_error"] == "block"
 
         # Test update_config

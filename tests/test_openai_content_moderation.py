@@ -1,11 +1,16 @@
 import asyncio
 import sys
+import pytest
 from pathlib import Path
 
 # Add src to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from src.stinger.guardrails.content_moderation_guardrail import ContentModerationGuardrail
+
+
+@pytest.mark.efficacy
+@pytest.mark.uses_ai
 
 
 async def test():

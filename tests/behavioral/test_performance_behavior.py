@@ -10,6 +10,7 @@ import asyncio
 import concurrent.futures
 import statistics
 import time
+import pytest
 
 from src.stinger.core.pipeline import GuardrailPipeline
 from src.stinger.guardrails.prompt_injection_guardrail import PromptInjectionGuardrail
@@ -17,6 +18,9 @@ from src.stinger.guardrails.simple_pii_detection_guardrail import SimplePIIDetec
 from src.stinger.guardrails.simple_toxicity_detection_guardrail import (
     SimpleToxicityDetectionGuardrail,
 )
+
+
+@pytest.mark.performance
 
 
 class TestSingleRequestPerformance:

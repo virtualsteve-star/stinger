@@ -6,11 +6,14 @@ Tests ACTUAL BEHAVIOR: Does it block injection attempts? Is it robust?
 """
 
 import asyncio
+import pytest
 
 from src.stinger.core.conversation import Conversation
 from src.stinger.guardrails.prompt_injection_guardrail import PromptInjectionGuardrail
 
 
+@pytest.mark.efficacy
+@pytest.mark.uses_ai
 class TestPromptInjectionBehavior:
     """Test prompt injection detection blocks actual attacks"""
 
