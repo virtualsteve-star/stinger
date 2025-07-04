@@ -177,9 +177,11 @@ Never assume or guess dates - always verify with the system date
 ### Manual Steps (if script unavailable)
 1. **Format code**: `black src/ tests/`
 2. **Fix imports**: `isort src/ tests/`
-3. **Check style**: `flake8 src/ tests/`
-4. **Run tests**: `pytest`
-5. **Check Python 3.8**: `python3.8 -m py_compile src/stinger/core/*.py`
+3. **Check style**: `flake8 src/ tests/ --max-line-length=100 --extend-ignore=E203,W503`
+4. **Run CI tests**: `pytest -m "ci"`
+5. **Run efficacy tests** (requires OPENAI_API_KEY): `pytest -m "efficacy"`
+6. **Run human verification**: `cd tests/human && python human_verification_test.py`
+7. **Check Python 3.8**: `python3.8 -m py_compile src/stinger/core/*.py`
 
 ### Pre-commit Hooks (Recommended)
 ```bash
@@ -237,24 +239,58 @@ Before submitting any changes:
 **Quality over speed. Architecture over quick fixes. Tests that actually test.**
 **No CI surprises - check locally first, then verify in cloud!**
 
+## Test Organization (Phase 9A)
+
+### Test Directory Structure
+Tests are organized by purpose and pytest markers:
+- `tests/ci/` - Fast CI tests marked with `@pytest.mark.ci`
+- `tests/efficacy/` - AI behavior tests marked with `@pytest.mark.efficacy`
+- `tests/performance/` - Performance tests marked with `@pytest.mark.performance`
+- `tests/integration/` - Integration and system tests
+- `tests/validation/` - Input validation and error handling
+- `tests/behavioral/` - Real-world usage patterns
+- `tests/human/` - Human verification tests with visual reports
+- `tests/` (root) - Unit tests for individual guardrails
+
+### Adding New Tests
+1. Place tests in appropriate directory based on type
+2. Add correct pytest markers
+3. Follow naming convention: `test_<feature>_<aspect>.py`
+4. For AI tests, mark as efficacy: `@pytest.mark.efficacy`
+
+### Test Runners
+We have ONE primary test runner:
+- `run_test_suites.py` - Runs pytest suites (CI, efficacy, performance)
+
+Note: `stinger_test_runner.py` is outdated and non-functional (looks for test_runner.py files that don't exist).
+The scenario test data in `tests/scenarios/` exists but lacks implementation.
+
 ## Common Development Commands
 
 ### Testing
 ```bash
-# Run all tests
-pytest tests/ -v
+# Three-tier testing strategy
+pytest -m "ci"          # Fast CI tests (<30s)
+pytest -m "efficacy"    # AI behavior tests (5-10min, needs OPENAI_API_KEY)
+pytest -m "performance" # Performance tests (10-30min)
+
+# Test runners for different purposes
+python run_test_suites.py fast      # Quick development tests
+python run_test_suites.py sanity    # AI sanity checks
+python run_test_suites.py all       # Everything before PR
+
+# Scenario testing (if needed, implement actual runners)
+# Note: stinger_test_runner.py is outdated and non-functional
+# The scenario test data exists but lacks runners
+
+# Human verification (visual test reports)
+cd tests/human && python human_verification_test.py
 
 # Run specific test file
 pytest tests/test_simple_pii_detection_guardrail.py -v
 
-# Run specific test
-pytest tests/test_integration.py::test_pipeline_with_all_guardrails -v
-
 # Run with coverage
 pytest tests/ -v --cov=src/stinger --cov-report=html
-
-# Run only fast tests (skip slow/integration tests)
-pytest tests/ -v -m "not slow"
 ```
 
 ### Building and Publishing
