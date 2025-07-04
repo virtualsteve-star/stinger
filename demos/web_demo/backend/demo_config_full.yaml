@@ -1,0 +1,110 @@
+version: "1.0"
+pipeline:
+  input:
+    # AI-powered guardrails
+    - name: ai_pii_detection
+      type: ai_pii_detection
+      enabled: true
+      risk_threshold: 70
+      block_levels: ["high", "critical"]
+      warn_levels: ["medium"]
+      on_error: "allow"
+    
+    - name: ai_toxicity_detection
+      type: ai_toxicity_detection
+      enabled: true
+      risk_threshold: 70
+      block_levels: ["high", "critical"]
+      warn_levels: ["medium"]
+      on_error: "allow"
+    
+    - name: prompt_injection
+      type: prompt_injection
+      enabled: true
+      risk_threshold: 70
+      block_levels: ["high", "critical"]
+      warn_levels: ["medium"]
+      on_error: "allow"
+    
+    # Simple/local guardrails
+    - name: simple_pii_detection
+      type: simple_pii_detection
+      enabled: false
+      risk_threshold: 80
+      block_levels: ["high", "critical"]
+      warn_levels: ["medium"]
+      on_error: "allow"
+    
+    - name: simple_toxicity_detection
+      type: simple_toxicity_detection
+      enabled: false
+      risk_threshold: 80
+      block_levels: ["high", "critical"]
+      warn_levels: ["medium"]
+      on_error: "allow"
+    
+    # Pattern-based guardrails
+    - name: keyword_block
+      type: keyword_block
+      enabled: true
+      keywords: ["banned_word", "forbidden_phrase"]
+      on_error: "allow"
+    
+    - name: regex_filter
+      type: regex_filter
+      enabled: true
+      patterns:
+        - "\\b(password|secret)\\s*=\\s*[\"'][^\"']+[\"']"
+      on_error: "allow"
+    
+    - name: url_filter
+      type: url_filter
+      enabled: true
+      blocked_domains: ["malicious.com", "phishing.net"]
+      allowed_domains: []
+      on_error: "allow"
+    
+    - name: length_filter
+      type: length_filter
+      enabled: true
+      max_length: 5000
+      min_length: 1
+      on_error: "allow"
+    
+    # Topic filter removed - not in current guardrail types
+    # Can be added when topic_filter is implemented
+
+  output:
+    # AI-powered guardrails
+    - name: ai_pii_detection_output
+      type: ai_pii_detection
+      enabled: true
+      risk_threshold: 70
+      block_levels: ["high", "critical"]
+      warn_levels: ["medium"]
+      on_error: "allow"
+    
+    - name: ai_code_generation
+      type: ai_code_generation
+      enabled: true
+      risk_threshold: 70
+      block_levels: ["high", "critical"]
+      warn_levels: ["medium"]
+      on_error: "allow"
+    
+    - name: ai_toxicity_detection_output
+      type: ai_toxicity_detection
+      enabled: false
+      risk_threshold: 70
+      block_levels: ["high", "critical"]
+      warn_levels: ["medium"]
+      on_error: "allow"
+    
+    # Simple/local guardrails
+    - name: simple_code_generation
+      type: simple_code_generation
+      enabled: false
+      risk_threshold: 80
+      block_levels: ["high", "critical"]
+      warn_levels: ["medium"]
+      on_error: "allow"

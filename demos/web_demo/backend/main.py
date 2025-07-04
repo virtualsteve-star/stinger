@@ -42,6 +42,7 @@ from stinger.core.conversation import Conversation
 from stinger.core import audit
 from stinger.core.api_key_manager import get_openai_key
 from stinger.adapters.openai_adapter import OpenAIAdapter
+from stinger.core.health_monitor import HealthMonitor
 
 # Pydantic models for request/response
 class ChatMessage(BaseModel):
@@ -121,6 +122,10 @@ def get_current_guardrail_settings(request: Request) -> Optional[GuardrailSettin
     """Get the current guardrail settings from app state."""
     return getattr(request.app.state, 'current_guardrail_settings', None)
 
+def get_health_monitor(request: Request) -> Optional[HealthMonitor]:
+    """Get the health monitor from app state."""
+    return getattr(request.app.state, 'health_monitor', None)
+
 
 # Define lifespan event handler
 @asynccontextmanager
@@ -159,8 +164,13 @@ async def lifespan(app: FastAPI):
         import yaml
         from stinger.core.pipeline import GuardrailPipeline
         
-        # Create YAML config with prompt injection filter
-        demo_config_yaml = """
+        # Load comprehensive demo configuration
+        config_file_path = Path(__file__).parent / "demo_config_full.yaml"
+        
+        # If the full config doesn't exist, create it
+        if not config_file_path.exists():
+            # Fallback to inline config
+            demo_config_yaml = """
 version: "1.0"
 pipeline:
   input:
@@ -208,13 +218,18 @@ pipeline:
 """
         
         try:
-            # Write config to temporary file
-            config_file = Path(tempfile.gettempdir()) / "demo_pipeline.yaml"
-            with open(config_file, 'w') as f:
-                f.write(demo_config_yaml)
-            
-            current_pipeline = GuardrailPipeline(str(config_file))
-            logger.info("✅ Custom demo pipeline with prompt injection loaded")
+            # Try to load the comprehensive config file first
+            if config_file_path.exists():
+                current_pipeline = GuardrailPipeline(str(config_file_path))
+                logger.info("✅ Comprehensive demo pipeline loaded with all 14+ guardrails")
+            else:
+                # Write fallback config to temporary file
+                config_file = Path(tempfile.gettempdir()) / "demo_pipeline.yaml"
+                with open(config_file, 'w') as f:
+                    f.write(demo_config_yaml)
+                
+                current_pipeline = GuardrailPipeline(str(config_file))
+                logger.info("✅ Basic demo pipeline loaded")
         except Exception as e:
             logger.warning(f"⚠️ Custom pipeline failed, falling back to preset: {e}")
             current_pipeline = GuardrailPipeline.from_preset("customer_service")
@@ -251,6 +266,10 @@ pipeline:
     
     # Initialize conversation
     app.state.current_conversation = None
+    
+    # Initialize HealthMonitor
+    app.state.health_monitor = HealthMonitor()
+    logger.info("✅ HealthMonitor initialized for performance tracking")
     
     logger.info("🚀 Stinger Web Demo backend ready!")
     
@@ -321,9 +340,12 @@ async def health_check(
 async def chat_endpoint(
     message: ChatMessage,
     pipeline: GuardrailPipeline = Depends(get_pipeline),
-    openai_adapter: Optional[OpenAIAdapter] = Depends(get_openai_adapter)
+    openai_adapter: Optional[OpenAIAdapter] = Depends(get_openai_adapter),
+    health_monitor: Optional[HealthMonitor] = Depends(get_health_monitor)
 ) -> ChatResponse:
     """Main chat endpoint that processes user input through guardrails and LLM."""
+    import time
+    start_time = time.time()
     
     # Get or create conversation
     conversation = getattr(app.state, 'current_conversation', None)
@@ -339,6 +361,12 @@ async def chat_endpoint(
     
     if input_result['blocked']:
         # Input was blocked by guardrails
+        
+        # Update performance metrics
+        if health_monitor:
+            response_time_ms = (time.time() - start_time) * 1000
+            health_monitor.update_performance_metrics(response_time_ms, blocked=True)
+        
         return ChatResponse(
             content="",
             blocked=True,
@@ -365,6 +393,7 @@ async def chat_endpoint(
                 temperature=0.7
             )
             response_content = response.choices[0].message.content or "I apologize, but I couldn't generate a response."
+            logger.info(f"OpenAI response content: {response_content[:100]}...")  # Debug log
             
             # Check output through guardrails (this automatically adds response to conversation)
             output_result = await check_output_async(pipeline, response_content, conversation)
@@ -380,8 +409,13 @@ async def chat_endpoint(
                     processing_details=output_result['details']
                 )
             
+            # Update performance metrics
+            if health_monitor:
+                response_time_ms = (time.time() - start_time) * 1000
+                health_monitor.update_performance_metrics(response_time_ms, blocked=False)
+            
             # Return successful response
-            return ChatResponse(
+            chat_response = ChatResponse(
                 content=response_content,
                 blocked=False,
                 warnings=input_result['warnings'] + output_result['warnings'],
@@ -392,6 +426,9 @@ async def chat_endpoint(
                     'output': output_result['details']
                 }
             )
+            logger.info(f"Returning chat response with content: {chat_response.content[:100]}...")  # Debug log
+            logger.info(f"Full response object: {chat_response.dict()}")  # More detailed debug
+            return chat_response
             
         except Exception as e:
             logger.error(f"Error generating response: {e}")
@@ -418,6 +455,11 @@ For now, this is a mock response demonstrating that guardrails are working corre
         
         # Check output through guardrails (this automatically adds response to conversation)
         output_result = await check_output_async(pipeline, mock_response, conversation)
+        
+        # Update performance metrics
+        if health_monitor:
+            response_time_ms = (time.time() - start_time) * 1000
+            health_monitor.update_performance_metrics(response_time_ms, blocked=False)
         
         return ChatResponse(
             content=mock_response,
@@ -496,6 +538,63 @@ async def update_guardrail_settings(
         logger.error(f"❌ Error updating guardrail settings: {e}")
         logger.error(f"Full traceback: {traceback.format_exc()}")
         raise HTTPException(status_code=500, detail=f"Failed to update guardrail settings: {str(e)}")
+
+
+@app.get("/api/debug/test")
+async def debug_test():
+    """Debug endpoint to test basic functionality."""
+    # Test ChatResponse serialization
+    test_response = ChatResponse(
+        content="This is a test message from the debug endpoint",
+        blocked=False,
+        warnings=["Test warning"],
+        reasons=[],
+        conversation_id="test-conversation-123",
+        processing_details={"test": "details"}
+    )
+    return test_response
+
+
+@app.post("/api/debug/chat")
+async def debug_chat(
+    message: ChatMessage,
+    openai_adapter: Optional[OpenAIAdapter] = Depends(get_openai_adapter)
+) -> dict:
+    """Debug endpoint to test OpenAI integration without guardrails."""
+    if not openai_adapter:
+        return {
+            "error": "OpenAI not configured",
+            "content": "OpenAI adapter not available"
+        }
+    
+    try:
+        # Direct OpenAI call
+        response = await openai_adapter.client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": "You are a helpful assistant."},
+                {"role": "user", "content": message.content}
+            ],
+            max_tokens=150,
+            temperature=0.7
+        )
+        
+        raw_content = response.choices[0].message.content
+        
+        return {
+            "raw_content": raw_content,
+            "content_type": str(type(raw_content)),
+            "content_length": len(raw_content) if raw_content else 0,
+            "is_none": raw_content is None,
+            "is_empty": raw_content == "",
+            "response_object": str(response.choices[0].message)
+        }
+        
+    except Exception as e:
+        return {
+            "error": str(e),
+            "type": str(type(e))
+        }
 
 
 @app.post("/api/preset")
@@ -602,6 +701,191 @@ async def get_conversation_info() -> dict:
         "turn_count": len(conversation.turns),
         "last_activity": conversation.last_activity.isoformat() if conversation.last_activity else None
     }
+
+
+@app.get("/api/test")
+async def test_endpoint() -> dict:
+    """Simple test endpoint to verify API is working."""
+    return {
+        "status": "ok",
+        "message": "API is working correctly",
+        "timestamp": datetime.now().isoformat()
+    }
+
+
+@app.post("/api/debug/chat")
+async def debug_chat_endpoint(message: ChatMessage) -> dict:
+    """Debug endpoint to test chat response format."""
+    return {
+        "content": f"Debug response: You said '{message.content}'",
+        "blocked": False,
+        "warnings": ["This is a debug endpoint"],
+        "reasons": [],
+        "conversation_id": "debug-conversation",
+        "processing_details": {"debug": True}
+    }
+
+
+@app.get("/api/performance")
+async def get_performance_metrics(
+    health_monitor: Optional[HealthMonitor] = Depends(get_health_monitor)
+) -> dict:
+    """Get performance metrics from health monitor."""
+    if not health_monitor:
+        return {
+            "status": "unavailable",
+            "message": "Health monitor not initialized"
+        }
+    
+    # Get performance metrics from health monitor
+    metrics = health_monitor.performance_metrics
+    
+    return {
+        "status": "ok",
+        "metrics": {
+            "total_requests": metrics.get("total_requests", 0),
+            "blocked_requests": metrics.get("blocked_requests", 0),
+            "avg_response_time_ms": round(metrics.get("avg_response_time_ms", 0), 2),
+            "peak_response_time_ms": round(metrics.get("peak_response_time_ms", 0), 2),
+            "last_request_time": metrics.get("last_request_time"),
+            "block_rate": round(metrics.get("blocked_requests", 0) / max(metrics.get("total_requests", 1), 1) * 100, 2)
+        }
+    }
+
+
+@app.get("/api/guardrails/details")
+async def get_guardrail_details(
+    pipeline: GuardrailPipeline = Depends(get_pipeline)
+) -> dict:
+    """Get detailed information about all available guardrails."""
+    
+    # Define guardrail descriptions for better UI
+    guardrail_descriptions = {
+        # AI-powered guardrails
+        "ai_pii_detection": {
+            "display_name": "AI PII Detection",
+            "description": "Uses AI to detect personally identifiable information like SSNs, credit cards, emails",
+            "category": "ai",
+            "type": "privacy"
+        },
+        "ai_toxicity_detection": {
+            "display_name": "AI Toxicity Detection", 
+            "description": "AI-powered detection of hate speech, threats, and toxic content",
+            "category": "ai",
+            "type": "safety"
+        },
+        "ai_code_generation": {
+            "display_name": "AI Code Generation Detection",
+            "description": "Detects attempts to generate potentially malicious code",
+            "category": "ai",
+            "type": "security"
+        },
+        "prompt_injection": {
+            "display_name": "Prompt Injection Detection",
+            "description": "Detects attempts to manipulate AI behavior through prompt injection",
+            "category": "ai",
+            "type": "security"
+        },
+        
+        # Simple/local guardrails
+        "simple_pii_detection": {
+            "display_name": "Regex PII Detection",
+            "description": "Fast regex-based detection of common PII patterns",
+            "category": "local",
+            "type": "privacy"
+        },
+        "simple_toxicity_detection": {
+            "display_name": "Keyword Toxicity Detection",
+            "description": "Fast keyword-based detection of inappropriate content",
+            "category": "local",
+            "type": "safety"
+        },
+        "simple_code_generation": {
+            "display_name": "Pattern Code Detection",
+            "description": "Pattern-based detection of code generation attempts",
+            "category": "local",
+            "type": "security"
+        },
+        
+        # Pattern-based guardrails
+        "keyword_block": {
+            "display_name": "Keyword Blocker",
+            "description": "Blocks specific keywords or phrases",
+            "category": "local",
+            "type": "filter"
+        },
+        "regex_filter": {
+            "display_name": "Regex Filter",
+            "description": "Filters content matching regex patterns",
+            "category": "local",
+            "type": "filter"
+        },
+        "url_filter": {
+            "display_name": "URL Filter",
+            "description": "Blocks or allows specific domains and URLs",
+            "category": "local",
+            "type": "filter"
+        },
+        "length_filter": {
+            "display_name": "Length Limiter",
+            "description": "Enforces minimum and maximum message lengths",
+            "category": "local",
+            "type": "filter"
+        },
+        "topic_filter": {
+            "display_name": "Topic Filter",
+            "description": "AI-based filtering of specific topics or themes",
+            "category": "ai",
+            "type": "filter"
+        }
+    }
+    
+    # Get current pipeline status
+    status = pipeline.get_guardrail_status()
+    
+    # Enhance guardrail info with descriptions
+    enhanced_info = {
+        "input_guardrails": [],
+        "output_guardrails": []
+    }
+    
+    for guardrail in status.get("input_guardrails", []):
+        name = guardrail["name"]
+        # Remove suffixes like _output, _input for matching
+        base_name = name.replace("_output", "").replace("_input", "")
+        
+        # Try to find description by type first, then by name
+        guardrail_type = guardrail.get("type", "")
+        description_info = guardrail_descriptions.get(guardrail_type) or guardrail_descriptions.get(base_name, {})
+        
+        enhanced_guardrail = {
+            **guardrail,
+            "display_name": description_info.get("display_name", name.replace("_", " ").title()),
+            "description": description_info.get("description", "Custom guardrail"),
+            "category": description_info.get("category", "custom"),
+            "guardrail_type": description_info.get("type", "filter")
+        }
+        enhanced_info["input_guardrails"].append(enhanced_guardrail)
+    
+    for guardrail in status.get("output_guardrails", []):
+        name = guardrail["name"]
+        # Remove suffixes like _output, _input for matching
+        base_name = name.replace("_output", "").replace("_input", "")
+        
+        # Try to find description by type first, then by name
+        guardrail_type = guardrail.get("type", "")
+        description_info = guardrail_descriptions.get(guardrail_type) or guardrail_descriptions.get(base_name, {})
+        
+        enhanced_guardrail = {
+            **guardrail,
+            "display_name": description_info.get("display_name", name.replace("_", " ").title()),
+            "description": description_info.get("description", "Custom guardrail"),
+            "category": description_info.get("category", "custom"),
+            "guardrail_type": description_info.get("type", "filter")
+        }
+        enhanced_info["output_guardrails"].append(enhanced_guardrail)
+    
+    return enhanced_info
 
 
 # Serve frontend files

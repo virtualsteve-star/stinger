@@ -721,11 +721,8 @@ class GuardrailPipeline:
                     reasons.append(f"{guardrail.name}: {result.reason}")
 
                 # Check if this should be a warning - only if the original action was 'warn'
-                # or if it's a high-confidence non-blocked result that isn't an explicit 'allow'
                 original_action = result.details.get("action", "")
-                if original_action == "warn" or (
-                    result.confidence > 0.5 and not result.blocked and original_action != "allow"
-                ):
+                if original_action == "warn":
                     warnings.append(f"{guardrail.name}: {result.reason}")
 
                 # Store detailed results
@@ -746,9 +743,7 @@ class GuardrailPipeline:
                 original_action = result.details.get("action", "")
                 if result.blocked:
                     decision = "block"
-                elif original_action == "warn" or (
-                    result.confidence > 0.5 and not result.blocked and original_action != "allow"
-                ):
+                elif original_action == "warn":
                     decision = "warn"
                 else:
                     decision = "allow"

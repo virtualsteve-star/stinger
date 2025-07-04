@@ -10,7 +10,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Determine backend URL based on environment or defaults
-const BACKEND_PROTOCOL = process.env.BACKEND_PROTOCOL || 'https';
+const BACKEND_PROTOCOL = process.env.BACKEND_PROTOCOL || 'http';
 const BACKEND_HOST = process.env.BACKEND_HOST || 'localhost';
 const BACKEND_PORT = process.env.BACKEND_PORT || '8000';
 const BACKEND_URL = `${BACKEND_PROTOCOL}://${BACKEND_HOST}:${BACKEND_PORT}`;

@@ -1,0 +1,155 @@
+.performance-panel {
+  padding: 20px;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.performance-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.auto-refresh-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #666;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.auto-refresh-toggle input {
+  cursor: pointer;
+}
+
+.performance-controls button {
+  padding: 8px 16px;
+  background: #1976d2;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.performance-controls button:hover:not(:disabled) {
+  background: #1565c0;
+}
+
+.performance-controls button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.performance-error {
+  background: #ffebee;
+  color: #c62828;
+  padding: 12px;
+  border-radius: 4px;
+  margin-bottom: 16px;
+  font-size: 14px;
+}
+
+.performance-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.metric-card {
+  background: #f5f5f5;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+}
+
+.metric-card.full-width {
+  grid-column: 1 / -1;
+}
+
+.metric-card h3 {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.metric-value {
+  font-size: 32px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 4px;
+}
+
+.metric-label {
+  font-size: 14px;
+  color: #666;
+}
+
+.metric-secondary {
+  font-size: 13px;
+  color: #999;
+  margin-top: 8px;
+}
+
+.performance-chart {
+  grid-column: 1 / -1;
+  background: #f5f5f5;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  margin-top: 8px;
+}
+
+.performance-chart h3 {
+  margin: 0 0 16px 0;
+  font-size: 14px;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.block-rate-bar {
+  width: 100%;
+  height: 40px;
+  background: #e0e0e0;
+  border-radius: 20px;
+  overflow: hidden;
+  position: relative;
+}
+
+.block-rate-fill {
+  height: 100%;
+  background: linear-gradient(to right, #4caf50, #ff9800, #f44336);
+  transition: width 0.5s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.block-rate-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  font-size: 12px;
+  color: #999;
+}
+
+.performance-empty {
+  text-align: center;
+  padding: 60px 20px;
+  color: #666;
+}
+
+.performance-empty p {
+  margin: 0;
+}
