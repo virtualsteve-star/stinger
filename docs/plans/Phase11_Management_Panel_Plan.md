@@ -2,28 +2,29 @@
 
 ## Overview
 
-Create a lightweight, attractive HTML management panel for monitoring and analyzing Stinger guardrails in real-time. This will provide operators with insights into system health, performance, and security events.
+Create a simple, lightweight management console for monitoring Stinger guardrails. This will provide operators with real-time insights into system health, performance, and security events without unnecessary complexity.
 
 ## Objectives
 
-1. **Real-time Monitoring**: Live view of system health and active conversations
+1. **Simple Monitoring**: Clear view of system health and active conversations
 2. **Performance Analytics**: Guardrail performance metrics and trends
-3. **Log Analysis**: Smart search and filtering of audit logs
+3. **Log Analysis**: Search and filter audit logs
 4. **Minimal Dependencies**: Fast build/run with minimal bloat
-5. **Production Ready**: Secure, performant, and useful for operators
+5. **Easy to Use**: No authentication, just run and monitor
 
 ## Architecture
 
 ### Backend (FastAPI)
-- Lightweight REST API endpoints
-- WebSocket for real-time updates
+- Simple REST API endpoints
+- Polling-based updates (no WebSockets)
 - Direct integration with existing Stinger components
 - No additional database required (uses existing audit logs)
+- No authentication or access control
 
 ### Frontend (React + Minimal Dependencies)
-- Create React App (minimal template)
+- Reuse components from Phase 10 web demo
 - Recharts for data visualization (lightweight, no D3 dependency)
-- React Query for efficient data fetching
+- React Query for efficient data fetching with smart polling
 - Tailwind CSS for styling (utility-first, small bundle)
 - No heavy UI frameworks (no Material-UI, Ant Design, etc.)
 
@@ -87,13 +88,13 @@ Create a lightweight, attractive HTML management panel for monitoring and analyz
 
 ### Backend Endpoints
 ```python
-# FastAPI routes
+# FastAPI routes - Simple REST, no auth required
 GET  /api/stats/overview      # Dashboard stats
-GET  /api/guardrails/metrics  # Guardrail performance
+GET  /api/guardrails/metrics  # Guardrail performance  
 GET  /api/conversations       # Active conversations
 GET  /api/audit/search        # Log search with filters
 GET  /api/health             # System health status
-WS   /ws/live                # WebSocket for real-time updates
+# No WebSockets - just polling
 ```
 
 ### Frontend Components
@@ -120,9 +121,9 @@ src/
 │       ├── SystemStatus.jsx
 │       └── HealthIndicators.jsx
 ├── hooks/
-│   ├── useWebSocket.js
-│   ├── useMetrics.js
-│   └── useAuditLogs.js
+│   ├── useMetrics.js      # Polling with React Query
+│   ├── useAuditLogs.js    # Log fetching and filtering
+│   └── usePolling.js      # Smart polling intervals
 └── utils/
     ├── api.js
     ├── formatters.js
@@ -130,10 +131,11 @@ src/
 ```
 
 ### Data Flow
-1. **Real-time Updates**: WebSocket pushes live metrics
-2. **Polling**: Background refresh every 30s for non-critical data
+1. **Smart Polling**: 5s for metrics, 10s for conversations
+2. **Tab-aware**: Reduce polling when tab is hidden
 3. **Caching**: React Query caches responses for efficiency
 4. **Pagination**: Server-side pagination for log explorer
+5. **Manual Refresh**: Refresh buttons for immediate updates
 
 ## Open Source Components
 
@@ -152,45 +154,45 @@ src/
 
 ## Development Plan
 
-### Phase 11A: Core Infrastructure (2 days)
-- Set up FastAPI endpoints
-- Create React app structure
-- Implement WebSocket connection
-- Basic authentication/security
+### Phase 11A: Core Infrastructure (1 day)
+- Set up simple FastAPI endpoints (no auth)
+- Adapt Phase 10 React components
+- Implement smart polling with React Query
+- Basic project structure
 
-### Phase 11B: Dashboard & Metrics (2 days)
-- Dashboard overview components
+### Phase 11B: Dashboard & Metrics (1.5 days)
+- Dashboard overview (reuse Phase 10 patterns)
 - Guardrail performance table
-- Real-time metric updates
-- Basic charts with Recharts
+- Polling-based metric updates
+- Simple charts with Recharts
 
-### Phase 11C: Conversation & Logs (2 days)
+### Phase 11C: Conversation & Logs (1.5 days)
 - Active conversation monitor
-- Audit log explorer with filters
+- Audit log explorer (adapt LogPanel from Phase 10)
 - Search functionality
-- Export capabilities
+- CSV export for logs
 
 ### Phase 11D: Polish & Deploy (1 day)
 - System health monitoring
 - Error handling
 - Performance optimization
-- Deployment configuration
+- Simple deployment (just run it!)
 
 ## Performance Targets
 
 - **Initial Load**: < 2 seconds
 - **Bundle Size**: < 200KB gzipped
 - **API Response**: < 100ms for most endpoints
-- **WebSocket Latency**: < 50ms
+- **Polling Efficiency**: Smart intervals based on tab visibility
 - **Memory Usage**: < 50MB client-side
 
 ## Security Considerations
 
-1. **Authentication**: API key or session-based
-2. **Read-only**: No modification capabilities
-3. **Rate Limiting**: Prevent abuse
-4. **CORS**: Properly configured
-5. **Data Sanitization**: Prevent XSS
+1. **No Authentication**: Simple console, run locally
+2. **Read-only**: No modification capabilities  
+3. **CORS**: Configured for local development
+4. **Data Sanitization**: Prevent XSS
+5. **Local Use**: Designed for operators with system access
 
 ## Deployment Options
 
@@ -210,10 +212,10 @@ src/
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│ 🛡️ Stinger Management                          admin │ ⚙️ │ 🔔 │
+│ 🛡️ Stinger Management Console                    [↻ Refresh]  │
 ├───────┬─────────────────────────────────────────────────────────┤
 │       │                                                         │
-│   📊  │  System Overview                              Live 🟢  │
+│   📊  │  System Overview                    Updated: 2s ago  │
 │   🎯  │  ┌─────────────┬─────────────┬─────────────┐         │
 │   💬  │  │ Total       │ Blocked     │ Active      │         │
 │   📝  │  │ 12,456      │ 234 (1.9%)  │ 3 convos    │         │
@@ -238,9 +240,18 @@ src/
 
 ## Next Steps
 
-1. **Review & Approve**: Get feedback on the plan
-2. **Prototype**: Build minimal version for validation
-3. **Iterate**: Refine based on user feedback
-4. **Deploy**: Production-ready release
+1. **Start Simple**: Build core monitoring features first
+2. **Reuse Phase 10**: Leverage existing components
+3. **Test Locally**: Ensure it works out of the box
+4. **Document**: Simple README for operators
 
-This management panel will provide operators with a powerful yet lightweight tool for monitoring and analyzing their Stinger deployment without adding significant complexity or dependencies.
+## Quick Start (Future)
+```bash
+# Start Stinger with management console
+cd management-console
+npm install
+npm start
+# Open http://localhost:3001
+```
+
+This management console will provide operators with a simple, no-auth monitoring tool that just works. Perfect for development and small deployments where simplicity matters more than enterprise features.
