@@ -17,7 +17,7 @@ import time
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict
 
 import yaml
 
@@ -266,7 +266,7 @@ class HumanVerificationTester:
         """Get status text for test result."""
         return "MATCH" if matched else "MISMATCH"
 
-    def generate_report(self) -> str:
+    def generate_report(self) -> str:  # noqa: C901
         """Generate a pretty-printed report."""
         if not self.results:
             return "No test results available."
