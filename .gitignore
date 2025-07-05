@@ -131,3 +131,33 @@ logs/*
 
 # Test installations
 test_install/
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnp
+.pnp.js
+package-lock.json
+
+# Backup files
+*.bak
+*.orig
+*.tmp
+*.temp
+*~
+
+# Additional log patterns
+*.log.*
+logs/
+
+# Temporary directories
+temp/
+tmp/
+
+# pytype
+.pytype/
+
+# Pyre
+.pyre/
