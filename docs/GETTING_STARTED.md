@@ -45,7 +45,7 @@ print(f"Reasons: {result['reasons']}")
 
 ```bash
 # Run the CLI demo
-python -m stinger.cli demo
+stinger demo
 
 # Or run a comprehensive demo
 python demos/conversation_demo.py
@@ -80,8 +80,8 @@ A pipeline is a sequence of guardrails that process content in order. Stinger su
 ### Presets
 Pre-configured pipeline setups for common use cases:
 - `customer_service`: Protects customer support interactions
-- `medical_bot`: Ensures medical information safety
-- `general`: Basic content moderation
+- `medical`: Ensures medical information safety
+- `basic`: Basic content moderation
 
 ## 🛠️ Basic Usage
 
@@ -94,10 +94,10 @@ from stinger import GuardrailPipeline
 pipeline = GuardrailPipeline.from_preset('customer_service')
 
 # Medical bot preset (stricter medical content filtering)
-pipeline = GuardrailPipeline.from_preset('medical_bot')
+pipeline = GuardrailPipeline.from_preset('medical')
 
-# General preset (basic content moderation)
-pipeline = GuardrailPipeline.from_preset('general')
+# Basic preset (basic content moderation)
+pipeline = GuardrailPipeline.from_preset('basic')
 ```
 
 ### Checking Content
@@ -180,7 +180,7 @@ assert result['blocked'] == False
 ### 2. Medical Information Bot
 
 ```python
-pipeline = GuardrailPipeline.from_preset('medical_bot')
+pipeline = GuardrailPipeline.from_preset('medical')
 
 # This will be blocked (medical advice)
 result = pipeline.check_input("I have chest pain, what should I do?")
@@ -204,7 +204,7 @@ conv.add_exchange("Hello", "Hi there!")
 conv.add_exchange("How are you?", "I'm doing well, thanks!")
 
 # Check if rate limit is exceeded
-exceeded = conv.check_rate_limit(action="warn")
+exceeded = conv.check_rate_limit()
 print(f"Rate limit exceeded: {exceeded}")
 ```
 
@@ -317,7 +317,7 @@ conv.add_exchange("Hello", "Hi there! How can I help you today?")
 conv.add_exchange("How are you?", "I'm doing well, thanks for asking!")
 
 # Check if rate limit is exceeded
-exceeded = conv.check_rate_limit(action="warn")
+exceeded = conv.check_rate_limit()
 print(f"Rate limit exceeded: {exceeded}")
 
 # Get conversation history
@@ -343,13 +343,14 @@ python examples/getting_started/06_health_monitoring.py
 
 Example usage:
 ```python
-from stinger import health_monitor
+from stinger.core.health_monitor import HealthMonitor
 
-status = health_monitor.get_status()
-print(f"Overall status: {status['overall']}")
-print(f"Pipeline status: {status['pipeline']}")
-print(f"API keys status: {status['api_keys']}")
-print(f"Rate limiter status: {status['rate_limiter']}")
+monitor = HealthMonitor()
+health = monitor.get_system_health()
+print(f"Overall status: {health.overall_status}")
+print(f"Pipeline status: {health.pipeline_healthy}")
+print(f"API keys status: {health.api_keys_configured}")
+print(f"Rate limiter status: {health.rate_limiter_healthy}")
 ```
 
 ### **07_cli_and_yaml_config.py** - CLI and YAML Configuration
@@ -442,10 +443,10 @@ Each example is designed to be run independently and includes clear output showi
 
 ### CLI Commands
 ```bash
-python -m stinger.cli demo                    # Run demo
-python -m stinger.cli health                  # Health check
-python -m stinger.cli check-prompt "text"     # Check prompt
-python -m stinger.cli check-response "text"   # Check response
+stinger demo                    # Run demo
+stinger health                  # Health check
+stinger check-prompt "text"     # Check prompt
+stinger check-response "text"   # Check response
 ```
 
 ### Python API
