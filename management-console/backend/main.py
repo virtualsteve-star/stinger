@@ -15,7 +15,6 @@ import json
 import tempfile
 from collections import defaultdict
 import random
-import numpy as np
 
 # Add src to path for Stinger imports
 sys.path.insert(0, str(Path(__file__).parent.parent.parent / "src"))
