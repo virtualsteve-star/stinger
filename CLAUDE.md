@@ -6,11 +6,16 @@ This ensures safe, reviewable PRs and keeps main stable.
 
 ## CRITICAL BRANCH WORKFLOW RULE
 NEVER push directly to main branch. ALWAYS:
-1. Work on dev branch
+1. Work on dev branch (don't create new feature branches unless specifically asked)
 2. Make changes and commit to dev
 3. Push to origin/dev
 4. Create PR from dev to main
 5. Merge via PR, never direct push to main
+
+**Important**: Use the dev branch for all work. Don't create unnecessary feature branches.
+Only create a new branch if specifically asked or if working on something that needs isolation.
+The dev branch is our working branch - use it directly.
+
 This rule is non-negotiable for code safety and review process.
 
 ## Code Quality & Architecture
