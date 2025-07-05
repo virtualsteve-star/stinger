@@ -1,6 +1,5 @@
 import re
 from typing import List, Optional
-from urllib.parse import urlparse
 
 from ..core.config_validator import URL_GUARDRAIL_RULES, ValidationRule
 from ..core.conversation import Conversation
@@ -15,16 +14,20 @@ class URLGuardrail(GuardrailInterface):
 
         # Handle nested config structure from pipeline configuration
         nested_config = config.get("config", {})
-        
-        self.blocked_domains = nested_config.get("blocked_domains", config.get("blocked_domains", []))
-        self.allowed_domains = nested_config.get("allowed_domains", config.get("allowed_domains", []))
+
+        self.blocked_domains = nested_config.get(
+            "blocked_domains", config.get("blocked_domains", [])
+        )
+        self.allowed_domains = nested_config.get(
+            "allowed_domains", config.get("allowed_domains", [])
+        )
         self.action = nested_config.get("action", config.get("action", "block"))
 
         # Improved URL regex pattern that handles ports and domains without protocol
         # Matches: http://example.com, https://example.com, example.com, sub.example.com
         self.url_pattern = re.compile(
-            r'(?:https?://)?(?:www\.)?([a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)+)(?:[/?#][^\s]*)?',
-            re.IGNORECASE
+            r"(?:https?://)?(?:www\.)?([a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)+)(?:[/?#][^\s]*)?",
+            re.IGNORECASE,
         )
 
     def get_validation_rules(self) -> List[ValidationRule]:
@@ -65,15 +68,21 @@ class URLGuardrail(GuardrailInterface):
         for match in matches:
             full_match = match.group(0)
             domain = match.group(1).lower()  # The domain is captured in group 1
-            
+
             # Check blocked domains first
-            if any(domain == blocked or domain.endswith('.' + blocked) for blocked in self.blocked_domains):
+            if any(
+                domain == blocked or domain.endswith("." + blocked)
+                for blocked in self.blocked_domains
+            ):
                 blocked_urls.append(full_match)
                 continue
 
             # Check allowed domains (if specified)
             if self.allowed_domains:
-                if any(domain == allowed or domain.endswith('.' + allowed) for allowed in self.allowed_domains):
+                if any(
+                    domain == allowed or domain.endswith("." + allowed)
+                    for allowed in self.allowed_domains
+                ):
                     allowed_urls.append(full_match)
                 else:
                     blocked_urls.append(full_match)

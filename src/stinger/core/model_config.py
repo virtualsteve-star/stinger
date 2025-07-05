@@ -7,7 +7,7 @@ ensuring consistent model usage and configuration management.
 
 import logging
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 import yaml
 from openai import AsyncOpenAI
@@ -18,8 +18,6 @@ logger = logging.getLogger(__name__)
 class ModelError(Exception):
     """Exception raised for model-related errors."""
 
-    pass
-
 
 class ModelProvider(ABC):
     """Abstract interface for model providers."""
@@ -27,17 +25,14 @@ class ModelProvider(ABC):
     @abstractmethod
     async def generate_response(self, prompt: str, **kwargs) -> str:
         """Generate a response from the model."""
-        pass
 
     @abstractmethod
     def get_model_name(self) -> str:
         """Get the name of the model being used."""
-        pass
 
     @abstractmethod
     def is_available(self) -> bool:
         """Check if the model is available."""
-        pass
 
 
 class OpenAIModelProvider(ModelProvider):

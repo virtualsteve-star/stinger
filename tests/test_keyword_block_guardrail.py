@@ -11,13 +11,13 @@ Tests cover:
 """
 
 import asyncio
-from unittest.mock import Mock
 
 import pytest
 
 from src.stinger.guardrails.keyword_block import KeywordBlockGuardrail
 
 
+@pytest.mark.performance
 class TestKeywordBlockFilter:
     """Test suite for KeywordBlockGuardrail functionality."""
 
@@ -25,6 +25,7 @@ class TestKeywordBlockFilter:
         """Set up test fixtures."""
         self.basic_config = {"keyword": "blocked_word", "on_error": "allow"}
 
+    @pytest.mark.ci
     @pytest.mark.asyncio
     async def test_basic_keyword_blocking(self):
         """Test basic keyword blocking functionality."""
@@ -40,6 +41,7 @@ class TestKeywordBlockFilter:
         assert result.blocked == False
         assert result.reason == "No keyword match found"
 
+    @pytest.mark.ci
     @pytest.mark.asyncio
     async def test_case_insensitive_matching(self):
         """Test that keyword matching is case insensitive."""
@@ -57,6 +59,7 @@ class TestKeywordBlockFilter:
             assert result.blocked == True, f"Failed to block: {test_case}"
             assert "Blocked keyword found: blocked_word" in result.reason
 
+    @pytest.mark.ci
     @pytest.mark.asyncio
     async def test_partial_word_matching(self):
         """Test that partial words are matched."""
@@ -69,6 +72,7 @@ class TestKeywordBlockFilter:
         result = await guardrail_instance.analyze("Contest results are here")
         assert result.blocked == True
 
+    @pytest.mark.ci
     @pytest.mark.asyncio
     async def test_empty_and_none_content(self):
         """Test handling of empty and None content."""
@@ -84,22 +88,25 @@ class TestKeywordBlockFilter:
         assert result.blocked == False
         assert result.reason == "No content to analyze"
 
+    @pytest.mark.ci
     @pytest.mark.asyncio
     async def test_no_keyword_configured(self):
         """Test behavior when no keyword is configured."""
         # Now that validation is enforced, we expect this to fail
         with pytest.raises(ValueError, match="Required field 'keyword' is missing"):
             config = {"on_error": "allow"}  # No keyword
-            guardrail_instance = KeywordBlockGuardrail(config)
+            KeywordBlockGuardrail(config)
 
+    @pytest.mark.ci
     @pytest.mark.asyncio
     async def test_empty_keyword_configured(self):
         """Test behavior when empty keyword is configured."""
         # Validation now prevents empty keywords
         with pytest.raises(ValueError, match="keyword must have length >= 1"):
             config = {"keyword": "", "on_error": "allow"}
-            guardrail_instance = KeywordBlockGuardrail(config)
+            KeywordBlockGuardrail(config)
 
+    @pytest.mark.ci
     @pytest.mark.asyncio
     async def test_whitespace_keyword(self):
         """Test behavior with whitespace-only keyword."""
@@ -110,6 +117,7 @@ class TestKeywordBlockFilter:
         assert result.blocked == True
         assert "Blocked keyword found:" in result.reason
 
+    @pytest.mark.ci
     @pytest.mark.asyncio
     async def test_special_characters_in_keyword(self):
         """Test keywords with special characters."""
@@ -134,6 +142,7 @@ class TestKeywordBlockFilter:
             assert result.blocked == True, f"Failed to block keyword: {keyword}"
             assert f"Blocked keyword found: {keyword.lower()}" in result.reason
 
+    @pytest.mark.ci
     @pytest.mark.asyncio
     async def test_unicode_content(self):
         """Test handling of unicode content."""
@@ -148,6 +157,7 @@ class TestKeywordBlockFilter:
         result = await guardrail_instance.analyze("test with émojis 🚀 and spëcial chars")
         assert result.blocked == True
 
+    @pytest.mark.ci
     @pytest.mark.asyncio
     async def test_very_long_content(self):
         """Test performance with very long content."""
@@ -164,6 +174,7 @@ class TestKeywordBlockFilter:
         result = await guardrail_instance.analyze(long_content_with_keyword)
         assert result.blocked == True
 
+    @pytest.mark.ci
     @pytest.mark.asyncio
     async def test_multiple_keyword_occurrences(self):
         """Test content with multiple occurrences of keyword."""
@@ -174,6 +185,7 @@ class TestKeywordBlockFilter:
         assert result.blocked == True
         assert "Blocked keyword found: blocked_word" in result.reason
 
+    @pytest.mark.performance
     @pytest.mark.asyncio
     async def test_concurrent_filtering(self):
         """Test concurrent filtering operations."""
@@ -196,6 +208,7 @@ class TestKeywordBlockFilter:
         actual_actions = ["block" if result.blocked else "allow" for result in results]
         assert actual_actions == expected_actions
 
+    @pytest.mark.ci
     def test_filter_initialization(self):
         """Test filter initialization with various configurations."""
         # Valid configuration
@@ -209,6 +222,7 @@ class TestKeywordBlockFilter:
         assert guardrail_instance.keyword == "test"
         # Extra fields are ignored during initialization
 
+    @pytest.mark.ci
     @pytest.mark.asyncio
     async def test_edge_case_keywords(self):
         """Test edge case keywords."""
@@ -227,6 +241,7 @@ class TestKeywordBlockFilter:
             result = await guardrail_instance.analyze(test_content)
             assert result.blocked == True, f"Failed to block keyword: {repr(keyword)}"
 
+    @pytest.mark.ci
     @pytest.mark.asyncio
     async def test_filter_result_structure(self):
         """Test that FilterResult has correct structure."""
@@ -241,6 +256,7 @@ class TestKeywordBlockFilter:
         assert isinstance(result.reason, str)
         assert len(result.reason) > 0
 
+    @pytest.mark.performance
     @pytest.mark.asyncio
     async def test_performance_benchmarking(self):
         """Test performance characteristics of the filter."""

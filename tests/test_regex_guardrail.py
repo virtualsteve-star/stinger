@@ -13,13 +13,13 @@ Tests cover:
 
 import asyncio
 import re
-from unittest.mock import Mock
 
 import pytest
 
 from src.stinger.guardrails.regex_guardrail import RegexGuardrail
 
 
+@pytest.mark.performance
 class TestRegexFilter:
     """Test suite for RegexGuardrail functionality."""
 
@@ -32,6 +32,7 @@ class TestRegexFilter:
             "on_error": "allow",
         }
 
+    @pytest.mark.ci
     @pytest.mark.asyncio
     async def test_basic_pattern_matching(self):
         """Test basic pattern matching functionality."""
@@ -56,6 +57,7 @@ class TestRegexFilter:
         assert result.blocked == False
         assert result.reason == "No pattern matches found"
 
+    @pytest.mark.ci
     @pytest.mark.asyncio
     async def test_case_sensitivity(self):
         """Test case sensitive and insensitive matching."""
@@ -97,6 +99,7 @@ class TestRegexFilter:
             result = await guardrail_instance.analyze(test_case)
             assert result.blocked == True, f"Failed case insensitive match: {test_case}"
 
+    @pytest.mark.ci
     @pytest.mark.asyncio
     async def test_multiple_pattern_matches(self):
         """Test content matching multiple patterns."""
@@ -118,6 +121,7 @@ class TestRegexFilter:
         assert "password" in reason_patterns
         assert "\\b\\w+@\\w+\\.\\w+\\b" in reason_patterns
 
+    @pytest.mark.ci
     @pytest.mark.asyncio
     async def test_complex_regex_patterns(self):
         """Test complex regex patterns."""
@@ -149,6 +153,7 @@ class TestRegexFilter:
             else:
                 assert result.blocked == False, f"Should not have matched: {content}"
 
+    @pytest.mark.ci
     @pytest.mark.asyncio
     async def test_regex_flags(self):
         """Test regex flags configuration."""
@@ -178,6 +183,7 @@ class TestRegexFilter:
         result = await guardrail_instance.analyze(dotall_content)
         assert result.blocked == True
 
+    @pytest.mark.ci
     @pytest.mark.asyncio
     async def test_empty_and_none_content(self):
         """Test handling of empty and None content."""
@@ -193,6 +199,7 @@ class TestRegexFilter:
         assert result.blocked == False
         assert result.reason == "No content or patterns to match"
 
+    @pytest.mark.ci
     @pytest.mark.asyncio
     async def test_no_patterns_configured(self):
         """Test behavior when no patterns are configured."""
@@ -203,6 +210,7 @@ class TestRegexFilter:
         assert result.blocked == False
         assert result.reason == "No content or patterns to match"
 
+    @pytest.mark.ci
     @pytest.mark.asyncio
     async def test_different_actions(self):
         """Test different action configurations."""
@@ -222,6 +230,7 @@ class TestRegexFilter:
         assert result.blocked == True  # analyze always blocks when patterns match
         assert "Matched patterns: test" in result.reason
 
+    @pytest.mark.ci
     def test_invalid_regex_patterns(self):
         """Test handling of invalid regex patterns."""
         invalid_patterns = [
@@ -238,6 +247,7 @@ class TestRegexFilter:
             with pytest.raises(ValueError, match="Invalid regex pattern"):
                 RegexGuardrail(config)
 
+    @pytest.mark.ci
     def test_config_validation_success(self):
         """Test successful configuration validation."""
         valid_configs = [
@@ -249,9 +259,10 @@ class TestRegexFilter:
 
         for config in valid_configs:
             config["on_error"] = "allow"
-            guardrail_instance = RegexGuardrail(config)
+            RegexGuardrail(config)
             # Should not raise an exception during initialization
 
+    @pytest.mark.ci
     def test_config_validation_failure(self):
         """Test configuration validation failures."""
         # Test patterns type validation
@@ -266,6 +277,7 @@ class TestRegexFilter:
         with pytest.raises(ValueError, match="Invalid or unsafe regex pattern"):
             RegexGuardrail({"patterns": [r"[invalid"], "action": "block", "on_error": "allow"})
 
+    @pytest.mark.ci
     @pytest.mark.asyncio
     async def test_unicode_content(self):
         """Test regex matching with unicode content."""
@@ -284,6 +296,7 @@ class TestRegexFilter:
         result = await guardrail_instance.analyze("Regular ASCII content")
         assert result.blocked == False
 
+    @pytest.mark.ci
     @pytest.mark.asyncio
     async def test_anchored_patterns(self):
         """Test anchored regex patterns (^ and $)."""
@@ -310,6 +323,7 @@ class TestRegexFilter:
             else:
                 assert result.blocked == False, f"Should not have matched: {content}"
 
+    @pytest.mark.ci
     @pytest.mark.asyncio
     async def test_word_boundaries(self):
         """Test word boundary patterns (\\b)."""
@@ -331,6 +345,7 @@ class TestRegexFilter:
             else:
                 assert result.blocked == False, f"Should not have matched: {content}"
 
+    @pytest.mark.ci
     @pytest.mark.asyncio
     async def test_lookahead_lookbehind(self):
         """Test lookahead and lookbehind assertions."""
@@ -361,6 +376,7 @@ class TestRegexFilter:
             else:
                 assert result.blocked == False, f"Should not have matched: {content}"
 
+    @pytest.mark.performance
     @pytest.mark.asyncio
     async def test_performance_with_complex_patterns(self):
         """Test performance with complex patterns and large content."""
@@ -388,6 +404,7 @@ class TestRegexFilter:
         assert duration < 1.0, f"Performance test took too long: {duration}s"
         assert result.blocked == False
 
+    @pytest.mark.performance
     @pytest.mark.asyncio
     async def test_concurrent_filtering(self):
         """Test concurrent filtering operations."""
@@ -410,6 +427,7 @@ class TestRegexFilter:
         actual_actions = ["block" if result.blocked else "allow" for result in results]
         assert actual_actions == expected_actions
 
+    @pytest.mark.ci
     @pytest.mark.asyncio
     async def test_confidence_scoring(self):
         """Test confidence scoring in results."""
@@ -420,6 +438,7 @@ class TestRegexFilter:
         assert hasattr(result, "confidence")
         assert result.confidence == 1.0
 
+    @pytest.mark.ci
     @pytest.mark.asyncio
     async def test_pattern_order_independence(self):
         """Test that pattern order doesn't affect results."""

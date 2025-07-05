@@ -6,12 +6,9 @@ Helps users configure their environment and get started quickly.
 import json
 import os
 import platform
-import shutil
 import subprocess
 import sys
-import time
 from pathlib import Path
-from typing import Dict, Optional, Tuple
 
 
 class SetupWizard:
@@ -187,9 +184,7 @@ class SetupWizard:
                     "-w",  # Read password from stdin
                 ]
                 # Pass the API key via stdin to avoid command line exposure
-                result = subprocess.run(
-                    cmd, input=api_key.encode("utf-8"), check=True, capture_output=True
-                )
+                subprocess.run(cmd, input=api_key.encode("utf-8"), check=True, capture_output=True)
                 print("✅ API key stored in Keychain")
 
                 print("\nTo use this key, add to your shell profile:")
@@ -259,7 +254,6 @@ class SetupWizard:
         try:
             # Import core modules
             print("Testing imports...")
-            from stinger.core.pipeline import GuardrailPipeline
             from stinger.guardrails.keyword_list import KeywordListGuardrail
 
             print("✅ Core modules imported successfully")

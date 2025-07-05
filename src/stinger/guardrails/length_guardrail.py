@@ -17,10 +17,10 @@ class LengthGuardrail(GuardrailInterface):
 
         # Initialize with validation
         super().__init__(name, GuardrailType.LENGTH_FILTER, config)
-        
+
         # Handle nested config structure from pipeline configuration
         nested_config = config.get("config", {})
-        
+
         self.min_length = nested_config.get("min_length", config.get("min_length", 0))
         self.max_length = nested_config.get("max_length", config.get("max_length", None))
         self.action = nested_config.get("action", config.get("action", "block"))

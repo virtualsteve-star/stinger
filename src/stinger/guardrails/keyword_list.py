@@ -1,5 +1,4 @@
 import logging
-import os
 from pathlib import Path
 from typing import List, Optional, Tuple
 
@@ -34,11 +33,13 @@ class KeywordListGuardrail(GuardrailInterface):
 
         self.config = config  # Keep for compatibility with _load_keywords
         self.keywords = []
-        
+
         # Handle nested config structure
         nested_config = config.get("config", {})
-        self.case_sensitive = nested_config.get("case_sensitive", config.get("case_sensitive", False))
-        
+        self.case_sensitive = nested_config.get(
+            "case_sensitive", config.get("case_sensitive", False)
+        )
+
         self._load_keywords()
 
     def get_validation_rules(self) -> List[ValidationRule]:
@@ -65,7 +66,7 @@ class KeywordListGuardrail(GuardrailInterface):
         """Load keywords from config or file."""
         # Handle nested config structure
         nested_config = self.config.get("config", {})
-        
+
         # Get inline keywords from nested or flat config
         inline_keywords = nested_config.get("keywords", self.config.get("keywords", []))
         if isinstance(inline_keywords, str):

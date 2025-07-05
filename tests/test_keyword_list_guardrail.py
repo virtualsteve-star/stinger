@@ -6,13 +6,13 @@ Tests all functionality including inline keywords, file loading, and error handl
 
 import os
 import tempfile
-from pathlib import Path
 
 import pytest
 
 from src.stinger.guardrails.keyword_list import KeywordListGuardrail
 
 
+@pytest.mark.ci
 @pytest.mark.asyncio
 async def test_inline_keywords_basic():
     config = {
@@ -31,6 +31,7 @@ async def test_inline_keywords_basic():
     assert result.reason == "No keyword matches found"
 
 
+@pytest.mark.ci
 @pytest.mark.asyncio
 async def test_inline_keywords_case_sensitive():
     config = {
@@ -48,6 +49,7 @@ async def test_inline_keywords_case_sensitive():
     assert result.blocked == False
 
 
+@pytest.mark.ci
 @pytest.mark.asyncio
 async def test_phrase_matching():
     config = {
@@ -65,6 +67,7 @@ async def test_phrase_matching():
     assert result.blocked == False
 
 
+@pytest.mark.performance
 @pytest.mark.asyncio
 async def test_file_loading_basic():
     with tempfile.NamedTemporaryFile(mode="w", suffix=".txt", delete=False) as f:
@@ -87,6 +90,7 @@ async def test_file_loading_basic():
         os.unlink(temp_file)
 
 
+@pytest.mark.ci
 @pytest.mark.asyncio
 async def test_multiple_matches():
     config = {

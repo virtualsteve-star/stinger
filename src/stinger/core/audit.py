@@ -13,7 +13,7 @@ import threading
 import time
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Union
 
 
 class AuditTrail:
@@ -107,7 +107,7 @@ class AuditTrail:
         if hasattr(self, "_file_handle") and self._file_handle and self._file_handle != sys.stdout:
             try:
                 self._file_handle.close()
-            except:
+            except (IOError, OSError):
                 pass  # Ignore errors during cleanup
             self._file_handle = None
 
@@ -237,7 +237,7 @@ class AuditTrail:
         if hasattr(self, "_file_handle") and self._file_handle and self._file_handle != sys.stdout:
             try:
                 self._file_handle.close()
-            except:
+            except (IOError, OSError):
                 pass  # Ignore errors during cleanup
             self._file_handle = None
 
@@ -340,7 +340,7 @@ class AuditTrail:
                     batch = []
                     last_flush = current_time
 
-            except Exception as e:
+            except Exception:
                 # Don't let background thread crash
                 self._stats["dropped"] += len(batch)
                 batch = []
@@ -359,7 +359,7 @@ class AuditTrail:
             self._file_handle.flush()
             self._stats["written"] += len(batch)
 
-        except Exception as e:
+        except Exception:
             # Record the failure but don't crash
             self._stats["dropped"] += len(batch)
 
@@ -390,7 +390,7 @@ class AuditTrail:
             json_line = json.dumps(record, separators=(",", ":"))
             self._file_handle.write(json_line + "\n")
             self._file_handle.flush()
-        except Exception as e:
+        except Exception:
             # Don't break the main pipeline
             pass
 
@@ -506,7 +506,6 @@ def query(
         List of matching audit records
     """
     import json
-    from datetime import datetime, timedelta, timezone
     from pathlib import Path
 
     try:

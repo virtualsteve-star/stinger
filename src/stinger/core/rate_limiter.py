@@ -9,8 +9,6 @@ or any other identifier across the entire application.
 import logging
 import threading
 import time
-from collections import defaultdict
-from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional, Union
 
 import yaml
@@ -149,7 +147,7 @@ class GlobalRateLimiter:
         Returns a dict with 'exceeded', 'remaining', 'limit', 'reason', and 'current'.
         """
         tracker = self._get_tracker(api_key)
-        now = time.time()
+        time.time()
         minute_window = 60
         hour_window = 3600
         minute_count = tracker.get_current_count(minute_window)

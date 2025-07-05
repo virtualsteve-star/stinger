@@ -66,10 +66,14 @@ class PromptInjectionGuardrail(GuardrailInterface):
 
         # Handle nested config structure from pipeline configuration
         nested_config = config.get("config", {})
-        
+
         # Basic configuration
-        self.risk_threshold = nested_config.get("risk_threshold", config.get("risk_threshold", 70))  # 0-100
-        self.block_levels = nested_config.get("block_levels", config.get("block_levels", ["high", "critical"]))
+        self.risk_threshold = nested_config.get(
+            "risk_threshold", config.get("risk_threshold", 70)
+        )  # 0-100
+        self.block_levels = nested_config.get(
+            "block_levels", config.get("block_levels", ["high", "critical"])
+        )
         self.warn_levels = nested_config.get("warn_levels", config.get("warn_levels", ["medium"]))
         self.on_error = config.get("on_error", "allow")  # 'allow', 'block', 'warn'
 
@@ -174,7 +178,7 @@ Text to analyze: {content}
 
         try:
             # Use GPT-4o-mini for fast, cost-effective analysis
-            from ..adapters.openai_adapter import CompletionResult
+            pass
 
             result = await self.openai_adapter.complete(
                 messages=[
@@ -689,7 +693,7 @@ RESPONSE FORMAT (JSON):
 
         # Base risk from current prompt
         base_risk_percent = injection_result.risk_percent
-        base_risk_level = injection_result.level
+        injection_result.level
 
         # Multi-turn risk factors
         pattern_detected = multi_turn_analysis.get("pattern_detected", "none")
@@ -770,7 +774,7 @@ RESPONSE FORMAT (JSON):
         """Build reason with multi-turn context."""
 
         pattern_detected = multi_turn_analysis.get("pattern_detected", "none")
-        manipulation_techniques = multi_turn_analysis.get("manipulation_techniques", [])
+        multi_turn_analysis.get("manipulation_techniques", [])
 
         if should_block:
             if pattern_detected != "none":

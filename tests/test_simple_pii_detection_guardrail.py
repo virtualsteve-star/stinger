@@ -5,14 +5,13 @@ Tests pattern matching accuracy, configuration options, and error handling
 for the regex-based PII detection filter.
 """
 
-import asyncio
-
 import pytest
 
 from src.stinger.core.guardrail_interface import GuardrailType
 from src.stinger.guardrails.simple_pii_detection_guardrail import SimplePIIDetectionGuardrail
 
 
+@pytest.mark.ci  # This uses regex patterns, not AI
 class TestSimplePIIDetectionFilter:
     """Test cases for Simple PII Detection Filter."""
 
@@ -22,7 +21,7 @@ class TestSimplePIIDetectionFilter:
         return {
             "enabled": True,
             "patterns": ["ssn", "credit_card", "email", "phone", "ip_address"],
-            "confidence_threshold": 0.8,
+            "confidence_threshold": 0.9,
             "on_error": "block",
         }
 
@@ -31,6 +30,7 @@ class TestSimplePIIDetectionFilter:
         """Create a filter instance for testing."""
         return SimplePIIDetectionGuardrail("test_pii_filter", basic_config)
 
+    @pytest.mark.ci
     def test_filter_initialization(self, basic_config):
         """Test filter initialization with various configurations."""
         # Test basic initialization
@@ -38,7 +38,7 @@ class TestSimplePIIDetectionFilter:
         assert guardrail_instance.name == "test_filter"
         assert guardrail_instance.guardrail_type == GuardrailType.PII_DETECTION
         assert guardrail_instance.enabled is True
-        assert guardrail_instance.confidence_threshold == 0.8
+        assert guardrail_instance.confidence_threshold == 0.9
         assert guardrail_instance.on_error == "block"
 
         # Test with minimal config
@@ -48,6 +48,7 @@ class TestSimplePIIDetectionFilter:
         assert guardrail_instance.confidence_threshold == 0.8  # Default
         assert guardrail_instance.on_error == "block"  # Default
 
+    @pytest.mark.ci
     def test_pattern_validation(self):
         """Test pattern validation and unknown pattern handling."""
         config = {"enabled": True, "patterns": ["ssn", "unknown_pattern", "email"]}
@@ -57,6 +58,7 @@ class TestSimplePIIDetectionFilter:
         assert "email" in guardrail_instance.enabled_patterns
         assert "unknown_pattern" not in guardrail_instance.enabled_patterns
 
+    @pytest.mark.ci
     @pytest.mark.asyncio
     async def test_ssn_detection(self, guardrail_instance):
         """Test SSN pattern detection."""
@@ -80,6 +82,7 @@ class TestSimplePIIDetectionFilter:
                 assert "ssn" in result.details["detected_pii"]
                 assert "PII detected" in result.reason
 
+    @pytest.mark.ci
     @pytest.mark.asyncio
     async def test_credit_card_detection(self, guardrail_instance):
         """Test credit card pattern detection."""
@@ -101,6 +104,7 @@ class TestSimplePIIDetectionFilter:
                 assert result.confidence >= expected_confidence
                 assert "credit_card" in result.details["detected_pii"]
 
+    @pytest.mark.ci
     @pytest.mark.asyncio
     async def test_email_detection(self, guardrail_instance):
         """Test email pattern detection."""
@@ -122,6 +126,7 @@ class TestSimplePIIDetectionFilter:
                 assert result.confidence >= expected_confidence
                 assert "email" in result.details["detected_pii"]
 
+    @pytest.mark.ci
     @pytest.mark.asyncio
     async def test_phone_detection(self, guardrail_instance):
         """Test phone number pattern detection."""
@@ -143,6 +148,7 @@ class TestSimplePIIDetectionFilter:
                 assert result.confidence >= expected_confidence
                 assert "phone" in result.details["detected_pii"]
 
+    @pytest.mark.ci
     @pytest.mark.asyncio
     async def test_ip_address_detection(self, guardrail_instance):
         """Test IP address pattern detection."""
@@ -164,6 +170,7 @@ class TestSimplePIIDetectionFilter:
                 assert result.confidence >= expected_confidence
                 assert "ip_address" in result.details["detected_pii"]
 
+    @pytest.mark.ci
     @pytest.mark.asyncio
     async def test_multiple_pii_detection(self, guardrail_instance):
         """Test detection of multiple PII types in same content."""
@@ -176,6 +183,7 @@ class TestSimplePIIDetectionFilter:
         assert "email" in result.details["detected_pii"]
         assert len(result.details["detected_pii"]) == 2
 
+    @pytest.mark.ci
     @pytest.mark.asyncio
     async def test_confidence_threshold(self):
         """Test confidence threshold behavior."""
@@ -203,6 +211,7 @@ class TestSimplePIIDetectionFilter:
         result = await high_filter.analyze("SSN: 123-45-6789")
         assert result.blocked is False
 
+    @pytest.mark.ci
     @pytest.mark.asyncio
     async def test_disabled_filter(self):
         """Test disabled filter behavior."""
@@ -214,6 +223,7 @@ class TestSimplePIIDetectionFilter:
         assert result.confidence == 0.0
         assert "disabled" in result.reason
 
+    @pytest.mark.ci
     @pytest.mark.asyncio
     async def test_no_pii_detection(self, guardrail_instance):
         """Test content with no PII."""
@@ -225,6 +235,7 @@ class TestSimplePIIDetectionFilter:
         assert "No PII detected" in result.reason
         assert result.details["detected_pii"] == []
 
+    @pytest.mark.ci
     @pytest.mark.asyncio
     async def test_false_positive_avoidance(self, guardrail_instance):
         """Test that similar but non-PII content is not flagged."""
@@ -241,13 +252,14 @@ class TestSimplePIIDetectionFilter:
             # These should not be detected as PII
             assert result.blocked is False
 
+    @pytest.mark.ci
     def test_configuration_methods(self, guardrail_instance):
         """Test configuration getter and setter methods."""
         # Test get_config
         config = guardrail_instance.get_config()
         assert config["enabled"] is True
         assert "ssn" in config["patterns"]
-        assert config["confidence_threshold"] == 0.8
+        assert config["confidence_threshold"] == 0.9
         assert config["on_error"] == "block"
 
         # Test update_config
@@ -260,6 +272,7 @@ class TestSimplePIIDetectionFilter:
         assert guardrail_instance.confidence_threshold == 0.9
         assert guardrail_instance.on_error == "allow"
 
+    @pytest.mark.ci
     def test_availability_check(self, guardrail_instance):
         """Test availability checking."""
         assert guardrail_instance.is_available() is True
@@ -270,6 +283,7 @@ class TestSimplePIIDetectionFilter:
         guardrail_instance.enable()
         assert guardrail_instance.is_available() is True
 
+    @pytest.mark.ci
     @pytest.mark.asyncio
     async def test_error_handling(self):
         """Test error handling in filter."""

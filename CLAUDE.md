@@ -39,6 +39,26 @@ This rule is non-negotiable for code safety and review process.
 - Follow Python best practices and PEP 8 style guidelines
 - The codebase should be a pleasure to work with
 
+### 4.1. Pragmatic Linting Strategy
+- **Focus on real issues, not style preferences**
+- Use `.flake8` config to ignore style-only issues:
+  - E203, W503: Black compatibility
+  - E712: True/False comparisons (style preference)
+  - F541: f-strings without placeholders (minor)
+  - E402: Import order in tests (needed for sys.path)
+  - W293: Whitespace on blank lines (trivial)
+  - E501: Long lines (many valid reasons)
+- **Must fix actual bugs and code smells:**
+  - F401: Unused imports in src/ (real code smell)
+  - F841: Unused variables in src/ (real code smell)
+  - E722: Bare except (security risk)
+  - F811: Redefinitions (actual bugs)
+- **Per-file ignores:**
+  - Tests can have unused variables (F841)
+  - Complex functions marked as legitimately complex (C901)
+- **Benefits:** CI focuses on real issues, developers aren't blocked by pedantic style checks
+- **Philosophy:** Pragmatic quality over perfect style
+
 ## Testing Philosophy
 
 ### 5. Test Quality Over Quantity
@@ -48,6 +68,32 @@ This rule is non-negotiable for code safety and review process.
 - Write tests that catch real bugs and prevent regressions
 - Focus on integration tests that verify the system works end-to-end
 - Test edge cases and error conditions
+
+### 5.1. NO MOCKING OF AI BEHAVIOR
+- **NEVER mock AI guardrail responses** - that's the core behavior we're testing!
+- **Why:** The entire value of Stinger is testing real AI behavior. Mocking defeats this purpose.
+- **This is an AI product!** We MUST test AI behavior before releases.
+
+### 5.2. API Keys and Test Environments
+- **GitHub CI**: May skip AI tests if no API keys (security reasons)
+- **Local Development**: MUST have API keys and run AI tests
+- **Before Push to Main**: MUST run full suite including efficacy and performance tests
+- **Release Rule**: No code goes to main without passing ALL tests locally
+
+### 5.3. Test Execution Strategy
+- **Speed Strategy:**
+  - CI tests: Non-AI components only (for GitHub Actions without keys)
+  - Efficacy tests: Real AI behavior - accept 20-30s per test
+  - Performance tests: Load and scale testing
+- **Development Workflow:**
+  - During coding: Run specific AI tests you're working on
+  - Before commit: Run CI suite (<30s) 
+  - Before PR: Run efficacy tests locally
+  - **BEFORE PUSH TO MAIN: Run FULL suite (CI + efficacy + performance)**
+- **Examples:**
+  - ✅ GOOD: Test AI-based PII detection with real OpenAI calls
+  - ❌ BAD: Mock OpenAI responses to make tests fast
+  - ✅ GOOD: Skip AI tests in GitHub CI if no keys, but REQUIRE locally
 
 ### 6. Test-Driven Development
 - Write tests first when adding new features
@@ -131,9 +177,11 @@ Never assume or guess dates - always verify with the system date
 ### Manual Steps (if script unavailable)
 1. **Format code**: `black src/ tests/`
 2. **Fix imports**: `isort src/ tests/`
-3. **Check style**: `flake8 src/ tests/`
-4. **Run tests**: `pytest`
-5. **Check Python 3.8**: `python3.8 -m py_compile src/stinger/core/*.py`
+3. **Check style**: `flake8 src/ tests/ --max-line-length=100 --extend-ignore=E203,W503`
+4. **Run CI tests**: `pytest -m "ci"`
+5. **Run efficacy tests** (requires OPENAI_API_KEY): `pytest -m "efficacy"`
+6. **Run human verification**: `cd tests/human && python human_verification_test.py`
+7. **Check Python 3.8**: `python3.8 -m py_compile src/stinger/core/*.py`
 
 ### Pre-commit Hooks (Recommended)
 ```bash
@@ -144,9 +192,42 @@ pre-commit install
 # Now hooks run automatically on git commit
 ```
 
+## CI Validation Workflow (Push-Wait-Fix-Repeat)
+**CRITICAL**: After EVERY push to dev, follow this workflow to ensure CI stays green:
+
+### Automated CI Validation Process
+1. **Push to dev**: `git push origin dev`
+2. **Wait for CI**: Wait 2-5 minutes for GitHub Actions to run
+3. **Check CI status**: 
+   ```bash
+   gh run list --branch dev --limit 1
+   ```
+4. **If CI fails**, check logs and fix:
+   ```bash
+   # View failing run details
+   gh run view <run-id> --log | grep -E "(ERROR|FAILED|error:|failed:)" | head -20
+   
+   # Fix the issues, commit, and push again
+   git add -A && git commit -m "Fix CI: <description>" && git push origin dev
+   ```
+5. **Repeat until green**: Continue the cycle until all checks pass
+
+### Common CI Fixes
+- **Test failures**: Check if tests need API keys (mark as `@pytest.mark.efficacy`)
+- **Linting issues**: Run `black src/ tests/` and `isort src/ tests/`
+- **Safety check**: Update command syntax if needed
+- **Import errors**: Ensure pytest is imported before decorators
+
+### Why This Matters
+- Keeps dev branch always ready for PR to main
+- Catches issues early before they accumulate
+- Maintains team confidence in the codebase
+- Prevents "CI surprise" during critical PR reviews
+
 ## Code Review Checklist
 Before submitting any changes:
 - [ ] Ran `./scripts/local-ci-check.sh` - ALL CHECKS PASSED
+- [ ] Pushed to dev and verified CI is green (see workflow above)
 - [ ] Code follows project architecture patterns
 - [ ] Tests are meaningful and pass
 - [ ] Documentation is updated
@@ -156,26 +237,60 @@ Before submitting any changes:
 
 ## Remember
 **Quality over speed. Architecture over quick fixes. Tests that actually test.**
-**No CI surprises - check locally first!**
+**No CI surprises - check locally first, then verify in cloud!**
+
+## Test Organization (Phase 9A)
+
+### Test Directory Structure
+Tests are organized by purpose and pytest markers:
+- `tests/ci/` - Fast CI tests marked with `@pytest.mark.ci`
+- `tests/efficacy/` - AI behavior tests marked with `@pytest.mark.efficacy`
+- `tests/performance/` - Performance tests marked with `@pytest.mark.performance`
+- `tests/integration/` - Integration and system tests
+- `tests/validation/` - Input validation and error handling
+- `tests/behavioral/` - Real-world usage patterns
+- `tests/human/` - Human verification tests with visual reports
+- `tests/` (root) - Unit tests for individual guardrails
+
+### Adding New Tests
+1. Place tests in appropriate directory based on type
+2. Add correct pytest markers
+3. Follow naming convention: `test_<feature>_<aspect>.py`
+4. For AI tests, mark as efficacy: `@pytest.mark.efficacy`
+
+### Test Runners
+We have ONE primary test runner:
+- `run_test_suites.py` - Runs pytest suites (CI, efficacy, performance)
+
+Note: `stinger_test_runner.py` is outdated and non-functional (looks for test_runner.py files that don't exist).
+The scenario test data in `tests/scenarios/` exists but lacks implementation.
 
 ## Common Development Commands
 
 ### Testing
 ```bash
-# Run all tests
-pytest tests/ -v
+# Three-tier testing strategy
+pytest -m "ci"          # Fast CI tests (<30s)
+pytest -m "efficacy"    # AI behavior tests (5-10min, needs OPENAI_API_KEY)
+pytest -m "performance" # Performance tests (10-30min)
+
+# Test runners for different purposes
+python run_test_suites.py fast      # Quick development tests
+python run_test_suites.py sanity    # AI sanity checks
+python run_test_suites.py all       # Everything before PR
+
+# Scenario testing (if needed, implement actual runners)
+# Note: stinger_test_runner.py is outdated and non-functional
+# The scenario test data exists but lacks runners
+
+# Human verification (visual test reports)
+cd tests/human && python human_verification_test.py
 
 # Run specific test file
 pytest tests/test_simple_pii_detection_guardrail.py -v
 
-# Run specific test
-pytest tests/test_integration.py::test_pipeline_with_all_guardrails -v
-
 # Run with coverage
 pytest tests/ -v --cov=src/stinger --cov-report=html
-
-# Run only fast tests (skip slow/integration tests)
-pytest tests/ -v -m "not slow"
 ```
 
 ### Building and Publishing

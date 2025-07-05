@@ -15,7 +15,6 @@ import pytest
 # Add src to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
-from stinger.core.config import ConfigLoader
 from stinger.core.pipeline import GuardrailPipeline
 from stinger.guardrails.keyword_list import KeywordListGuardrail
 from stinger.guardrails.length_guardrail import LengthGuardrail

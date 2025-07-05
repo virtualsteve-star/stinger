@@ -5,6 +5,61 @@ All notable changes to the Stinger Guardrails Framework will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.0a2] - 2025-07-04
+
+### 🚀 Alpha 2 Release - Enhanced Testing & Demo Experience
+
+This release completes Phases 7-10, bringing significant improvements to testing infrastructure, demos, and developer experience.
+
+### ✨ Major Improvements
+
+#### **Testing Infrastructure (Phase 7)**
+- **Consolidated Test Suite**: Unified 558 tests with 96%+ code coverage
+- **AI-Powered Testing**: Two-tier strategy with sanity and efficacy tests
+- **Performance Metrics**: Comprehensive benchmarking for all guardrails
+- **Behavioral Tests**: Real-world scenario testing for bypass attempts
+- **CI/CD Enhancements**: Pre-commit hooks and local CI checks
+
+#### **Enhanced Demos (Phase 8-10)**
+- **Production Web Demo**: Full React frontend with real-time guardrail visualization
+- **Performance Monitoring**: Live metrics dashboard with HealthMonitor integration
+- **Interactive Panels**: Slide-out panels for guardrails, logs, and performance
+- **14+ Guardrails**: Complete showcase of all guardrail types
+- **Memory Optimized**: Frontend reduced from 1.4GB to normal levels
+
+#### **Developer Experience**
+- **Streamlined Examples**: Reorganized and tested all 9 progressive examples
+- **Local CI Script**: Run all checks locally before pushing (`./scripts/local-ci-check.sh`)
+- **Better Error Messages**: Clear guidance when setup is incomplete
+- **Simplified Demos**: One-command startup for all demos
+
+### 🛠️ Technical Improvements
+
+#### **Web Demo Features**
+- **Real-time Updates**: Smart polling for live metrics (no WebSocket complexity)
+- **Audit Trail Viewer**: Conversation-aware log filtering
+- **Performance Panel**: Request volumes, block rates, response times
+- **Guardrail Controls**: Enable/disable guardrails on the fly
+- **Export Capabilities**: Download logs and metrics
+
+#### **Code Quality**
+- **Test Organization**: Clear separation of unit, integration, and behavioral tests
+- **Performance Benchmarks**: Baseline metrics for all components
+- **Documentation Updates**: Comprehensive test strategy and architecture docs
+- **Clean Repository**: Removed duplicate tests and organized structure
+
+### 📊 Metrics & Performance
+- **Test Coverage**: 96%+ across core modules
+- **CI Runtime**: ~1.5 minutes for full test suite
+- **Bundle Size**: Web demo < 200KB gzipped
+- **Response Times**: < 100ms for guardrail processing
+
+### 🔧 Developer Tools
+- **Pre-commit Hooks**: Automatic formatting and linting
+- **Local CI Checks**: Test before pushing
+- **Debug Endpoints**: Built-in troubleshooting tools
+- **Performance Tracking**: Issue #59 filed for future enhancements
+
 ## [0.1.0a1] - 2025-07-01
 
 ### 🎉 Initial Alpha Release

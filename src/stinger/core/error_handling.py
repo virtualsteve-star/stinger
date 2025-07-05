@@ -16,8 +16,6 @@ from typing import Any, Dict, Optional
 class SecurityError(Exception):
     """Raised when a security constraint is violated."""
 
-    pass
-
 
 class ProductionErrorHandler:
     """Handles error messages securely for production environments."""
