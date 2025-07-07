@@ -128,8 +128,8 @@ echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━�
 if [ -f "scripts/build_package.sh" ]; then
     echo "Running package build..."
     if ./scripts/build_package.sh; then
-        # Check if packages were created
-        if [ -f "dist/stinger_guardrails_alpha-0.1.0a3-py3-none-any.whl" ] && [ -f "dist/stinger-guardrails-alpha-0.1.0a3.tar.gz" ]; then
+        # Check if packages were created (use glob to avoid hardcoding version)
+        if ls dist/stinger_guardrails_alpha-*.whl 1> /dev/null 2>&1 && ls dist/stinger-guardrails-alpha-*.tar.gz 1> /dev/null 2>&1; then
             echo -e "\n${GREEN}✅ Package Build Test: PASSED${NC}"
             ((PASSED_TESTS++))
         else
@@ -151,7 +151,9 @@ echo -e "${BLUE}Test 4: Simulated Package Installation Test${NC}"
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 
 ((TOTAL_TESTS++))
-if [ -f "dist/stinger_guardrails_alpha-0.1.0a3-py3-none-any.whl" ]; then
+# Find the wheel file dynamically
+WHEEL_FILE=$(ls dist/stinger_guardrails_alpha-*.whl 2>/dev/null | head -1)
+if [ -n "$WHEEL_FILE" ]; then
     echo "Testing local wheel installation in virtual environment..."
     
     # Create temporary test directory
@@ -163,7 +165,7 @@ if [ -f "dist/stinger_guardrails_alpha-0.1.0a3-py3-none-any.whl" ]; then
     source test_venv/bin/activate
     
     # Install from local wheel
-    if pip install "$PROJECT_DIR/dist/stinger_guardrails_alpha-0.1.0a3-py3-none-any.whl"; then
+    if pip install "$PROJECT_DIR/$WHEEL_FILE"; then
         echo "✅ Package installed successfully"
         
         # Test imports
