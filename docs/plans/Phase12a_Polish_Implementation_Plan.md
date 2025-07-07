@@ -269,6 +269,8 @@ Show why Stinger is better:
 3. **CLI --version** - Add version command
 4. **Remove broken references** - No more `simple_usage.py` or `run_all_tests.py`
 5. **Fix directory names** - `filters/` → `guardrails/`
+6. **Terminology update** - Replace all "filter" with "guardrail" in demos/examples
+7. **Create GitHub Release** - v0.1.0a3 for PyPI publishing
 
 ### High Priority (Day 1 Afternoon)
 1. **Create hero example** - Impressive first demo
@@ -316,6 +318,18 @@ Show why Stinger is better:
 - [ ] Check output is meaningful
 - [ ] Add comments explaining what's happening
 - [ ] Include expected output in comments
+- [ ] Replace "filter" with "guardrail" terminology
+
+### Terminology Update Locations
+Files that need "filter" → "guardrail" updates:
+- examples/getting_started/02_simple_filter.py (filename and content)
+- examples/getting_started/02_simple_filter_enhanced.py (filename and content)
+- examples/getting_started/07_cli_and_yaml_config.py
+- demos/topic_filter_demo.py (filename and content)
+- demos/web_demo/README.md
+- demos/web_demo/QUICK_START.md
+- demos/web_demo/backend/main.py (display names)
+- demos/demo_presets.py
 
 ### Final Verification
 - [ ] Install from test PyPI in fresh environment
