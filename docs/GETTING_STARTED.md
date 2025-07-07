@@ -10,8 +10,11 @@
 # Install the alpha release
 pip install stinger-guardrails-alpha
 
-# Set up your configuration
-stinger setup
+# Verify installation
+stinger --version
+
+# Run the demo
+stinger demo
 ```
 
 #### Alternative: Install from Source
