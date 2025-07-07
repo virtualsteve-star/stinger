@@ -5,6 +5,53 @@ All notable changes to the Stinger Guardrails Framework will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.0a3] - 2025-07-07
+
+### 🚀 Alpha 3 Release - PyPI Publishing & Management Console
+
+This release completes Phases 11-12, adding the management console and publishing to PyPI.
+
+### ✨ Major Features
+
+#### **Management Console (Phase 11)**
+- **Real-time Monitoring**: Live dashboard for all guardrail activity
+- **Performance Analytics**: Charts and metrics for system health
+- **Audit Log Explorer**: Search and export security audit trails
+- **Zero Configuration**: No authentication required, simple deployment
+- **Virtual Scrolling**: Handle large log files efficiently
+- **Data Retention**: Configure retention policies for logs and metrics
+
+#### **PyPI Publishing (Phase 12)**
+- **Package Available**: Install with `pip install stinger-guardrails-alpha`
+- **Automated CI/CD**: GitHub Actions for release automation
+- **Documentation Updates**: Installation instructions updated
+- **Version Management**: Proper versioning with bumpversion
+
+### 🛠️ Improvements
+
+#### **Documentation**
+- Fixed outdated API examples in getting_started.md
+- Updated preset names to match implementation
+- Corrected CLI command examples
+- Fixed health monitor import paths
+
+#### **Repository Cleanup**
+- Removed 800+ node_modules files from git history
+- Cleaned up test backup files and logs
+- Updated .gitignore to prevent future issues
+- Removed one-time migration scripts
+
+#### **Bug Fixes**
+- Fixed management console numpy dependency issue
+- Corrected rate limit API in documentation
+- Updated health monitor API examples
+
+### 📦 Installation
+
+```bash
+pip install stinger-guardrails-alpha==0.1.0a3
+```
+
 ## [0.1.0a2] - 2025-07-04
 
 ### 🚀 Alpha 2 Release - Enhanced Testing & Demo Experience
