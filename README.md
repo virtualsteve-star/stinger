@@ -67,11 +67,17 @@ stinger check-response "Here is your password: hunter2"
 Experience Stinger's power through our interactive web interface that shows guardrails in action:
 
 ```bash
-# Start the web demo
-cd demos/web_demo
-python start_demo.py
+# Terminal 1: Start the backend
+cd demos/web_demo/backend
+pip install -r requirements.txt  # First time only
+python main.py
 
-# Open http://localhost:8001 in your browser
+# Terminal 2: Start the frontend
+cd demos/web_demo/frontend
+npm install  # First time only
+npm start
+
+# Open http://localhost:3000 in your browser
 ```
 
 **Features:**

@@ -143,11 +143,17 @@ Before diving into code, try our interactive demos to experience Stinger's capab
 
 #### Web Demo - Visual Guardrail Experience
 ```bash
-# Start the interactive web interface
-cd demos/web_demo
-python start_demo.py
+# Terminal 1: Start the backend
+cd demos/web_demo/backend
+pip install -r requirements.txt  # First time only
+python main.py
 
-# Open http://localhost:8001 in your browser
+# Terminal 2: Start the frontend
+cd demos/web_demo/frontend
+npm install  # First time only
+npm start
+
+# Open http://localhost:3000 in your browser
 ```
 
 Try these scenarios:

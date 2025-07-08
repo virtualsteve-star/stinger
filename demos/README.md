@@ -46,9 +46,16 @@ The `/demos` folder contains **interactive demonstrations** and **feature showca
 
 ```bash
 # Start the web demo (most impressive!)
-cd demos/web_demo
-python start_demo.py
-# Open http://localhost:8001
+# Terminal 1: Backend
+cd demos/web_demo/backend
+pip install -r requirements.txt  # First time only
+python main.py
+
+# Terminal 2: Frontend
+cd demos/web_demo/frontend
+npm install  # First time only
+npm start
+# Open http://localhost:3000
 
 # Start the management console
 cd management-console  # From project root
