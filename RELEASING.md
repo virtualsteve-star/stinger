@@ -15,26 +15,26 @@ This document describes how to release new versions of Stinger to PyPI.
 
 ### 1. Update Version Numbers
 
-Use bumpversion to update all version references:
+Use bumpversion to update all version references (config in scripts/):
 
 ```bash
 # For alpha releases (e.g., 0.1.0a3 → 0.1.0a4)
-bumpversion build
+bumpversion --config-file scripts/bumpversion.cfg build
 
 # For beta releases (e.g., 0.1.0a4 → 0.1.0b1)
-bumpversion release --new-values b
+bumpversion --config-file scripts/bumpversion.cfg release --new-values b
 
 # For release candidates (e.g., 0.1.0b1 → 0.1.0rc1)
-bumpversion release --new-values rc
+bumpversion --config-file scripts/bumpversion.cfg release --new-values rc
 
 # For production releases (e.g., 0.1.0rc1 → 0.1.0)
-bumpversion release --new-values prod
+bumpversion --config-file scripts/bumpversion.cfg release --new-values prod
 ```
 
 Or manually update:
 - `pyproject.toml` - version field
 - `src/stinger/__init__.py` - __version__ variable
-- `.bumpversion.cfg` - current_version field
+- `scripts/bumpversion.cfg` - current_version field
 
 ### 2. Update CHANGELOG.md
 

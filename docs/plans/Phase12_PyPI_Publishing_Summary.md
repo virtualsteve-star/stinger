@@ -54,7 +54,7 @@ Phase 12 establishes Stinger as a pip-installable package with automated release
 
 1. **pyproject.toml** - Version 0.1.0a3
 2. **src/stinger/__init__.py** - Version 0.1.0a3
-3. **.bumpversion.cfg** - Version 0.1.0a3
+3. **scripts/bumpversion.cfg** - Version 0.1.0a3
 4. **CHANGELOG.md** - Added alpha 3 release notes
 5. **docs/GETTING_STARTED.md** - Updated installation steps
 
