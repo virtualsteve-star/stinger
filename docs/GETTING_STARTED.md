@@ -143,15 +143,13 @@ Before diving into code, try our interactive demos to experience Stinger's capab
 
 #### Web Demo - Visual Guardrail Experience
 ```bash
-# Terminal 1: Start the backend
-cd demos/web_demo/backend
-pip install -r requirements.txt  # First time only
-python main.py
+# Quick start (single terminal)
+cd demos/web_demo
+pip install -r backend/requirements.txt  # First time only
+(cd frontend && npm install)  # First time only
 
-# Terminal 2: Start the frontend
-cd demos/web_demo/frontend
-npm install  # First time only
-npm start
+# Start both services
+(cd backend && python main.py &) && (cd frontend && npm start)
 
 # Open http://localhost:3000 in your browser
 ```
@@ -164,15 +162,13 @@ Try these scenarios:
 
 #### Management Console - Real-Time Monitoring
 ```bash
-# Terminal 1: Start the backend
-cd management-console/backend
-pip install -r requirements.txt  # First time only
-python main.py
+# Quick start (single terminal)
+cd management-console
+pip install -r backend/requirements.txt  # First time only
+(cd frontend && npm install)  # First time only
 
-# Terminal 2: Start the frontend
-cd management-console/frontend
-npm install  # First time only
-npm start
+# Start both services
+(cd backend && python main.py &) && (cd frontend && npm start)
 
 # Open http://localhost:3001 in your browser
 ```

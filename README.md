@@ -67,17 +67,19 @@ stinger check-response "Here is your password: hunter2"
 Experience Stinger's power through our interactive web interface that shows guardrails in action:
 
 ```bash
-# Terminal 1: Start the backend
-cd demos/web_demo/backend
-pip install -r requirements.txt  # First time only
-python main.py
+# Start the web demo (single terminal)
+cd demos/web_demo
 
-# Terminal 2: Start the frontend
-cd demos/web_demo/frontend
-npm install  # First time only
-npm start
+# Install dependencies (first time only)
+pip install -r backend/requirements.txt
+(cd frontend && npm install)
+
+# Start both services
+(cd backend && python main.py &)
+(cd frontend && npm start)
 
 # Open http://localhost:3000 in your browser
+# Press Ctrl+C to stop the frontend, then: kill %1 to stop backend
 ```
 
 **Features:**
@@ -92,17 +94,19 @@ npm start
 Monitor your Stinger deployment with our real-time management console:
 
 ```bash
-# Terminal 1: Start the backend
-cd management-console/backend
-pip install -r requirements.txt  # First time only
-python main.py
+# Start the management console (single terminal)
+cd management-console
 
-# Terminal 2: Start the frontend
-cd management-console/frontend
-npm install  # First time only
-npm start
+# Install dependencies (first time only)
+pip install -r backend/requirements.txt
+(cd frontend && npm install)
+
+# Start both services
+(cd backend && python main.py &)
+(cd frontend && npm start)
 
 # Open http://localhost:3001 in your browser
+# Press Ctrl+C to stop the frontend, then: kill %1 to stop backend
 ```
 
 **Features:**

@@ -45,29 +45,19 @@ The `/demos` folder contains **interactive demonstrations** and **feature showca
 ### Interactive Web Interfaces
 
 ```bash
-# Start the web demo (most impressive!)
-# Terminal 1: Backend
-cd demos/web_demo/backend
-pip install -r requirements.txt  # First time only
-python main.py
-
-# Terminal 2: Frontend
-cd demos/web_demo/frontend
-npm install  # First time only
-npm start
+# Web Demo - Quick Start (single terminal)
+cd demos/web_demo
+pip install -r backend/requirements.txt && (cd frontend && npm install)  # First time only
+(cd backend && python main.py &) && (cd frontend && npm start)
 # Open http://localhost:3000
 
-# Start the management console
-# Terminal 1: Backend
-cd management-console/backend
-pip install -r requirements.txt  # First time only
-python main.py
-
-# Terminal 2: Frontend
-cd management-console/frontend
-npm install  # First time only
-npm start
+# Management Console - Quick Start (single terminal)  
+cd management-console
+pip install -r backend/requirements.txt && (cd frontend && npm install)  # First time only
+(cd backend && python main.py &) && (cd frontend && npm start)
 # Open http://localhost:3001
+
+# To stop: Ctrl+C for frontend, then 'kill %1' for backend
 ```
 
 ### Command-Line Demos
