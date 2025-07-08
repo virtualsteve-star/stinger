@@ -118,18 +118,50 @@ pip install -r backend/requirements.txt
 
 ## 🛡️ Available Guardrails
 
-### Input Guardrails
-- **Toxicity Detection**: Identify hate speech, harassment, threats
-- **PII Detection**: Protect credit cards, SSNs, emails, phone numbers
-- **Prompt Injection**: Prevent malicious prompt manipulation
-- **Keyword Blocking**: Block specific words or phrases
-- **Length Filtering**: Control input/output length
+Stinger offers multiple levels of protection with both fast regex-based and sophisticated AI-powered guardrails:
 
-### Output Guardrails
-- **Code Generation**: Prevent unauthorized code generation
-- **Content Moderation**: AI-powered content screening
-- **URL Filtering**: Block malicious or unwanted URLs
-- **Toxicity Detection**: Screen generated responses
+### 🚀 Simple/Fast Guardrails (No API Key Required)
+- **Simple PII Detection**: Regex-based detection of SSNs, credit cards, emails, phone numbers
+- **Simple Toxicity Detection**: Keyword-based profanity and hate speech filtering  
+- **Simple Code Generation**: Pattern-based code snippet detection
+- **Keyword Blocking**: Block specific words or phrases
+- **URL Filtering**: Block or allow specific domains
+- **Length Limiting**: Control input/output length
+- **Regex Filtering**: Custom pattern matching
+
+### 🤖 AI-Powered Guardrails (Requires OpenAI API Key)
+- **AI PII Detection**: Context-aware PII detection using language models
+- **AI Toxicity Detection**: Nuanced understanding of harmful content
+- **AI Code Generation**: Sophisticated code pattern recognition
+- **Content Moderation**: General inappropriate content detection
+- **Topic Filtering**: AI-based allowed/blocked topic enforcement
+
+### 🔐 Prompt Injection Protection (Three Levels)
+1. **Quick/Local Detection**: Fast pattern matching for common injection attempts
+2. **AI-Powered Detection**: Single-turn analysis using language models
+3. **Conversation-Aware AI**: Multi-turn context analysis for sophisticated attacks
+   - Configurable strategies: 'recent', 'suspicious', or 'mixed' context
+   - Risk levels: low, medium, high, critical
+
+### 🎯 Usage Examples
+```python
+# Use simple guardrails for speed (no API key needed)
+pipeline = GuardrailPipeline.from_preset("customer_service")  # Uses simple versions
+
+# Enable AI guardrails for better accuracy (requires API key)
+export OPENAI_API_KEY="sk-..."
+pipeline = GuardrailPipeline.from_preset("medical")  # Uses AI versions
+
+# Mix and match as needed
+config = {
+    "input": [
+        {"type": "simple_pii_detection"},     # Fast PII check
+        {"type": "ai_toxicity_detection"},    # AI toxicity check
+        {"type": "prompt_injection",          # Multi-turn injection detection
+         "config": {"conversation_aware": True}}
+    ]
+}
+```
 
 ## 🔒 Security Audit Trail
 
