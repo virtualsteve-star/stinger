@@ -7,7 +7,8 @@ ensuring consistent model usage and configuration management.
 
 import logging
 from abc import ABC, abstractmethod
-from typing import Any, Dict
+from pathlib import Path
+from typing import Any, Dict, Optional
 
 import yaml
 from openai import AsyncOpenAI
@@ -74,13 +75,16 @@ class OpenAIModelProvider(ModelProvider):
 class ModelFactory:
     """Factory for creating model providers."""
 
-    def __init__(self, config_path: str = "src/stinger/core/configs/models.yaml"):
+    def __init__(self, config_path: Optional[str] = None):
+        if config_path is None:
+            # Use path relative to this file
+            config_path = Path(__file__).parent / "configs" / "models.yaml"
         self.config = self._load_config(config_path)
 
-    def _load_config(self, config_path: str) -> Dict[str, Any]:
+    def _load_config(self, config_path: Any) -> Dict[str, Any]:
         """Load model configuration from YAML file."""
         try:
-            with open(config_path, "r") as f:
+            with open(str(config_path), "r") as f:
                 config = yaml.safe_load(f)
                 if isinstance(config, dict) and "models" in config:
                     return config["models"]

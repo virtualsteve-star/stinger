@@ -153,7 +153,7 @@ guardrail_configs:
     type: "simple_code_generation"
     config:
       enabled: true
-      categories: ["code_structures", "programming_keywords", "code_injection"]
+      categories: ["code_requests", "programming_keywords", "code_injection"]
       confidence_threshold: 0.6
       on_error: "block"
 
