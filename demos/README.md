@@ -58,9 +58,15 @@ npm start
 # Open http://localhost:3000
 
 # Start the management console
-cd management-console  # From project root
+# Terminal 1: Backend
+cd management-console/backend
+pip install -r requirements.txt  # First time only
+python main.py
+
+# Terminal 2: Frontend
+cd management-console/frontend
 npm install  # First time only
-npm run dev
+npm start
 # Open http://localhost:3001
 ```
 

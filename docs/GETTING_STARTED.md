@@ -164,10 +164,15 @@ Try these scenarios:
 
 #### Management Console - Real-Time Monitoring
 ```bash
-# Start the monitoring dashboard
-cd management-console
+# Terminal 1: Start the backend
+cd management-console/backend
+pip install -r requirements.txt  # First time only
+python main.py
+
+# Terminal 2: Start the frontend
+cd management-console/frontend
 npm install  # First time only
-npm run dev
+npm start
 
 # Open http://localhost:3001 in your browser
 ```
