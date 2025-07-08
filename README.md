@@ -75,8 +75,9 @@ pip install -r backend/requirements.txt
 (cd frontend && npm install)
 
 # Start both services
-(cd backend && python main.py &)
-(cd frontend && npm start)
+cd backend && python main.py &
+sleep 2  # Give backend time to start
+cd ../frontend && npm start
 
 # Open http://localhost:3000 in your browser
 # Press Ctrl+C to stop the frontend, then: kill %1 to stop backend
@@ -102,8 +103,9 @@ pip install -r backend/requirements.txt
 (cd frontend && npm install)
 
 # Start both services
-(cd backend && python main.py &)
-(cd frontend && npm start)
+cd backend && python main.py &
+sleep 2  # Give backend time to start
+cd ../frontend && npm start
 
 # Open http://localhost:3001 in your browser
 # Press Ctrl+C to stop the frontend, then: kill %1 to stop backend

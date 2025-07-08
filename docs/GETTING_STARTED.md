@@ -149,7 +149,9 @@ pip install -r backend/requirements.txt  # First time only
 (cd frontend && npm install)  # First time only
 
 # Start both services
-(cd backend && python main.py &) && (cd frontend && npm start)
+cd backend && python main.py &
+sleep 2  # Give backend time to start
+cd ../frontend && npm start
 
 # Open http://localhost:3000 in your browser
 ```
@@ -168,7 +170,9 @@ pip install -r backend/requirements.txt  # First time only
 (cd frontend && npm install)  # First time only
 
 # Start both services
-(cd backend && python main.py &) && (cd frontend && npm start)
+cd backend && python main.py &
+sleep 2  # Give backend time to start
+cd ../frontend && npm start
 
 # Open http://localhost:3001 in your browser
 ```

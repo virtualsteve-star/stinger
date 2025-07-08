@@ -48,13 +48,17 @@ The `/demos` folder contains **interactive demonstrations** and **feature showca
 # Web Demo - Quick Start (single terminal)
 cd demos/web_demo
 pip install -r backend/requirements.txt && (cd frontend && npm install)  # First time only
-(cd backend && python main.py &) && (cd frontend && npm start)
+cd backend && python main.py &
+sleep 2  # Give backend time to start
+cd ../frontend && npm start
 # Open http://localhost:3000
 
 # Management Console - Quick Start (single terminal)  
 cd management-console
 pip install -r backend/requirements.txt && (cd frontend && npm install)  # First time only
-(cd backend && python main.py &) && (cd frontend && npm start)
+cd backend && python main.py &
+sleep 2  # Give backend time to start
+cd ../frontend && npm start
 # Open http://localhost:3001
 
 # To stop: Ctrl+C for frontend, then 'kill %1' for backend
