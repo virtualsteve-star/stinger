@@ -37,7 +37,7 @@ run_check() {
 echo -e "\n${BLUE}1. Version Consistency${NC}"
 PYPROJECT_VERSION=$(grep -E "^version = " pyproject.toml | cut -d'"' -f2)
 INIT_VERSION=$(grep -E "^__version__ = " src/stinger/__init__.py | cut -d'"' -f2)
-BUMP_VERSION=$(grep -E "^current_version = " .bumpversion.cfg | cut -d' ' -f3)
+BUMP_VERSION=$(grep -E "^current_version = " scripts/bumpversion.cfg | cut -d' ' -f3)
 
 if [ "$PYPROJECT_VERSION" = "$INIT_VERSION" ] && [ "$PYPROJECT_VERSION" = "$BUMP_VERSION" ]; then
     echo -e "${GREEN}✅${NC} Version consistent: $PYPROJECT_VERSION"
@@ -46,7 +46,7 @@ else
     echo -e "${RED}❌${NC} Version mismatch:"
     echo "   pyproject.toml: $PYPROJECT_VERSION"
     echo "   __init__.py: $INIT_VERSION"
-    echo "   .bumpversion.cfg: $BUMP_VERSION"
+    echo "   scripts/bumpversion.cfg: $BUMP_VERSION"
     ((CHECKS_FAILED++))
 fi
 

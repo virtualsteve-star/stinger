@@ -11,7 +11,7 @@ Phase 12 has been successfully completed with all infrastructure in place for Py
 - Ensured version consistency across:
   - `pyproject.toml`
   - `src/stinger/__init__.py` 
-  - `.bumpversion.cfg`
+  - `scripts/bumpversion.cfg`
   - `CHANGELOG.md`
 
 ### 2. Build Infrastructure ✅
@@ -128,7 +128,7 @@ python3 scripts/verify_pypi_release.py
 ### Modified Files:
 - `pyproject.toml` (version → 0.1.0a3)
 - `src/stinger/__init__.py` (version → 0.1.0a3)
-- `.bumpversion.cfg` (version → 0.1.0a3)
+- `scripts/bumpversion.cfg` (version → 0.1.0a3)
 - `CHANGELOG.md` (added v0.1.0a3 entry)
 - `docs/GETTING_STARTED.md` (minor updates)
 
