@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-Topic Filter Demo
+Topic Guardrail Demo
 
-This demo showcases the topic filtering capabilities including:
+This demo showcases the topic guardrail capabilities including:
 - Allow/deny list modes
 - Case sensitivity
 - Regex pattern matching
@@ -13,12 +13,12 @@ This demo showcases the topic filtering capabilities including:
 import asyncio
 import yaml
 from pathlib import Path
-from stinger.guardrails.topic_filter import TopicGuardrail
+from stinger.guardrails.topic_guardrail import TopicGuardrail
 from stinger.core.pipeline import GuardrailPipeline
 
 
-class TopicFilterDemo:
-    """Demo class for topic filtering capabilities."""
+class TopicGuardrailDemo:
+    """Demo class for topic guardrail capabilities."""
     
     def __init__(self):
         self.demo_configs = {
@@ -87,15 +87,15 @@ class TopicFilterDemo:
             "This is legitimate business content"
         ]
     
-    async def run_single_filter_demo(self, config_name: str, config: dict):
-        """Run demo for a single filter configuration."""
+    async def run_single_guardrail_demo(self, config_name: str, config: dict):
+        """Run demo for a single guardrail configuration."""
         print(f"\n{'='*60}")
         print(f"DEMO: {config_name.upper()}")
         print(f"{'='*60}")
         
-        # Create filter
+        # Create guardrail
         guardrail_obj = TopicGuardrail(config)
-        print(f"Filter: {guardrail_obj.name}")
+        print(f"Guardrail: {guardrail_obj.name}")
         print(f"Mode: {guardrail_obj.mode}")
         print(f"Allow topics: {len(guardrail_obj.allow_topics)}")
         print(f"Deny topics: {len(guardrail_obj.deny_topics)}")
@@ -117,9 +117,9 @@ class TopicFilterDemo:
             print()
     
     async def run_pipeline_demo(self):
-        """Run demo with multiple filters in a pipeline."""
+        """Run demo with multiple guardrails in a pipeline."""
         print(f"\n{'='*60}")
-        print("PIPELINE DEMO: Multiple Topic Filters")
+        print("PIPELINE DEMO: Multiple Topic Guardrails")
         print(f"{'='*60}")
         
         # Create temporary config file for pipeline
@@ -132,7 +132,7 @@ class TopicFilterDemo:
                 'input': [
                     {
                         'type': 'content_moderation',
-                        'name': 'customer_service_filter',
+                        'name': 'customer_service_guardrail',
                         'mode': 'allow',
                         'allow_topics': ['account', 'billing', 'support', 'help'],
                         'confidence_threshold': 0.5,
@@ -141,7 +141,7 @@ class TopicFilterDemo:
                     },
                     {
                         'type': 'content_moderation',
-                        'name': 'content_moderation_filter',
+                        'name': 'content_moderation_guardrail',
                         'mode': 'deny',
                         'deny_topics': ['hate speech', 'violence', 'threats'],
                         'confidence_threshold': 0.6,
@@ -197,9 +197,9 @@ class TopicFilterDemo:
         print("ANALYSIS DEMO: Content Analysis")
         print(f"{'='*60}")
         
-        # Create filter for analysis
+        # Create guardrail for analysis
         config = {
-            'name': 'analysis_filter',
+            'name': 'analysis_guardrail',
             'mode': 'both',
             'allow_topics': ['technology', 'science', 'education'],
             'deny_topics': ['politics', 'religion', 'gambling'],
@@ -236,12 +236,12 @@ class TopicFilterDemo:
         print("PERFORMANCE DEMO: Large Topic Lists")
         print(f"{'='*60}")
         
-        # Create filter with many topics
+        # Create guardrail with many topics
         allow_topics = [f"topic_{i}" for i in range(50)]
         deny_topics = [f"deny_{i}" for i in range(50)]
         
         config = {
-            'name': 'performance_filter',
+            'name': 'performance_guardrail',
             'mode': 'both',
             'allow_topics': allow_topics,
             'deny_topics': deny_topics,
@@ -282,14 +282,14 @@ class TopicFilterDemo:
     
     async def run_all_demos(self):
         """Run all demos."""
-        print("TOPIC FILTER DEMO")
+        print("TOPIC GUARDRAIL DEMO")
         print("=" * 60)
-        print("This demo showcases topic filtering capabilities including")
+        print("This demo showcases topic guardrail capabilities including")
         print("allow/deny lists, different modes, regex support, and more.")
         
-        # Run individual filter demos
+        # Run individual guardrail demos
         for config_name, config in self.demo_configs.items():
-            await self.run_single_filter_demo(config_name, config)
+            await self.run_single_guardrail_demo(config_name, config)
         
         # Run pipeline demo
         await self.run_pipeline_demo()
@@ -303,7 +303,7 @@ class TopicFilterDemo:
         print(f"\n{'='*60}")
         print("DEMO COMPLETE")
         print(f"{'='*60}")
-        print("The topic filter provides flexible content filtering based on")
+        print("The topic guardrail provides flexible content filtering based on")
         print("topic allow/deny lists with support for:")
         print("• Multiple modes (allow, deny, both)")
         print("• Case sensitivity control")
@@ -315,7 +315,7 @@ class TopicFilterDemo:
 
 async def main():
     """Main demo function."""
-    demo = TopicFilterDemo()
+    demo = TopicGuardrailDemo()
     await demo.run_all_demos()
 
 

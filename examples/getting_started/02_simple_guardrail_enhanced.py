@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Simple Filter Example - Stinger Guardrails
+Simple Guardrail Example - Stinger Guardrails
 
 Demonstrates using different presets and understanding guardrail results.
 Follows the Basic Usage section from the Getting Started guide.
@@ -40,7 +40,7 @@ def check_prerequisites() -> bool:
 
 def run_example():
     """Run the main example code."""
-    print("\n🔧 Simple Filter Example")
+    print("\n🔧 Simple Guardrail Example")
     print("=" * 35)
     
     try:
@@ -109,7 +109,7 @@ def run_example():
                     print(f"      ❌ Error checking content: {e}")
         
         print("\n✅ Example completed successfully!")
-        print("   Different presets have different filtering rules.")
+        print("   Different presets have different guardrail rules.")
         return True
         
     except ImportError as e:

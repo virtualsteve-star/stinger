@@ -59,7 +59,7 @@ def main():
                 },
                 {
                     "name": "length_check",
-                    "type": "length_filter",
+                    "type": "length_guardrail",
                     "enabled": True,
                     "on_error": "warn",
                     "config": {
@@ -87,7 +87,7 @@ def main():
         yaml.dump(custom_config, f, default_flow_style=False, indent=2)
     
     print(f"   ✅ Created: {config_path}")
-    print(f"   Config includes: toxicity, PII, length, and content moderation filters")
+    print(f"   Config includes: toxicity, PII, length, and content moderation guardrails")
     
     # Step 3: Load and use custom config
     print("\n3. Loading and using custom config:")
@@ -135,10 +135,10 @@ def main():
     print("")
     print("   Each guardrail has:")
     print("   ├── name: Unique identifier")
-    print("   ├── type: Filter type")
+    print("   ├── type: Guardrail type")
     print("   ├── enabled: True/False")
     print("   ├── on_error: block/warn/log")
-    print("   └── config: Filter-specific settings")
+    print("   └── config: Guardrail-specific settings")
     
     # Step 5: Demonstrate CLI simulation
     print("\n5. CLI Command Simulation:")

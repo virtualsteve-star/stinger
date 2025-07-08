@@ -143,15 +143,19 @@ Success Rate: 91.7%
 - 48 messages across 8 conversations
 - ~17% expected warn rate
 
-### Running Scenarios
+### Running Test Suites
 ```bash
-# All scenarios
-cd tests/scenarios
-python run_all_tests.py
+# Fast CI tests
+pytest -m "ci" -v
 
-# Specific scenario
-cd tests/scenarios/customer_service
-python test_runner.py --quiet
+# AI behavior tests (requires OPENAI_API_KEY)
+pytest -m "efficacy" -v
+
+# Performance tests
+pytest -m "performance" -v
+
+# All tests
+python run_test_suites.py all
 ```
 
 ## 📝 Adding New Tests

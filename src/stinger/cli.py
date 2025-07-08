@@ -1,10 +1,16 @@
 import argparse
 import sys
 
+import stinger
 from stinger.cli.first_run import check_first_run
 from stinger.cli.setup_wizard import run_setup
 from stinger.core.health_monitor import HealthMonitor, print_health_status
 from stinger.core.pipeline import GuardrailPipeline
+
+
+def get_version():
+    """Get the current version of Stinger."""
+    return stinger.__version__
 
 
 def run_demo():
@@ -70,6 +76,7 @@ def main():
             return first_run_result
 
     parser = argparse.ArgumentParser(description="Stinger CLI - LLM Guardrails")
+    parser.add_argument("--version", action="version", version="%(prog)s " + get_version())
     subparsers = parser.add_subparsers(dest="command")
 
     subparsers.add_parser("demo", help="Run a demo guardrail check")
