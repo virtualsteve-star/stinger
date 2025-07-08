@@ -1,7 +1,7 @@
 import argparse
 import sys
+from importlib.metadata import version
 
-import stinger
 from stinger.cli.first_run import check_first_run
 from stinger.cli.setup_wizard import run_setup
 from stinger.core.health_monitor import HealthMonitor, print_health_status
@@ -10,7 +10,10 @@ from stinger.core.pipeline import GuardrailPipeline
 
 def get_version():
     """Get the current version of Stinger."""
-    return stinger.__version__
+    try:
+        return version("stinger-guardrails-alpha")
+    except Exception:
+        return "unknown"
 
 
 def run_demo():
