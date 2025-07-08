@@ -189,7 +189,7 @@ pipeline:
       warn_levels: ["medium"]
       on_error: "allow"
     - name: length_check
-      type: length_filter
+      type: length_guardrail
       enabled: true
       max_length: 1000
       on_error: "allow"
@@ -812,31 +812,31 @@ async def get_guardrail_details(
             "display_name": "Keyword Blocker",
             "description": "Blocks specific keywords or phrases",
             "category": "local",
-            "type": "filter"
+            "type": "guardrail"
         },
-        "regex_filter": {
-            "display_name": "Regex Filter",
-            "description": "Filters content matching regex patterns",
+        "regex_guardrail": {
+            "display_name": "Regex Guardrail",
+            "description": "Guards against content matching regex patterns",
             "category": "local",
-            "type": "filter"
+            "type": "guardrail"
         },
-        "url_filter": {
-            "display_name": "URL Filter",
+        "url_guardrail": {
+            "display_name": "URL Guardrail",
             "description": "Blocks or allows specific domains and URLs",
             "category": "local",
-            "type": "filter"
+            "type": "guardrail"
         },
-        "length_filter": {
+        "length_guardrail": {
             "display_name": "Length Limiter",
             "description": "Enforces minimum and maximum message lengths",
             "category": "local",
-            "type": "filter"
+            "type": "guardrail"
         },
-        "topic_filter": {
-            "display_name": "Topic Filter",
-            "description": "AI-based filtering of specific topics or themes",
+        "topic_guardrail": {
+            "display_name": "Topic Guardrail",
+            "description": "AI-based guarding against specific topics or themes",
             "category": "ai",
-            "type": "filter"
+            "type": "guardrail"
         }
     }
     
@@ -863,7 +863,7 @@ async def get_guardrail_details(
             "display_name": description_info.get("display_name", name.replace("_", " ").title()),
             "description": description_info.get("description", "Custom guardrail"),
             "category": description_info.get("category", "custom"),
-            "guardrail_type": description_info.get("type", "filter")
+            "guardrail_type": description_info.get("type", "guardrail")
         }
         enhanced_info["input_guardrails"].append(enhanced_guardrail)
     
@@ -881,7 +881,7 @@ async def get_guardrail_details(
             "display_name": description_info.get("display_name", name.replace("_", " ").title()),
             "description": description_info.get("description", "Custom guardrail"),
             "category": description_info.get("category", "custom"),
-            "guardrail_type": description_info.get("type", "filter")
+            "guardrail_type": description_info.get("type", "guardrail")
         }
         enhanced_info["output_guardrails"].append(enhanced_guardrail)
     

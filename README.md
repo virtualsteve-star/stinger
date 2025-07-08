@@ -30,17 +30,22 @@ pip install .
 
 ```python
 from stinger import GuardrailPipeline
+from stinger.core import audit
 
-# Create a pipeline from configuration
-pipeline = GuardrailPipeline("config.yaml")
+# Enable security audit trail (zero-config)
+audit.enable()  # Tracks all security decisions
+
+# Create a pipeline from preset
+pipeline = GuardrailPipeline.from_preset("customer_service")
 
 # Check input content
-result = pipeline.check_input("Hello, world!")
+result = pipeline.check_input("My credit card is 4532-1234-5678-9012")
 if result['blocked']:
     print(f"Input blocked: {result['reasons']}")
+    # Audit trail automatically logs: user input, guardrail decision, reasons
 
 # Check output content
-result = pipeline.check_output("Here's your response...")
+result = pipeline.check_output("Here's the code: import os; os.system('rm -rf /')")
 if result['blocked']:
     print(f"Output blocked: {result['reasons']}")
 ```
@@ -54,6 +59,47 @@ stinger demo
 stinger check-prompt "My SSN is 123-45-6789."
 stinger check-response "Here is your password: hunter2"
 ```
+
+## 🌟 Interactive Demos
+
+### Web Demo - Real-Time Guardrail Visualization
+
+Experience Stinger's power through our interactive web interface that shows guardrails in action:
+
+```bash
+# Start the web demo
+cd demos/web_demo
+python start_demo.py
+
+# Open http://localhost:8001 in your browser
+```
+
+**Features:**
+- 💬 Interactive chat interface with real-time guardrail feedback
+- 🚦 Visual indicators showing which guardrails triggered
+- 📊 Live audit trail visualization
+- 🔄 Switch between presets (customer service, medical, financial)
+- ⚡ See guardrails activate as you type
+
+### Management Console - System Monitoring Dashboard
+
+Monitor your Stinger deployment with our real-time management console:
+
+```bash
+# Start the management console
+cd management-console
+npm install  # First time only
+npm run dev
+
+# Open http://localhost:3001 in your browser
+```
+
+**Features:**
+- 📈 Real-time metrics and performance monitoring
+- 🔍 Active conversation tracking
+- 📊 Guardrail trigger statistics
+- 🏥 System health monitoring
+- 📉 Historical data visualization
 
 ## 🛡️ Available Guardrails
 
@@ -76,7 +122,7 @@ Stinger provides comprehensive security audit logging for compliance and forensi
 
 ### Zero-Config Audit Trail
 ```python
-from stinger import audit
+from stinger.core import audit
 
 # Enable with smart defaults (just works!)
 audit.enable()
@@ -176,7 +222,7 @@ pipeline.update_guardrail_config("toxicity_check", {"confidence_threshold": 0.9}
 ### Audit Trail API
 
 ```python
-from stinger import audit
+from stinger.core import audit
 
 # Enable audit trail
 audit.enable("./logs/audit.log")
@@ -257,7 +303,7 @@ cd demos/tech_support
 python3 demo.py
 
 # Run the simple example
-python3 examples/simple_usage.py
+python3 examples/getting_started/01_basic_installation.py
 ```
 
 ## 📚 Learning Resources
@@ -265,7 +311,7 @@ python3 examples/simple_usage.py
 ### Examples (`/examples`)
 **Start here** - Minimal, focused code examples that mirror the Getting Started guide:
 - `01_basic_installation.py` - Installation and basic setup
-- `02_simple_filter.py` - Simple guardrail usage
+- `02_simple_guardrail.py` - Simple guardrail usage
 - `03_global_rate_limiting.py` - Rate limiting configuration
 - `04_conversation_api.py` - Conversation-based filtering
 - `05_conversation_rate_limiting.py` - Conversation rate limiting
@@ -323,7 +369,7 @@ pytest tests/
 src/
   └── stinger/
       ├── core/           # Core components and high-level API
-      ├── filters/        # Guardrail implementations
+      ├── guardrails/     # Guardrail implementations
       ├── data/           # Keyword lists and data files
       ├── scenarios/      # Pre-configured scenarios
       ├── utils/          # Utilities and exceptions

@@ -135,19 +135,77 @@ else:
         print(f"Warnings: {result['warnings']}")
 ```
 
+## 🌟 Interactive Demos
+
+### See Stinger in Action
+
+Before diving into code, try our interactive demos to experience Stinger's capabilities:
+
+#### Web Demo - Visual Guardrail Experience
+```bash
+# Start the interactive web interface
+cd demos/web_demo
+python start_demo.py
+
+# Open http://localhost:8001 in your browser
+```
+
+Try these scenarios:
+- Type a credit card number and watch PII detection activate
+- Use offensive language to trigger toxicity guardrails
+- Ask to generate code and see output filtering
+- Switch between presets to see different security levels
+
+#### Management Console - Real-Time Monitoring
+```bash
+# Start the monitoring dashboard
+cd management-console
+npm install  # First time only
+npm run dev
+
+# Open http://localhost:3001 in your browser
+```
+
+Monitor:
+- Real-time guardrail triggers
+- System performance metrics
+- Active conversations
+- Security event history
+
 ## 🔑 API Key Setup
 
-Stinger supports multiple AI providers. Set up your keys:
+Some guardrails use AI for advanced detection. Here's how to set up API keys:
 
+### Quick Setup (Environment Variable)
 ```bash
-# Add OpenAI API key
-python scripts/manage_api_keys.py add openai
+# Set your OpenAI API key
+export OPENAI_API_KEY="sk-..."
 
-# Test your key
-python scripts/manage_api_keys.py test openai
+# Or use the recommended secure method (macOS)
+security add-generic-password -a "$USER" -s openai-api-key -w 'sk-...'
+launchctl setenv OPENAI_API_KEY $(security find-generic-password -w -s openai-api-key)
+```
 
-# List configured services
-python scripts/manage_api_keys.py list
+### Which Guardrails Need API Keys?
+
+**AI-Powered (Require API Key):**
+- Content Moderation (`content_moderation`)
+- Advanced Toxicity Detection
+- Prompt Injection Detection (AI mode)
+
+**Regex-Based (No API Key):**
+- PII Detection (`simple_pii_detection`)
+- Basic Toxicity (`simple_toxicity_detection`)
+- Code Generation Detection
+- Keyword Blocking
+
+### Testing Your Setup
+```bash
+# Test with a simple (no API) guardrail
+python examples/getting_started/02_simple_guardrail.py
+
+# Test with an AI guardrail (requires API key)
+python examples/getting_started/11_ai_powered_filters.py
 ```
 
 ## �� Health Monitoring
@@ -156,10 +214,10 @@ Monitor your system's health:
 
 ```bash
 # Basic health check
-python -m stinger.cli health
+stinger health
 
 # Detailed health information
-python -m stinger.cli health --detailed
+stinger health --detailed
 ```
 
 ## 📖 Common Use Cases
@@ -219,8 +277,8 @@ Run the comprehensive test suite:
 # Run all tests
 python -m pytest tests/ -v
 
-# Run specific scenario tests
-python tests/scenarios/run_all_tests.py --scenario customer_service
+# Run specific test categories
+pytest -m "efficacy" -v  # Run AI behavior tests
 
 # Run integration tests
 python tests/test_integration.py
@@ -252,7 +310,7 @@ python scripts/manage_api_keys.py add openai
 **3. Configuration Errors**
 ```bash
 # Check health status
-python -m stinger.cli health
+stinger health
 
 # Run with debug output
 python demos/conversation_demo.py --debug
@@ -263,7 +321,7 @@ python demos/conversation_demo.py --debug
 - **Documentation**: Check the `docs/` directory
 - **Examples**: Look at `examples/` and `demos/` directories
 - **Tests**: Run tests to verify your setup
-- **Health Monitor**: Use `python -m stinger.cli health` to diagnose issues
+- **Health Monitor**: Use `stinger health` to diagnose issues
 
 ## 📈 Next Steps
 
@@ -414,7 +472,7 @@ python examples/getting_started/08_security_audit_trail.py
 
 Example usage:
 ```python
-from stinger import audit
+from stinger.core import audit
 
 audit.enable()  # Zero-config, just works!
 
@@ -470,15 +528,22 @@ conv.add_exchange("prompt", "response")
 ### Configuration
 ```yaml
 # config.yaml
-input_guardrails:
-  - type: pii_detection
-    enabled: true
-  - type: toxicity_detection
-    enabled: true
-
-output_guardrails:
-  - type: content_moderation
-    enabled: true
+version: "1.0"
+pipeline:
+  input:
+    - name: pii_check
+      type: simple_pii_detection
+      enabled: true
+      on_error: block
+    - name: toxicity_check
+      type: simple_toxicity_detection
+      enabled: true
+      on_error: warn
+  output:
+    - name: content_check
+      type: content_moderation
+      enabled: true
+      on_error: block
 ```
 
 ---

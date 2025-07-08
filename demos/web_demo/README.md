@@ -69,13 +69,13 @@ The frontend will be available at `https://localhost:3000`
 
 ### Settings Panel
 - **Preset Configurations**: Customer service, medical, financial, etc.
-- **Guardrail Toggles**: Enable/disable specific filters
+- **Guardrail Toggles**: Enable/disable specific guardrails
 - **Real-time Updates**: Changes apply immediately
 
 ### Audit Log Viewer
 - **Real-time Updates**: See security events as they happen
 - **Event Details**: Complete audit trail with timestamps
-- **Forensic Analysis**: Filter and search audit events
+- **Forensic Analysis**: Search and analyze audit events
 
 ### Try These Examples
 
@@ -170,7 +170,7 @@ npm run build
 
 The demo includes comprehensive guardrail testing:
 
-**Input Filters:**
+**Input Guardrails:**
 - Length limits
 - Rate limiting  
 - PII detection
@@ -178,7 +178,7 @@ The demo includes comprehensive guardrail testing:
 - Prompt injection detection
 - Toxicity screening
 
-**Output Filters:**
+**Output Guardrails:**
 - PII redaction
 - Code generation prevention
 - Content moderation

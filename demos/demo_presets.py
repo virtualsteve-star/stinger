@@ -77,7 +77,7 @@ def demo_content_moderation() -> None:
         print_result(result, "input")
         
         # Test long content
-        test_output = "This is a very long message that exceeds the typical length limits for social media platforms and should trigger the length filter"
+        test_output = "This is a very long message that exceeds the typical length limits for social media platforms and should trigger the length guardrail"
         result = pipeline.check_output(test_output)
         print_result(result, "output")
         

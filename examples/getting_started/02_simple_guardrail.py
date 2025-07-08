@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Simple Filter Example - Stinger Guardrails
+Simple Guardrail Example - Stinger Guardrails
 
 Demonstrates using different presets and understanding guardrail results.
 Follows the Basic Usage section from the Getting Started guide.
@@ -10,7 +10,7 @@ from stinger import GuardrailPipeline
 
 
 def main():
-    print("🔧 Simple Filter Example")
+    print("🔧 Simple Guardrail Example")
     print("=" * 35)
     
     # Test different presets
@@ -61,7 +61,7 @@ def main():
             else:
                 print("   ✅ PASSED")
     
-    print("\n🎉 Different presets working! Each preset has different filtering rules.")
+    print("\n🎉 Different presets working! Each preset has different guardrail rules.")
 
 
 if __name__ == "__main__":

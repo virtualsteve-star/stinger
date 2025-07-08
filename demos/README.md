@@ -16,10 +16,22 @@ The `/demos` folder contains **interactive demonstrations** and **feature showca
 
 ## Available Demos
 
+### 🌟 **Interactive Interfaces**
+- **`web_demo/`** - Full-featured web interface with real-time guardrail visualization
+  - Interactive chat with visual feedback
+  - Live audit trail display
+  - Preset switching (customer service, medical, financial)
+  - Real-time guardrail trigger indicators
+- **`management-console/`** - System monitoring dashboard (in root directory)
+  - Real-time metrics and performance graphs
+  - Active conversation tracking
+  - Guardrail trigger statistics
+  - System health monitoring
+
 ### **Core Features**
 - **`conversation_demo.py`** - Comprehensive conversation management with rate limiting, history tracking, and pipeline integration
 - **`global_rate_limiting_demo.py`** - Advanced rate limiting scenarios including custom limits and monitoring
-- **`topic_filter_demo.py`** - Topic-based content filtering with allow/deny lists
+- **`topic_guardrail_demo.py`** - Topic-based content filtering with allow/deny lists
 
 ### **Advanced Features**
 - **`conversation_aware_prompt_injection_demo.py`** - Prompt injection detection with conversation context
@@ -29,6 +41,23 @@ The `/demos` folder contains **interactive demonstrations** and **feature showca
 - **`tech_support/`** - Complete customer service scenario with configuration files and utilities
 
 ## Running Demos
+
+### Interactive Web Interfaces
+
+```bash
+# Start the web demo (most impressive!)
+cd demos/web_demo
+python start_demo.py
+# Open http://localhost:8001
+
+# Start the management console
+cd management-console  # From project root
+npm install  # First time only
+npm run dev
+# Open http://localhost:3001
+```
+
+### Command-Line Demos
 
 ```bash
 # Run a specific demo
