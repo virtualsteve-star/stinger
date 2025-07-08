@@ -188,12 +188,12 @@ audit.enable("./logs/audit.log", redact_pii=True)
 - **Conversation Flow**: Complete conversation reconstruction
 - **User Attribution**: IP, session, user ID tracking for forensics
 
-### Compliance Ready
-- **GDPR Compliance**: PII redaction while preserving audit value
-- **HIPAA Ready**: Healthcare data protection capabilities
-- **Enterprise Audit**: Complete audit trail for security reviews
-- **Forensic Analysis**: Reconstruct security incidents completely
-- **Async Performance**: Zero-impact logging with background processing
+### Compliance-Standard Ready
+- **PII Redaction Capabilities**: Automatically redact sensitive data while preserving audit value (useful for GDPR, HIPAA, and other privacy regulations)
+- **Complete Audit Trail**: Comprehensive logging suitable for enterprise security reviews
+- **Data Retention Controls**: Configurable retention policies for different data types
+- **Forensic Analysis**: Full incident reconstruction capabilities
+- **Export Formats**: Generate compliance-ready reports in standard formats
 
 ### Audit Trail Features
 - **Smart Environment Detection**: Auto-configures for dev/prod/docker
