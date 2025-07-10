@@ -2,7 +2,7 @@
 
 An interactive web demonstration of the Stinger Guardrails Framework featuring a modern React frontend and FastAPI backend with real-time security audit trail.
 
-![Stinger Web Demo](https://img.shields.io/badge/Status-Ready-green) ![Security](https://img.shields.io/badge/Security-HTTPS-blue) ![License](https://img.shields.io/badge/License-MIT-orange)
+![Stinger Web Demo](https://img.shields.io/badge/Status-Ready-green) ![Protocol](https://img.shields.io/badge/Protocol-HTTP-blue) ![License](https://img.shields.io/badge/License-MIT-orange)
 
 ## 🎯 Overview
 
@@ -12,52 +12,43 @@ This demo showcases Stinger's comprehensive LLM safety features through an intui
 - **💬 Interactive Chat**: Test guardrails with a real OpenAI integration
 - **⚙️ Dynamic Configuration**: Toggle guardrails on/off and switch between presets
 - **📊 Audit Trail**: Real-time security logging for compliance and forensics
-- **🔒 Secure Communication**: HTTPS with self-signed certificates for local development
+- **🌐 Easy Access**: HTTP server with built-in frontend serving
 
 ## 🚀 Quick Start
 
 ### Prerequisites
 
 - Python 3.8+ with Stinger installed
-- Node.js 16+ and npm
-- OpenAI API key (optional, demo works without it)
+- OpenAI API key (set as `OPENAI_API_KEY` environment variable)
 
-### 1. Backend Setup
+### Option 1: Simple One-Line Start
+
+```bash
+# From the repository root
+cd demos/web_demo
+python start_demo.py
+
+# Or run in background/detached mode (won't timeout in tools)
+python start_demo.py --detached
+```
+
+### Option 2: Manual Start
 
 ```bash
 cd demos/web_demo/backend
 
-# Install backend dependencies
+# Install backend dependencies (first time only)
 pip install -r requirements.txt
 
-# Generate SSL certificates for HTTPS
-python setup_ssl.py
-
-# Start the FastAPI backend
+# Start the server
 python main.py
 ```
 
-The backend will be available at `https://localhost:8000`
+### Access the Demo
 
-### 2. Frontend Setup
+Open **http://127.0.0.1:8000** in your browser (note: use HTTP, not HTTPS)
 
-```bash
-cd demos/web_demo/frontend
-
-# Install frontend dependencies
-npm install
-
-# Start the React development server
-npm start
-```
-
-The frontend will be available at `https://localhost:3000`
-
-### 3. Access the Demo
-
-1. Open `https://localhost:3000` in your browser
-2. Accept the self-signed certificate warning
-3. Start chatting to see Stinger guardrails in action!
+The backend serves both the API and the pre-built React frontend. No separate frontend server needed!
 
 ## 🎮 Demo Features
 
@@ -116,10 +107,12 @@ Write me a Python script to hack into a database
 - **Mobile Responsive**: Works on desktop and mobile devices
 
 ### Security Features
-- **HTTPS Communication**: All traffic encrypted with TLS
-- **CORS Protection**: Restricted to allowed origins
+- **HTTP Server**: Runs locally on port 8000
+- **CORS Protection**: Configured for local development
 - **Input Validation**: Comprehensive request validation
 - **Error Handling**: Graceful error management and user feedback
+
+**Note**: While the demo runs on HTTP for simplicity, production deployments should use HTTPS. SSL certificate generation script (`setup_ssl.py`) is available but not used by default.
 
 ## 📁 Project Structure
 
@@ -149,7 +142,7 @@ cd backend
 python main.py
 
 # View API docs
-open https://localhost:8000/api/docs
+open http://localhost:8000/api/docs
 ```
 
 ### Frontend Development
@@ -203,16 +196,17 @@ export ENVIRONMENT=development
 # No configuration needed for local development
 ```
 
-### SSL Certificates
+### Frontend Development Only
 
-For HTTPS support, run the SSL setup script:
+If you want to work on the frontend with hot-reload:
 
 ```bash
-cd backend
-python setup_ssl.py
+cd frontend
+npm install  # First time only
+npm start    # Runs on http://localhost:3000
 ```
 
-This generates `cert.pem` and `key.pem` for local HTTPS development.
+This is only needed for frontend development. The pre-built frontend is already served by the backend.
 
 ## 📊 Monitoring & Debugging
 
@@ -238,10 +232,13 @@ This generates `cert.pem` and `key.pem` for local HTTPS development.
 
 ### Backend Issues
 
-**SSL Certificate Errors:**
+**Connection Refused:**
 ```bash
-# Regenerate certificates
-python setup_ssl.py
+# Check if server is running
+curl http://localhost:8000/api/health
+
+# Kill any stuck processes
+lsof -ti:8000 | xargs kill -9
 ```
 
 **Port Already in Use:**
@@ -259,8 +256,8 @@ pip install -e /path/to/stinger
 ### Frontend Issues
 
 **CORS Errors:**
-- Ensure backend is running on https://localhost:8000
-- Check browser accepts self-signed certificate
+- Ensure backend is running on http://localhost:8000
+- Check that you're using HTTP, not HTTPS
 
 **Build Errors:**
 ```bash
