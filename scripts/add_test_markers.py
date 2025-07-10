@@ -113,7 +113,7 @@ def add_markers_to_content(content: str, filename: str) -> Tuple[str, List[str]]
                     modified_lines.insert(-1, '')
                     import_added = True
         if not import_added:
-            lines.insert(0, 'import pytest\n')
+            modified_lines.insert(0, 'import pytest\n')
     else:
         modified_lines = lines.copy()
     

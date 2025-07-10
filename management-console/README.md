@@ -12,6 +12,18 @@ A simple, lightweight monitoring console for Stinger guardrails. No authenticati
 
 ## Quick Start
 
+### Option 1: Using the startup script (recommended)
+
+```bash
+# Start both backend and frontend
+./start_console.sh
+
+# Or run in background/detached mode (useful for tools with timeouts)
+./start_console.sh --detached
+```
+
+### Option 2: Manual startup
+
 ```bash
 # Backend
 cd backend
@@ -22,9 +34,14 @@ python main.py
 cd frontend
 npm install
 npm start
-
-# Open http://localhost:3001
 ```
+
+### Access the Console
+
+Open **http://localhost:3001** in your browser
+
+- Frontend UI: http://localhost:3001
+- Backend API: http://localhost:8001
 
 ## Architecture
 

@@ -5,6 +5,31 @@ All notable changes to the Stinger Guardrails Framework will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.0a4] - 2025-07-10
+
+### 🛠️ Improvements
+
+#### **Demo Experience**
+- Added `--detached` flag to web demo and management console startup scripts
+- Fixed timeout issues when running demos through tools/CI environments
+- Updated documentation to reflect HTTP (not HTTPS) for web demo
+- Simplified startup instructions across all demos
+
+#### **Documentation**
+- Corrected web demo README to remove incorrect HTTPS references
+- Updated main README with simplified demo startup commands
+- Added clear instructions for background mode execution
+- Fixed management console startup documentation
+
+#### **Developer Experience**
+- Consistent startup patterns across web demo and management console
+- Better error handling and status messages in startup scripts
+- Added PID tracking for background processes
+
+### 🐛 Bug Fixes
+- Fixed web demo server crashes due to tool timeout limitations
+- Resolved startup script issues in both demos
+
 ## [0.1.0a3] - 2025-07-07
 
 ### 🚀 Alpha 3 Release - PyPI Publishing & Management Console
