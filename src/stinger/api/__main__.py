@@ -29,47 +29,88 @@ def main():
     
     # Detached/background mode
     if "--detached" in sys.argv or "--background" in sys.argv:
-        log_file = "/tmp/stinger-api.log"
-        pid_file = "/tmp/stinger-api.pid"
+        # Use platform-appropriate paths
+        if sys.platform == "win32":
+            import tempfile
+            temp_dir = tempfile.gettempdir()
+            log_file = os.path.join(temp_dir, "stinger-api.log")
+            pid_file = os.path.join(temp_dir, "stinger-api.pid")
+        else:
+            log_file = "/tmp/stinger-api.log"
+            pid_file = "/tmp/stinger-api.pid"
         
-        # Fork process
-        pid = os.fork()
-        if pid > 0:
-            # Parent process
+        # Platform-specific detached mode
+        if sys.platform == "win32":
+            # Windows: Use subprocess with CREATE_NEW_CONSOLE flag
+            import subprocess
+            
+            # Create startup info to hide console window
+            startupinfo = subprocess.STARTUPINFO()
+            startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+            
+            # Start new process
+            cmd = [sys.executable, "-m", "stinger.api", 
+                   "--host", host, "--port", str(port)]
+            
+            with open(log_file, "a") as log:
+                process = subprocess.Popen(
+                    cmd,
+                    stdout=log,
+                    stderr=log,
+                    startupinfo=startupinfo,
+                    creationflags=subprocess.CREATE_NEW_CONSOLE | subprocess.DETACHED_PROCESS
+                )
+            
             print(f"🚀 Starting Stinger API server at http://{host}:{port}")
             print(f"📚 Documentation available at http://{host}:{port}/docs")
-            print(f"📋 Process ID: {pid}")
+            print(f"📋 Process ID: {process.pid}")
             print(f"📄 Logs: {log_file}")
-            print("✋ To stop: kill $(cat /tmp/stinger-api.pid)")
+            print(f"✋ To stop: taskkill /PID {process.pid} /F")
             
             # Write PID file
             with open(pid_file, "w") as f:
-                f.write(str(pid))
+                f.write(str(process.pid))
             
             sys.exit(0)
-        
-        # Child process - detach from terminal
-        os.setsid()
-        os.umask(0)
-        
-        # Redirect output to log file
-        with open(log_file, "a") as log:
-            sys.stdout = log
-            sys.stderr = log
+        else:
+            # Unix/Linux/macOS: Use fork
+            pid = os.fork()
+            if pid > 0:
+                # Parent process
+                print(f"🚀 Starting Stinger API server at http://{host}:{port}")
+                print(f"📚 Documentation available at http://{host}:{port}/docs")
+                print(f"📋 Process ID: {pid}")
+                print(f"📄 Logs: {log_file}")
+                print("✋ To stop: kill $(cat /tmp/stinger-api.pid)")
+                
+                # Write PID file
+                with open(pid_file, "w") as f:
+                    f.write(str(pid))
+                
+                sys.exit(0)
             
-            # Print startup message to log
-            print(f"🚀 Starting Stinger API server at http://{host}:{port}")
-            print(f"📚 Documentation available at http://{host}:{port}/docs")
-            print("Press CTRL+C to stop\n")
+            # Child process - detach from terminal
+            os.setsid()
+            os.umask(0)
             
-            # Run the server
-            uvicorn.run(
-                app,
-                host=host,
-                port=port,
-                reload=False,  # No reload in detached mode
-                log_level="info"
-            )
+            # Redirect output to log file
+            with open(log_file, "a") as log:
+                sys.stdout = log
+                sys.stderr = log
+                
+                # Print startup message to log
+                print(f"🚀 Starting Stinger API server at http://{host}:{port}")
+                print(f"📚 Documentation available at http://{host}:{port}/docs")
+                print("Press CTRL+C to stop\n")
+                
+                # Run the server
+                uvicorn.run(
+                    app,
+                    host=host,
+                    port=port,
+                    reload=False,  # No reload in detached mode
+                    log_level="info"
+                )
     else:
         # Normal mode
         print(f"🚀 Starting Stinger API server at http://{host}:{port}")

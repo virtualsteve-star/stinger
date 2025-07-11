@@ -20,7 +20,7 @@ pip install stinger[all]
 # Start in foreground (default port 8888)
 stinger-api
 
-# Start in background/detached mode
+# Start in background/detached mode (cross-platform)
 stinger-api --detached
 
 # Custom host and port
@@ -29,6 +29,10 @@ stinger-api --host 0.0.0.0 --port 8080
 # With auto-reload for development
 stinger-api --reload
 ```
+
+**Note**: Detached mode works on all platforms:
+- **Unix/Linux/macOS**: Uses fork() and creates PID file at `/tmp/stinger-api.pid`
+- **Windows**: Uses subprocess with detached process, PID file in temp directory
 
 ### Environment Variables
 
