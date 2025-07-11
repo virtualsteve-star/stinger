@@ -60,6 +60,12 @@ ai = [
     "openai>=1.0.0",
 ]
 
+# API service dependencies
+api = [
+    "fastapi>=0.100.0",
+    "uvicorn[standard]>=0.23.0",
+]
+
 # Development dependencies
 dev = [
     "pytest>=7.0",
@@ -88,6 +94,7 @@ all = [
 
 [project.scripts]
 stinger = "stinger.cli:main"
+stinger-api = "stinger.api.__main__:main"
 
 [tool.setuptools]
 package-dir = { "" = "src" }

@@ -15,6 +15,7 @@ Stinger's documentation is organized to support users at every stage of their jo
 ### **Using Stinger:**
 - **[Guardrail Guide](GUARDRAIL_GUIDE.md)** - Complete reference for all 14+ guardrail types
 - **[API Reference](API_REFERENCE.md)** - Comprehensive API documentation with examples
+- **[REST API Guide](api/)** - REST API for browser extensions and remote clients
 
 ### **Extending Stinger:**
 - **[Extensibility Guide](EXTENSIBILITY_GUIDE.md)** - Create custom guardrails and filters

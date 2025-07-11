@@ -160,7 +160,7 @@ function App() {
     }
   };
 
-  const handleGuardrailToggle = async (name: string, type: 'input' | 'output', enabled: boolean) => {
+  const handleGuardrailToggle = async (name: string, type: 'input' | 'output', enabled: boolean): Promise<void> => {
     try {
       // Get current settings
       const settingsRes = await fetch('/api/guardrails');

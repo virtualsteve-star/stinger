@@ -26,6 +26,7 @@
 | **10** | **Web Demo Enhancement** ✅ | • Frontend stability fixes and performance optimization  • Unified panel design for guardrails and logging  • Enhanced logging interface with conversation focus and visual density  • Comprehensive guardrail showcase (all 14+ types)  • Modern, responsive UI with consistent styling  • Real-time updates and performance monitoring  • Mobile-friendly design and accessibility features | *Frontend runs stably without memory issues*  <br/>*Build time < 30 seconds, startup time < 10 seconds*  <br/>*Bundle size < 2MB, memory usage < 512MB*  <br/>*All 14+ guardrail types available and functional*  <br/>*Unified, modern UI with conversation-focused logging*  <br/>*Mobile-responsive and accessible design*  <br/>*Real-time updates with < 100ms latency* |
 | **11** | **Management Panel** ✅ | • Lightweight HTML management panel for real-time monitoring  • Dashboard with system health and performance analytics  • Guardrail performance metrics and trends  • Smart audit log search and filtering  • Active conversation monitoring  • WebSocket real-time updates  • Minimal dependencies (React, Recharts, Tailwind CSS) | *Management panel loads in < 2 seconds*  <br/>*Bundle size < 200KB gzipped*  <br/>*API responses < 100ms*  <br/>*WebSocket latency < 50ms*  <br/>*Provides actionable insights for operators*  <br/>*Clean, modern UI with real-time updates*  <br/>*Production-ready with security considerations* |
 | **12** | **PyPI Publishing** ✅ | • Package preparation and validation  • TestPyPI publishing and testing  • PyPI publishing and GitHub release  • Post-release verification and monitoring  • Release documentation and changelog  • Automated release workflow  • Package distribution and installation testing | *Package successfully published to PyPI*  <br/>*Package successfully published to TestPyPI*  <br/>*Installation works in clean environments*  <br/>*All functionality verified from PyPI install*  <br/>*GitHub release created with proper documentation*  <br/>*Automated release workflow established*  <br/>*Package distribution and monitoring in place* |
+| **13** | **API Service Integration** | • Simple REST API service within Python package  • FastAPI endpoints for Chrome extension support  • Direct module execution (`python -m stinger.api`)  • CLI integration (`stinger-api serve`)  • Core endpoints: `/v1/check`, `/v1/rules`, `/health`  • CORS support for browser extensions  • Configuration via CLI/env/file  • API documentation and examples | *API installable via `pip install stinger-guardrails-alpha[api]`*  <br/>*Service starts with `python -m stinger.api`*  <br/>*Chrome extension successfully calls endpoints*  <br/>*Response time <100ms for typical requests*  <br/>*No Docker/complex deployment required*  <br/>*Clear documentation for developers*  <br/>*API serves OpenAPI/Swagger docs* |
 
 > **Note:** Phases 1–3 are designed for quick iteration (~2–3 sprints). Phase 4 focuses on developer experience improvements that will accelerate development of later phases. Later phases can proceed in parallel once Phase 4 stability is proven.
 
@@ -256,3 +257,17 @@
 - **CI/CD Integration**: GitHub Actions workflow for automated publishing
 - **Quality Assurance**: Final validation and post-release monitoring
 
+
+
+### Phase 13 Additions
+- **API Service**: REST API service integrated into Python package (no Docker required)
+- **Simple Deployment**: Run with `python -m stinger.api` or `stinger-api serve`
+- **Chrome Extension Support**: Core endpoints for browser extension integration
+- **FastAPI Framework**: Automatic OpenAPI docs, validation, and async support
+- **Configuration Options**: CLI arguments, environment variables, or config file
+- **CORS Support**: Configured for browser extensions and web applications
+- **Minimal Dependencies**: Just `pip install stinger-guardrails-alpha[api]`
+- **Performance Focus**: Sub-100ms response times for typical requests
+- **Developer Experience**: Clear documentation and example code
+- **Future-Ready**: Foundation for WebSocket, batch endpoints, and auth
+EOF < /dev/null
