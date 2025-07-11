@@ -6,15 +6,18 @@ This directory contains examples demonstrating various features of the Stinger G
 
 The `getting_started/` directory contains progressive examples following the Getting Started guide:
 
-1. **01_basic_installation.py** - Your first guardrail check
-2. **02_simple_filter.py** - Using different presets
-3. **03_global_rate_limiting.py** - Rate limiting across conversations
-4. **04_conversation_api.py** - Conversation-aware filtering
-5. **05_conversation_rate_limiting.py** - Per-conversation rate limits
-6. **06_health_monitoring.py** - System health and monitoring
-7. **07_cli_and_yaml_config.py** - CLI usage and YAML configuration
-8. **08_security_audit_trail.py** - Security audit logging
-9. **09_troubleshooting_and_testing.py** - Debugging and testing
+1. **00_verify_installation.py** - Verify your Stinger installation
+2. **01_basic_installation.py** - Your first guardrail check
+3. **02_simple_guardrail.py** - Using different presets
+4. **03_global_rate_limiting.py** - Rate limiting across conversations
+5. **04_conversation_api.py** - Conversation-aware filtering
+6. **05_conversation_rate_limiting.py** - Per-conversation rate limits
+7. **06_health_monitoring.py** - System health and monitoring
+8. **07_cli_and_yaml_config.py** - CLI usage and YAML configuration
+9. **08_security_audit_trail.py** - Security audit logging
+10. **09_troubleshooting_and_testing.py** - Debugging and testing
+11. **11_ai_powered_filters.py** - AI-based guardrails
+12. **12_rest_api_usage.py** - 🆕 Using Stinger via REST API
 
 ## Running Examples
 
@@ -42,6 +45,18 @@ Each example is self-contained and can be run directly:
 
 ```bash
 python examples/getting_started/01_basic_installation.py
+```
+
+**Note**: The REST API example (12) requires starting the API server first:
+```bash
+# Install API dependencies
+pip install stinger-guardrails-alpha[api]
+
+# Terminal 1: Start server
+stinger-api
+
+# Terminal 2: Run example
+python examples/getting_started/12_rest_api_usage.py
 ```
 
 ## Example Structure
@@ -132,7 +147,8 @@ Stinger requires Python 3.8+. Update your Python version.
 ### Integration
 - CLI usage
 - YAML configuration
-- API integration
+- REST API usage
+- Language-agnostic integration
 
 ## Creating New Examples
 
