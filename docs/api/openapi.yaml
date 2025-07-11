@@ -1,0 +1,263 @@
+openapi: 3.0.0
+info:
+  title: Stinger Guardrails API
+  description: REST API for Stinger Guardrails Framework
+  version: 0.1.0
+  contact:
+    name: Stinger Development Team
+    url: https://github.com/virtualsteve-star/stinger
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:8888
+    description: Local development server
+  - url: https://api.stinger.example.com
+    description: Production server (example)
+
+paths:
+  /:
+    get:
+      summary: Root endpoint
+      description: Returns basic API information
+      tags:
+        - root
+      responses:
+        '200':
+          description: API information
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    example: "Stinger Guardrails API"
+                  version:
+                    type: string
+                    example: "0.1.0"
+                  docs:
+                    type: string
+                    example: "/docs"
+                  health:
+                    type: string
+                    example: "/health"
+
+  /health:
+    get:
+      summary: Health check
+      description: Verify API service health and dependencies
+      tags:
+        - health
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+  /v1/check:
+    post:
+      summary: Check content
+      description: Evaluate content against configured guardrails
+      tags:
+        - guardrails
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CheckRequest'
+      responses:
+        '200':
+          description: Content evaluated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CheckResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /v1/rules:
+    get:
+      summary: Get guardrail rules
+      description: Retrieve active guardrail configuration for a preset
+      tags:
+        - configuration
+      parameters:
+        - in: query
+          name: preset
+          schema:
+            type: string
+            default: customer_service
+          description: Preset configuration name
+        - in: query
+          name: ext_version
+          schema:
+            type: string
+          description: Extension version for compatibility
+      responses:
+        '200':
+          description: Rules retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RulesResponse'
+        '404':
+          description: Preset not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [healthy, unhealthy]
+          example: healthy
+        pipeline_available:
+          type: boolean
+          example: true
+        guardrail_count:
+          type: integer
+          example: 5
+        api_key_configured:
+          type: boolean
+          example: true
+
+    CheckRequest:
+      type: object
+      required:
+        - text
+        - kind
+        - preset
+      properties:
+        text:
+          type: string
+          description: Content to check
+          example: "Hello, my email is test@example.com"
+        kind:
+          type: string
+          enum: [prompt, response]
+          description: Type of content
+          example: prompt
+        preset:
+          type: string
+          description: Guardrail preset to use
+          example: customer_service
+        context:
+          type: object
+          description: Optional conversation context
+          properties:
+            sessionId:
+              type: string
+              example: "session123"
+            userId:
+              type: string
+              example: "user456"
+
+    CheckResponse:
+      type: object
+      properties:
+        action:
+          type: string
+          enum: [allow, warn, block]
+          description: Recommended action
+          example: block
+        reasons:
+          type: array
+          items:
+            type: string
+          description: Reasons for blocking
+          example: ["pii_check: PII detected (regex): email"]
+        warnings:
+          type: array
+          items:
+            type: string
+          description: Warning messages
+          example: []
+        metadata:
+          type: object
+          properties:
+            guardrails_triggered:
+              type: array
+              items:
+                type: string
+              example: ["pii_check"]
+            processing_time_ms:
+              type: number
+              example: 12
+
+    RulesResponse:
+      type: object
+      properties:
+        preset:
+          type: string
+          example: customer_service
+        guardrails:
+          type: object
+          properties:
+            input_guardrails:
+              type: object
+              additionalProperties:
+                $ref: '#/components/schemas/GuardrailRule'
+            output_guardrails:
+              type: object
+              additionalProperties:
+                $ref: '#/components/schemas/GuardrailRule'
+        version:
+          type: string
+          example: "1.0.f7c3ea55"
+
+    GuardrailRule:
+      type: object
+      properties:
+        type:
+          type: string
+          example: "SimplePIIDetectionGuardrail"
+        enabled:
+          type: boolean
+          example: true
+        config:
+          type: object
+          description: Guardrail-specific configuration
+
+    ErrorResponse:
+      type: object
+      properties:
+        detail:
+          type: string
+          description: Error message
+          example: "Invalid preset: unknown"
+
+tags:
+  - name: root
+    description: API information
+  - name: health
+    description: Service health monitoring
+  - name: guardrails
+    description: Content checking operations
+  - name: configuration
+    description: Guardrail configuration

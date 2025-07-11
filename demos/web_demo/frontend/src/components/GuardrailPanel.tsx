@@ -19,7 +19,7 @@ interface GuardrailDetails {
 interface GuardrailPanelProps {
   isOpen: boolean;
   onClose: () => void;
-  onGuardrailToggle: (name: string, type: 'input' | 'output', enabled: boolean) => void;
+  onGuardrailToggle: (name: string, type: 'input' | 'output', enabled: boolean) => Promise<void>;
 }
 
 export const GuardrailPanel: React.FC<GuardrailPanelProps> = ({ 
@@ -80,7 +80,7 @@ export const GuardrailPanel: React.FC<GuardrailPanelProps> = ({
     }, {} as Record<string, GuardrailInfo[]>);
 
     const categoryOrder = ['ai', 'local', 'custom'];
-    const categoryLabels = {
+    const categoryLabels: Record<string, string> = {
       'ai': 'AI-Powered Guardrails',
       'local': 'Local Pattern Matching',
       'custom': 'Custom Guardrails'
@@ -103,7 +103,11 @@ export const GuardrailPanel: React.FC<GuardrailPanelProps> = ({
                     <input
                       type="checkbox"
                       checked={guardrail.enabled}
-                      onChange={(e) => onGuardrailToggle(guardrail.name, type, e.target.checked)}
+                      onChange={async (e) => {
+                        await onGuardrailToggle(guardrail.name, type, e.target.checked);
+                        // Refresh the guardrail details after update
+                        loadGuardrailDetails();
+                      }}
                     />
                     <span className="toggle-slider"></span>
                   </label>
