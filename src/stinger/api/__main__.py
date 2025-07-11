@@ -7,6 +7,7 @@ import sys
 
 try:
     import uvicorn
+
     from stinger.api.app import app
 except ImportError:
     print("Error: API dependencies not installed.")
