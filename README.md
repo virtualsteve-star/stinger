@@ -9,6 +9,7 @@ A powerful, easy-to-use Python framework for safeguarding LLM applications with 
 - **🛡️ Comprehensive Guardrails**: Toxicity detection, PII protection, code generation prevention, and more
 - **🔒 Security Audit Trail**: Complete logging of all security decisions for compliance and forensics
 - **🎯 Simple API**: Get started in 3 lines of code
+- **🌐 REST API**: Language-agnostic HTTP/REST interface for non-Python integration
 - **⚡ High Performance**: Async-ready with synchronous convenience wrapper
 - **🔧 Configurable**: YAML-based configuration with runtime updates
 - **🧪 Production Ready**: Comprehensive testing and error handling
@@ -50,6 +51,21 @@ if result['blocked']:
     print(f"Output blocked: {result['reasons']}")
 ```
 
+## 🤔 Python Library vs REST API
+
+Choose the right approach for your use case:
+
+| Feature | Python Library | REST API |
+|---------|---------------|----------|
+| **Setup** | `import stinger` | `stinger-api` server |
+| **Performance** | ⚡ Fastest (no network) | 🚀 Fast (adds ~1-5ms) |
+| **Language Support** | 🐍 Python only | 🌐 Any language |
+| **Deployment** | 📦 Part of your app | 🖥️ Separate service |
+| **Scaling** | 📈 Scale with your app | 🔄 Independent scaling |
+| **Use When** | Building Python apps | Non-Python apps, microservices |
+
+**Quick Decision**: Building a Python app? Use the library. Building anything else? Use the REST API.
+
 ## 🖥️ Command Line Interface (CLI)
 
 After installing Stinger, you can use the CLI:
@@ -59,6 +75,62 @@ stinger demo
 stinger check-prompt "My SSN is 123-45-6789."
 stinger check-response "Here is your password: hunter2"
 ```
+
+## 🌐 REST API Service
+
+Stinger provides a REST API for language-agnostic integration, browser extensions, and microservices:
+
+### Starting the API Server
+
+```bash
+# Install with API support
+pip install stinger-guardrails-alpha[api]
+
+# Start the server
+stinger-api
+
+# Or start in background
+stinger-api --detached
+
+# Custom port
+stinger-api --port 8080
+```
+
+### API Endpoints
+
+- `GET /health` - Service health check
+- `POST /v1/check` - Check content against guardrails
+- `GET /v1/rules` - Get active guardrail configuration
+
+### Quick Example
+
+```bash
+# Check content via API
+curl -X POST http://localhost:8888/v1/check \
+  -H "Content-Type: application/json" \
+  -d '{
+    "text": "My SSN is 123-45-6789",
+    "kind": "prompt",
+    "preset": "customer_service"
+  }'
+
+# Response
+{
+  "action": "block",
+  "reasons": ["pii_check: PII detected (regex): ssn"],
+  "warnings": [],
+  "metadata": {"processing_time_ms": 12}
+}
+```
+
+### Use Cases
+
+- 🌐 **Browser Extensions**: CORS-enabled for Chrome/Firefox extensions
+- 🔗 **Microservices**: Language-agnostic guardrail service
+- 📱 **Mobile Apps**: REST API for iOS/Android integration
+- 🚀 **Non-Python Apps**: Use Stinger from any language
+
+See [REST API example](./examples/getting_started/12_rest_api_usage.py) for detailed usage.
 
 ## 🌟 Interactive Demos
 

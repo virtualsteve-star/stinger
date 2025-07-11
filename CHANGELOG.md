@@ -5,6 +5,62 @@ All notable changes to the Stinger Guardrails Framework will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.0a5] - 2025-07-11
+
+### 🚀 Major Features
+
+#### **REST API Service** - Central Feature of This Release
+- **Complete REST API implementation** for language-agnostic integration
+  - `GET /health` - Service health monitoring
+  - `POST /v1/check` - Content evaluation against guardrails
+  - `GET /v1/rules` - Active guardrail configuration
+- **Cross-platform support** with platform-specific detached modes
+- **CORS enabled** for browser extension compatibility
+- **FastAPI-based** with automatic validation and OpenAPI docs
+- **Comprehensive testing** with 33 tests covering all endpoints
+- **Full documentation** including developer guide and examples
+
+### 🎯 New Capabilities
+
+#### **Language-Agnostic Integration**
+- Use Stinger from **any programming language** via REST API
+- **Browser extension** support with CORS headers
+- **Microservices** architecture compatibility
+- **Mobile app** integration ready
+
+#### **API Features**
+- High-performance async request handling
+- Pipeline caching for efficiency
+- Comprehensive error handling
+- Request/response validation with Pydantic
+- Interactive API documentation at `/docs`
+
+### 📚 Documentation
+
+#### **New Documentation**
+- REST API comprehensive guide (`docs/api/`)
+- OpenAPI specification
+- Developer integration guide
+- API vs Library comparison in main README
+- New example #12 demonstrating API usage
+
+#### **Updated Documentation**
+- Main README with REST API section
+- Examples README highlighting API capabilities
+- Clear guidance on when to use API vs Python library
+
+### 🛠️ Improvements
+
+#### **Package Structure**
+- Added `[api]` extras for API dependencies
+- Added `stinger-api` CLI command
+- API module included in all package distributions
+
+### 🐛 Bug Fixes
+- Fixed import issues when FastAPI not installed
+- Corrected pipeline attribute references
+- Enhanced cross-platform compatibility
+
 ## [0.1.0a4] - 2025-07-10
 
 ### 🛠️ Improvements

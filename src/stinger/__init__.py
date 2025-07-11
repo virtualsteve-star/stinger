@@ -5,7 +5,7 @@ A powerful, easy-to-use framework for safeguarding LLM applications with
 comprehensive content filtering and moderation capabilities.
 """
 
-__version__ = "0.1.0a4"
+__version__ = "0.1.0a5"
 __author__ = "Stinger Team"
 
 # Security audit trail

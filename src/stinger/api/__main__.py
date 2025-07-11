@@ -5,9 +5,14 @@ Run Stinger API service directly with: python -m stinger.api
 import os
 import sys
 
-import uvicorn
+try:
+    import uvicorn
 
-from stinger.api.app import app
+    from stinger.api.app import app
+except ImportError:
+    print("Error: API dependencies not installed.")
+    print("Please install with: pip install stinger-guardrails-alpha[api]")
+    sys.exit(1)
 
 
 def main():

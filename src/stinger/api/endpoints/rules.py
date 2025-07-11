@@ -36,7 +36,6 @@ async def get_rules(
             logger.error(f"Invalid preset {preset}: {e}")
             raise HTTPException(status_code=404, detail=f"Preset '{preset}' not found")
 
-
         # Create a simplified rules structure for the extension
         rules = {"input_guardrails": {}, "output_guardrails": {}}
 

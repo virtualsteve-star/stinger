@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "stinger-guardrails-alpha"
-version = "0.1.0a4"
+version = "0.1.0a5"
 description = "AI Guardrails Framework - Comprehensive LLM safety toolkit (Alpha)"
 authors = [
     { name = "Steve", email = "steve@example.com" }
@@ -89,6 +89,7 @@ web-demo = [
 # All features
 all = [
     "stinger-guardrails-alpha[ai]",
+    "stinger-guardrails-alpha[api]",
     "stinger-guardrails-alpha[web-demo]",
 ]
 
