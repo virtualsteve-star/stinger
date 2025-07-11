@@ -4,7 +4,8 @@ FastAPI application for Stinger API service.
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from stinger.api.endpoints import health, check, rules
+
+from stinger.api.endpoints import check, health, rules
 
 # Create FastAPI app
 app = FastAPI(
@@ -33,6 +34,7 @@ app.add_middleware(
 app.include_router(health.router, tags=["health"])
 app.include_router(check.router, prefix="/v1", tags=["guardrails"])
 app.include_router(rules.router, prefix="/v1", tags=["configuration"])
+
 
 @app.get("/", tags=["root"])
 async def root():
