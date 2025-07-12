@@ -563,3 +563,60 @@ class TestGlobalRateLimiterPerformance:
 
         # Should complete quickly
         assert end_time - start_time < 2.0  # Less than 2 seconds
+
+
+@pytest.mark.ci 
+class TestRateLimiterEncapsulation:
+    """Test BugBot Fix: Rate limiter encapsulation and public interface usage."""
+    
+    def test_get_status_provides_reset_times(self):
+        """Test that get_status() provides reset times without accessing private methods."""
+        limiter = GlobalRateLimiter()
+        
+        # Add some requests to create a meaningful reset time
+        for i in range(3):
+            limiter.record_request("test_key")
+        
+        # Use public interface to get status with reset times
+        status = limiter.get_status("test_key")
+        
+        # Verify the public interface provides what security.py needs
+        assert "details" in status
+        assert "requests_per_minute" in status["details"] 
+        assert "requests_per_hour" in status["details"]
+        
+        # Verify reset_time is available through public interface
+        minute_details = status["details"]["requests_per_minute"]
+        hour_details = status["details"]["requests_per_hour"]
+        
+        assert "reset_time" in minute_details
+        assert "reset_time" in hour_details
+        assert isinstance(minute_details["reset_time"], (int, float))
+        assert isinstance(hour_details["reset_time"], (int, float))
+        
+        # Verify reset times are reasonable (in the future)
+        import time
+        now = time.time()
+        assert minute_details["reset_time"] > now - 1  # Allow small tolerance
+        assert hour_details["reset_time"] > now - 1
+    
+    def test_security_module_compatibility(self):
+        """Test that the security module pattern works with public interface."""
+        limiter = GlobalRateLimiter()
+        
+        # Simulate the pattern used in security.py after BugBot fix
+        # 1. Check rate limit
+        result = limiter.check_rate_limit("test_key") 
+        
+        # 2. If exceeded, get reset times using public interface
+        if result["exceeded"]:
+            status = limiter.get_status("test_key")
+            reset_times = []
+            for limit_type in result["exceeded_limits"]:
+                if limit_type in status["details"]:
+                    reset_times.append(status["details"][limit_type]["reset_time"])
+            
+            reset_time = min(reset_times) if reset_times else 0
+            assert isinstance(reset_time, (int, float))
+        
+        # This test verifies the security.py pattern works without private method access

@@ -44,6 +44,14 @@ This rule is non-negotiable for code safety and review process.
 - Follow Python best practices and PEP 8 style guidelines
 - The codebase should be a pleasure to work with
 
+### 4.2. BugBot Testing Requirement
+**CRITICAL**: When BugBot finds issues, they indicate gaps in our test coverage.
+- **ALWAYS** add tests for every BugBot fix to prevent regression
+- **NEVER** just fix the bug without adding tests
+- BugBot findings = missing test scenarios we need to cover
+- Examples: malformed input handling, encapsulation violations, edge cases
+- These tests should have caught the issues before BugBot found them
+
 ### 4.1. Pragmatic Linting Strategy
 - **Focus on real issues, not style preferences**
 - Use `.flake8` config to ignore style-only issues:
