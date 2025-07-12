@@ -120,18 +120,17 @@ Phase 14 focuses on implementing end-to-end streaming support for Stinger, addre
    - [ ] POST /v1/stream/finish - Finalize and audit session
    - [ ] GET /v1/stream/status - Check session health
 
-3. **Secure Client-Side Rule Distribution** - *QA Security Priority*
-   - [ ] **SAFE RULES ONLY**: Distribute regex and keyword rules (INSTANT/FAST)
-   - [ ] **NEVER DISTRIBUTE**: AI-based rules or external API rules  
-   - [ ] Add rule validation and digital signing
-   - [ ] Implement rule versioning and rollback capability
-   - [ ] Add client rule execution sandboxing
+3. **~~Client-Side Rule Distribution~~ - REMOVED**
+   - **Decision**: Keep all guardrail execution server-side for simplicity and security
+   - **Rationale**: Client-side rules add complexity without proven performance need
+   - **Alternative**: Focus on optimizing server-side streaming performance instead
 
-4. **Performance & Network Optimization**
-   - [ ] Content delta algorithms for updates
-   - [ ] Response compression
-   - [ ] Request batching for efficiency
+4. **Performance & Network Optimization** 
+   - [ ] Content delta algorithms for streaming updates
+   - [ ] Response compression for efficiency
+   - [ ] Request batching where applicable
    - [ ] Network timeout and retry logic
+   - [ ] Server-side performance optimizations (focus area instead of client-side rules)
 
 ### Week 5: Integration and Polish
 **Goal**: Complete integration, documentation, and performance validation
@@ -184,8 +183,8 @@ Phase 14 focuses on implementing end-to-end streaming support for Stinger, addre
 - **DEFERRED**: SLOW + VERY_SLOW guardrails (>1s) → Monitor mode, check at end only
 
 **Security Rules:**
-- Client-side execution: INSTANT regex/keyword rules only
-- Server-side execution: All AI-based and external API rules
+- **All guardrail execution remains server-side** for security and simplicity
+- No client-side rule distribution (removed due to complexity concerns)
 
 ### Monitor Mode Decision Matrix
 | Guardrail Type | Performance | Default Mode | Streaming | Can Override |
@@ -200,7 +199,7 @@ Phase 14 focuses on implementing end-to-end streaming support for Stinger, addre
 
 ### Performance Targets
 - **Streaming Latency**: < 200ms per chunk - *Accounts for network overhead*
-- **API Call Reduction**: 70% (20 → 6 per message) - *More realistic target*
+- **API Call Reduction**: 60-70% (20 → 6-8 per message) - *Server-side only, no client-side rules*
 - **Audit Log Reduction**: 90% (session-based aggregation)
 - **Monitor Mode Overhead**: < 15ms added latency - *More conservative*
 - **Memory Usage**: < 100MB per 1000 sessions - *Safer target*
@@ -262,7 +261,7 @@ Phase 14 focuses on implementing end-to-end streaming support for Stinger, addre
 3. **Simplified Checkpoint Strategy** - Changed from 5-level to 3-level system (IMMEDIATE/BATCHED/DEFERRED)
 4. **Enhanced Error Handling** - Added comprehensive error recovery and network failure handling
 5. **Memory Management** - Added session cleanup, monitoring, and leak detection
-6. **Secure Client Rules** - Restricted to regex/keyword only, never AI-based rules
+6. **~~Secure Client Rules~~ - REMOVED** - All execution remains server-side for simplicity
 7. **Conservative Targets** - More realistic latency, uptime, and memory usage targets
 8. **Session Simplification** - Reduced to 3-state lifecycle (ACTIVE/MONITORING/COMPLETE)
 9. **Audit Trail Enhancement** - Added session-based aggregation for streaming micro-decisions
