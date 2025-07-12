@@ -119,6 +119,48 @@ def test_partial_context_works(client):
     assert result["action"] in ["allow", "warn", "block"]
 
 
+@pytest.mark.ci
+def test_conversation_types(client):
+    """Test different conversation types (agent-to-agent, bot-to-human, etc)."""
+    # Test agent-to-agent conversation
+    response = client.post(
+        "/v1/check",
+        json={
+            "text": "Process this data set",
+            "kind": "prompt",
+            "context": {
+                "userId": "research-agent",
+                "userType": "agent",
+                "botId": "analysis-agent",
+                "botType": "agent"
+            }
+        }
+    )
+    
+    assert response.status_code == 200
+    result = response.json()
+    assert result["action"] in ["allow", "warn", "block"]
+    
+    # Test bot-to-human conversation
+    response = client.post(
+        "/v1/check",
+        json={
+            "text": "Your support ticket #12345 has been created",
+            "kind": "response",
+            "context": {
+                "userId": "support-bot",
+                "userType": "bot",
+                "botId": "customer@email.com",
+                "botType": "human"
+            }
+        }
+    )
+    
+    assert response.status_code == 200
+    result = response.json()
+    assert result["action"] in ["allow", "warn", "block"]
+
+
 @pytest.mark.efficacy
 def test_conversation_audit_trail():
     """

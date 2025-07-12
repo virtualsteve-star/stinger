@@ -90,7 +90,9 @@ Evaluates content against configured guardrails.
     "sessionId": "session123",      // Session tracking
     "userName": "Bob Smith",        // Optional: Human-readable name
     "botName": "ChatGPT",          // Optional: AI display name
-    "botModel": "gpt-4"            // Optional: Specific model
+    "botModel": "gpt-4",           // Optional: Specific model
+    "userType": "human",           // Optional: human, bot, agent, ai_model (default: human)
+    "botType": "ai_model"          // Optional: human, bot, agent, ai_model (default: ai_model)
   }
 }
 ```
