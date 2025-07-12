@@ -58,7 +58,9 @@ async def limit_request_size(request, call_next):
                     content={"detail": f"Request too large. Max size: {MAX_REQUEST_SIZE} bytes"},
                 )
         except (ValueError, TypeError):
-            logger.warning(f"Invalid Content-Length header: {request.headers.get('content-length')}")
+            logger.warning(
+                f"Invalid Content-Length header: {request.headers.get('content-length')}"
+            )
             return JSONResponse(
                 status_code=400,
                 content={"detail": "Invalid Content-Length header"},
