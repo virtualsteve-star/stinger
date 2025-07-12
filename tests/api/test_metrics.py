@@ -2,8 +2,6 @@
 Test metrics collection and endpoint.
 """
 
-import json
-
 import pytest
 
 try:
