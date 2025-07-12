@@ -2,6 +2,15 @@
 
 The Stinger API provides a REST interface for integrating guardrail functionality into remote applications, browser extensions, and other services.
 
+## 🆕 What's New
+
+### Enhanced Conversation Tracking (v0.1.0a5)
+The API now supports identifying conversation participants for better security audit trails:
+- Track WHO is involved: "bob@example.com <-> ChatGPT"
+- Add `userId` and `botId` to the context field
+- Backward compatible - existing integrations continue to work
+- See [Conversation Tracking Guide](./CONVERSATION_TRACKING.md) for details
+
 ## Quick Start
 
 ### Installation
@@ -76,11 +85,23 @@ Evaluates content against configured guardrails.
   "kind": "prompt",           // "prompt" or "response"
   "preset": "customer_service", // Preset configuration to use
   "context": {                // Optional conversation context
-    "sessionId": "session123",
-    "userId": "user456"
+    "userId": "bob@example.com",    // User identifier (email, ID, etc.)
+    "botId": "chatgpt",             // AI system identifier
+    "sessionId": "session123",      // Session tracking
+    "userName": "Bob Smith",        // Optional: Human-readable name
+    "botName": "ChatGPT",          // Optional: AI display name
+    "botModel": "gpt-4",           // Optional: Specific model
+    "userType": "human",           // Optional: human, bot, agent, ai_model (default: human)
+    "botType": "ai_model"          // Optional: human, bot, agent, ai_model (default: ai_model)
   }
 }
 ```
+
+**Enhanced Conversation Tracking (New):**
+The `context` field now supports identifying conversation participants for better audit trails:
+- `userId` and `botId` create audit entries like "bob@example.com <-> chatgpt"
+- This helps track WHO is involved in each security decision
+- All fields in context are optional for backward compatibility
 
 **Response:**
 ```json
@@ -149,7 +170,7 @@ The API is configured to accept requests from:
 
 ```javascript
 // Check user input before sending to LLM
-async function checkInput(text) {
+async function checkInput(text, userEmail) {
   const response = await fetch('http://localhost:8888/v1/check', {
     method: 'POST',
     headers: {
@@ -158,7 +179,17 @@ async function checkInput(text) {
     body: JSON.stringify({
       text: text,
       kind: 'prompt',
-      preset: 'customer_service'
+      preset: 'customer_service',
+      context: {
+        // Track WHO is using the extension
+        userId: userEmail || 'anonymous',
+        botId: detectCurrentAI(),  // e.g., 'chatgpt', 'claude'
+        sessionId: `ext-${Date.now()}`,
+        
+        // Optional metadata
+        browser: navigator.userAgentData?.brands[0]?.brand,
+        extensionVersion: chrome.runtime.getManifest().version
+      }
     })
   });
   
@@ -175,6 +206,15 @@ async function checkInput(text) {
   
   return true;
 }
+
+// Helper to detect which AI is being used
+function detectCurrentAI() {
+  const hostname = window.location.hostname;
+  if (hostname.includes('chat.openai.com')) return 'chatgpt';
+  if (hostname.includes('claude.ai')) return 'claude';
+  if (hostname.includes('bard.google.com')) return 'bard';
+  return 'unknown-ai';
+}
 ```
 
 ### Python Client
@@ -186,13 +226,23 @@ class StingerClient:
     def __init__(self, base_url="http://localhost:8888"):
         self.base_url = base_url
         
-    def check_content(self, text, kind="prompt", preset="customer_service"):
+    def check_content(self, text, kind="prompt", preset="customer_service", 
+                     user_id=None, bot_id=None, **context):
+        # Build context with conversation tracking
+        full_context = {}
+        if user_id:
+            full_context["userId"] = user_id
+        if bot_id:
+            full_context["botId"] = bot_id
+        full_context.update(context)
+        
         response = requests.post(
             f"{self.base_url}/v1/check",
             json={
                 "text": text,
                 "kind": kind,
-                "preset": preset
+                "preset": preset,
+                "context": full_context if full_context else None
             }
         )
         return response.json()
@@ -204,13 +254,21 @@ class StingerClient:
         )
         return response.json()
 
-# Usage
+# Usage with conversation tracking
 client = StingerClient()
 
-# Check user input
-result = client.check_content("My email is test@example.com")
+# Check user input with full context
+result = client.check_content(
+    "My email is test@example.com",
+    user_id="alice@company.com",
+    bot_id="gpt-4",
+    userName="Alice Johnson",
+    sessionId="app-session-123"
+)
+
 if result["action"] == "block":
     print(f"Blocked: {result['reasons']}")
+    # Audit log will show: "alice@company.com <-> gpt-4"
 ```
 
 ### cURL Examples
@@ -219,13 +277,28 @@ if result["action"] == "block":
 # Health check
 curl http://localhost:8888/health
 
-# Check content
+# Check content (basic)
 curl -X POST http://localhost:8888/v1/check \
   -H "Content-Type: application/json" \
   -d '{
     "text": "Hello world",
     "kind": "prompt",
     "preset": "customer_service"
+  }'
+
+# Check content with conversation tracking (recommended)
+curl -X POST http://localhost:8888/v1/check \
+  -H "Content-Type: application/json" \
+  -d '{
+    "text": "My SSN is 123-45-6789",
+    "kind": "prompt",
+    "preset": "customer_service",
+    "context": {
+      "userId": "bob@example.com",
+      "botId": "chatgpt",
+      "userName": "Bob Smith",
+      "sessionId": "cli-test-123"
+    }
   }'
 
 # Get rules
