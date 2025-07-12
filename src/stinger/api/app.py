@@ -2,10 +2,17 @@
 FastAPI application for Stinger API service.
 """
 
+import logging
+import os
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from stinger.api.endpoints import check, health, rules
+from stinger.core import audit
+
+# Configure logging
+logger = logging.getLogger(__name__)
 
 # Create FastAPI app
 app = FastAPI(
@@ -45,3 +52,21 @@ async def root():
         "docs": "/docs",
         "health": "/health",
     }
+
+
+@app.on_event("startup")
+async def startup_event():
+    """Initialize audit logging on API startup."""
+    # Get audit log configuration from environment
+    audit_file = os.getenv("STINGER_AUDIT_LOG", "./api_audit.log")
+    
+    # Enable audit logging
+    audit.enable(
+        destination=audit_file,
+        redact_pii=False,  # Keep PII for security analysis
+        buffer_size=1,     # Flush immediately for real-time monitoring
+        flush_interval=1.0
+    )
+    
+    logger.info(f"Audit logging enabled: {audit_file}")
+    logger.info("Stinger API started with conversation tracking enabled")
