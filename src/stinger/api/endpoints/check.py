@@ -3,6 +3,7 @@ Check endpoint for evaluating content against guardrails.
 """
 
 import logging
+import threading
 
 from fastapi import APIRouter, HTTPException
 
@@ -13,19 +14,28 @@ from stinger.core.pipeline import GuardrailPipeline
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
-# Cache for pipelines to avoid recreation
+# Thread-safe cache for pipelines to avoid recreation
 _pipeline_cache = {}
+_pipeline_cache_lock = threading.RLock()
 
 
 def get_pipeline(preset: str) -> GuardrailPipeline:
-    """Get or create a pipeline for the given preset."""
-    if preset not in _pipeline_cache:
-        try:
-            _pipeline_cache[preset] = GuardrailPipeline.from_preset(preset)
-        except Exception as e:
-            logger.error(f"Failed to create pipeline for preset {preset}: {e}")
-            raise HTTPException(status_code=400, detail=f"Invalid preset: {preset}")
-    return _pipeline_cache[preset]
+    """Get or create a pipeline for the given preset (thread-safe)."""
+    # Fast path: check if already cached (double-checked locking pattern)
+    if preset in _pipeline_cache:
+        return _pipeline_cache[preset]
+    
+    # Slow path: create pipeline with lock
+    with _pipeline_cache_lock:
+        # Check again in case another thread created it
+        if preset not in _pipeline_cache:
+            try:
+                _pipeline_cache[preset] = GuardrailPipeline.from_preset(preset)
+                logger.info(f"Created pipeline for preset: {preset}")
+            except Exception as e:
+                logger.error(f"Failed to create pipeline for preset {preset}: {e}")
+                raise HTTPException(status_code=400, detail=f"Invalid preset: {preset}")
+        return _pipeline_cache[preset]
 
 
 @router.post("/check", response_model=CheckResponse)
