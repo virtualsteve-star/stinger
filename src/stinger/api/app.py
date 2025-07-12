@@ -49,12 +49,19 @@ MAX_REQUEST_SIZE = int(os.getenv("STINGER_MAX_REQUEST_SIZE", "1048576"))  # 1MB
 async def limit_request_size(request, call_next):
     """Limit request body size to prevent abuse."""
     if request.headers.get("content-length"):
-        content_length = int(request.headers["content-length"])
-        if content_length > MAX_REQUEST_SIZE:
-            logger.warning(f"Request too large: {content_length} bytes")
+        try:
+            content_length = int(request.headers["content-length"])
+            if content_length > MAX_REQUEST_SIZE:
+                logger.warning(f"Request too large: {content_length} bytes")
+                return JSONResponse(
+                    status_code=413,
+                    content={"detail": f"Request too large. Max size: {MAX_REQUEST_SIZE} bytes"},
+                )
+        except (ValueError, TypeError):
+            logger.warning(f"Invalid Content-Length header: {request.headers.get('content-length')}")
             return JSONResponse(
-                status_code=413,
-                content={"detail": f"Request too large. Max size: {MAX_REQUEST_SIZE} bytes"},
+                status_code=400,
+                content={"detail": "Invalid Content-Length header"},
             )
     return await call_next(request)
 

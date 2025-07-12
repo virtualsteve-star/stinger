@@ -76,13 +76,12 @@ async def check_rate_limit(request: Request, api_key: str) -> None:
     result = rate_limiter.check_rate_limit(rate_limit_key)
 
     if result["exceeded"]:
-        # Get reset time for the most restrictive limit
+        # Get reset time using public interface
+        status = rate_limiter.get_status(rate_limit_key)
         reset_times = []
         for limit_type in result["exceeded_limits"]:
-            window_seconds = rate_limiter._get_window_seconds(limit_type)
-            if window_seconds:
-                tracker = rate_limiter._get_tracker(rate_limit_key)
-                reset_times.append(tracker.get_reset_time(window_seconds))
+            if limit_type in status["details"]:
+                reset_times.append(status["details"][limit_type]["reset_time"])
 
         reset_time = min(reset_times) if reset_times else 0
 
