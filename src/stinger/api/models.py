@@ -15,7 +15,7 @@ class CheckRequest(BaseModel):
         "prompt", description="Type of content - user prompt or LLM response"
     )
     context: Optional[Dict[str, Any]] = Field(
-        None, description="Optional context (userId, sessionId, etc.)"
+        None, description="Optional context with userId, botId, sessionId, etc."
     )
     preset: Optional[str] = Field("customer_service", description="Guardrail preset to use")
 

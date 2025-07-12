@@ -40,12 +40,25 @@ async def check_content(request: CheckRequest):
         # Get pipeline for the requested preset
         pipeline = get_pipeline(request.preset)
 
-        # Create a simple conversation context if needed
+        # Create conversation context if provided
         conversation = None
-        if request.context and request.context.get("sessionId"):
-            conversation = Conversation.human_ai(
-                user_id=request.context.get("userId", "user"),
-                model_id="gpt-4",  # Default, not used for checking
+        if request.context:
+            # Extract participant information
+            user_id = request.context.get("userId", "anonymous")
+            bot_id = request.context.get("botId", "unknown-ai")
+            session_id = request.context.get("sessionId")
+            
+            # Build metadata for audit trail
+            metadata = request.context.copy()
+            metadata["participants"] = f"{user_id} <-> {bot_id}"
+            
+            conversation = Conversation(
+                initiator=user_id,
+                responder=bot_id,
+                initiator_type="human",
+                responder_type="ai_model",
+                conversation_id=session_id,
+                metadata=metadata,
             )
 
         # Check the content based on type
