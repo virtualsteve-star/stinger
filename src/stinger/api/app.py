@@ -42,6 +42,7 @@ app.add_middleware(
 # Add request size limit (1MB default)
 MAX_REQUEST_SIZE = int(os.getenv("STINGER_MAX_REQUEST_SIZE", "1048576"))  # 1MB
 
+
 @app.middleware("http")
 async def limit_request_size(request, call_next):
     """Limit request body size to prevent abuse."""
@@ -51,7 +52,7 @@ async def limit_request_size(request, call_next):
             logger.warning(f"Request too large: {content_length} bytes")
             return JSONResponse(
                 status_code=413,
-                content={"detail": f"Request too large. Max size: {MAX_REQUEST_SIZE} bytes"}
+                content={"detail": f"Request too large. Max size: {MAX_REQUEST_SIZE} bytes"},
             )
     return await call_next(request)
 
@@ -60,26 +61,28 @@ async def limit_request_size(request, call_next):
 async def track_metrics(request, call_next):
     """Track request metrics for monitoring."""
     import time
+
     start_time = time.time()
-    
+
     # Process request
     response = await call_next(request)
-    
+
     # Calculate duration
     duration_ms = (time.time() - start_time) * 1000
-    
+
     # Record metrics
     metrics.record_request(
         endpoint=request.url.path,
         method=request.method,
         status_code=response.status_code,
-        duration_ms=duration_ms
+        duration_ms=duration_ms,
     )
-    
+
     # Add response time header
     response.headers["X-Response-Time"] = f"{duration_ms:.2f}ms"
-    
+
     return response
+
 
 # Include routers
 app.include_router(health.router, tags=["health"])
@@ -104,14 +107,14 @@ async def startup_event():
     """Initialize audit logging on API startup."""
     # Get audit log configuration from environment
     audit_file = os.getenv("STINGER_AUDIT_LOG", "./api_audit.log")
-    
+
     # Enable audit logging
     audit.enable(
         destination=audit_file,
         redact_pii=False,  # Keep PII for security analysis
-        buffer_size=1,     # Flush immediately for real-time monitoring
-        flush_interval=1.0
+        buffer_size=1,  # Flush immediately for real-time monitoring
+        flush_interval=1.0,
     )
-    
+
     logger.info(f"Audit logging enabled: {audit_file}")
     logger.info("Stinger API started with conversation tracking enabled")

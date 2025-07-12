@@ -25,7 +25,7 @@ def get_pipeline(preset: str) -> GuardrailPipeline:
     # Fast path: check if already cached (double-checked locking pattern)
     if preset in _pipeline_cache:
         return _pipeline_cache[preset]
-    
+
     # Slow path: create pipeline with lock
     with _pipeline_cache_lock:
         # Check again in case another thread created it
@@ -88,15 +88,15 @@ async def check_content(request: CheckRequest):
             # Calculate per-guardrail time (approximate)
             total_time = result.get("processing_time_ms", 0)
             per_guardrail_time = total_time / len(details) if details else 0
-            
+
             for guardrail_name, guardrail_result in details.items():
                 metrics.record_guardrail_check(
                     guardrail=guardrail_name,
                     pipeline_type=request.kind,
                     blocked=guardrail_result.get("blocked", False),
-                    duration_ms=per_guardrail_time
+                    duration_ms=per_guardrail_time,
                 )
-        
+
         # Convert to response format
         action = "block" if result["blocked"] else "allow"
         if result.get("warnings") and not result["blocked"]:
@@ -104,7 +104,7 @@ async def check_content(request: CheckRequest):
 
         # Extract guardrail names from details
         guardrails_triggered = list(details.keys()) if details else []
-        
+
         return CheckResponse(
             action=action,
             reasons=result.get("reasons", []),

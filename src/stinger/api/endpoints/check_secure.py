@@ -28,7 +28,7 @@ def get_pipeline(preset: str) -> GuardrailPipeline:
     # Fast path: check if already cached
     if preset in _pipeline_cache:
         return _pipeline_cache[preset]
-    
+
     # Slow path: create pipeline with lock
     with _pipeline_cache_lock:
         # Check again in case another thread created it
