@@ -6,7 +6,6 @@ This version uses the core engine's rate limiting system.
 
 import logging
 from datetime import datetime, timedelta
-from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 
@@ -136,7 +135,7 @@ async def check_content(
 
 @router.get("/check/status")
 async def get_rate_limit_status(
-    api_key: str = Depends(verify_api_key),
+    api_key: str = Depends(verify_api_key_with_rate_limit),
 ):
     """
     Get current rate limit status for the authenticated API key.

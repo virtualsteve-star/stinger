@@ -6,7 +6,6 @@ audit system without duplicating any logging.
 """
 
 import logging
-from typing import Optional
 
 from fastapi import APIRouter, HTTPException, Request
 
