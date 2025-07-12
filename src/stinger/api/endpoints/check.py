@@ -8,6 +8,7 @@ import threading
 from fastapi import APIRouter, HTTPException
 
 from stinger.api.models import CheckRequest, CheckResponse
+from stinger.api import metrics
 from stinger.core.conversation import Conversation
 from stinger.core.pipeline import GuardrailPipeline
 
@@ -81,17 +82,35 @@ async def check_content(request: CheckRequest):
         else:  # response
             result = await pipeline.check_output_async(request.text, conversation=conversation)
 
+        # Record guardrail metrics
+        details = result.get("details", {})
+        if details:
+            # Calculate per-guardrail time (approximate)
+            total_time = result.get("processing_time_ms", 0)
+            per_guardrail_time = total_time / len(details) if details else 0
+            
+            for guardrail_name, guardrail_result in details.items():
+                metrics.record_guardrail_check(
+                    guardrail=guardrail_name,
+                    pipeline_type=request.kind,
+                    blocked=guardrail_result.get("blocked", False),
+                    duration_ms=per_guardrail_time
+                )
+        
         # Convert to response format
         action = "block" if result["blocked"] else "allow"
         if result.get("warnings") and not result["blocked"]:
             action = "warn"
 
+        # Extract guardrail names from details
+        guardrails_triggered = list(details.keys()) if details else []
+        
         return CheckResponse(
             action=action,
             reasons=result.get("reasons", []),
             warnings=result.get("warnings", []),
             metadata={
-                "guardrails_triggered": result.get("guardrails_triggered", []),
+                "guardrails_triggered": guardrails_triggered,
                 "processing_time_ms": result.get("processing_time_ms", 0),
             },
         )

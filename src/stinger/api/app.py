@@ -9,7 +9,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from stinger.api.endpoints import check, health, rules
+from stinger.api.endpoints import check, health, rules, metrics as metrics_endpoint
+from stinger.api import metrics
 from stinger.core import audit
 
 # Configure logging
@@ -54,10 +55,37 @@ async def limit_request_size(request, call_next):
             )
     return await call_next(request)
 
+
+@app.middleware("http")
+async def track_metrics(request, call_next):
+    """Track request metrics for monitoring."""
+    import time
+    start_time = time.time()
+    
+    # Process request
+    response = await call_next(request)
+    
+    # Calculate duration
+    duration_ms = (time.time() - start_time) * 1000
+    
+    # Record metrics
+    metrics.record_request(
+        endpoint=request.url.path,
+        method=request.method,
+        status_code=response.status_code,
+        duration_ms=duration_ms
+    )
+    
+    # Add response time header
+    response.headers["X-Response-Time"] = f"{duration_ms:.2f}ms"
+    
+    return response
+
 # Include routers
 app.include_router(health.router, tags=["health"])
 app.include_router(check.router, prefix="/v1", tags=["guardrails"])
 app.include_router(rules.router, prefix="/v1", tags=["configuration"])
+app.include_router(metrics_endpoint.router, tags=["monitoring"])
 
 
 @app.get("/", tags=["root"])
