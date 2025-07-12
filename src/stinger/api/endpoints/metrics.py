@@ -3,7 +3,7 @@ Metrics endpoint for API monitoring.
 """
 
 from fastapi import APIRouter, Query
-from fastapi.responses import PlainTextResponse, JSONResponse
+from fastapi.responses import JSONResponse, PlainTextResponse
 
 from stinger.api import metrics
 

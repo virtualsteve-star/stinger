@@ -2,13 +2,15 @@
 Test metrics collection and endpoint.
 """
 
-import pytest
 import json
+
+import pytest
 
 try:
     from fastapi.testclient import TestClient
-    from stinger.api.app import app
+
     from stinger.api import metrics
+    from stinger.api.app import app
 except ImportError:
     pytest.skip("FastAPI not installed, skipping API tests", allow_module_level=True)
 

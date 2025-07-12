@@ -7,8 +7,8 @@ import threading
 
 from fastapi import APIRouter, HTTPException
 
-from stinger.api.models import CheckRequest, CheckResponse
 from stinger.api import metrics
+from stinger.api.models import CheckRequest, CheckResponse
 from stinger.core.conversation import Conversation
 from stinger.core.pipeline import GuardrailPipeline
 

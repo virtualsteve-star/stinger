@@ -9,8 +9,10 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from stinger.api.endpoints import check, health, rules, metrics as metrics_endpoint
 from stinger.api import metrics
+from stinger.api.endpoints import check, health
+from stinger.api.endpoints import metrics as metrics_endpoint
+from stinger.api.endpoints import rules
 from stinger.core import audit
 
 # Configure logging

@@ -5,13 +5,13 @@ This module provides basic metrics tracking without external dependencies.
 For production use, consider integrating with Prometheus, StatsD, or OpenTelemetry.
 """
 
+import json
+import logging
 import time
 from collections import defaultdict, deque
 from datetime import datetime, timedelta
 from threading import Lock
-from typing import Dict, List, Optional, Any
-import json
-import logging
+from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
