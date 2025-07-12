@@ -52,12 +52,12 @@ async def startup_event():
 async def add_rate_limit_headers(request: Request, call_next):
     """Add rate limit headers to response."""
     response = await call_next(request)
-    
+
     # Add rate limit headers if they were set
     if hasattr(request.state, "rate_limit_headers"):
         for header, value in request.state.rate_limit_headers.items():
             response.headers[header] = value
-    
+
     return response
 
 

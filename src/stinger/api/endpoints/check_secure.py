@@ -5,6 +5,7 @@ This version uses the core engine's rate limiting system.
 """
 
 import logging
+from datetime import datetime, timedelta
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Request
@@ -59,7 +60,7 @@ async def check_content(
         if check_request.context:
             # Use API key as part of the user ID for conversation tracking
             user_id = check_request.context.get("userId", f"api-user-{api_key[:8]}")
-            
+
             # Create conversation with rate limiting if specified
             rate_limit_config = check_request.context.get("rate_limit")
             conversation = Conversation.human_ai(
@@ -67,16 +68,14 @@ async def check_content(
                 model_id="gpt-4",  # Default, not used for checking
                 rate_limit=rate_limit_config,
             )
-            
+
             # Add session tracking if provided
             if session_id := check_request.context.get("sessionId"):
                 conversation.conversation_id = session_id
 
         # Check the content based on type
         if check_request.kind == "prompt":
-            result = await pipeline.check_input_async(
-                check_request.text, conversation=conversation
-            )
+            result = await pipeline.check_input_async(check_request.text, conversation=conversation)
         else:  # response
             result = await pipeline.check_output_async(
                 check_request.text, conversation=conversation
@@ -141,22 +140,18 @@ async def get_rate_limit_status(
 ):
     """
     Get current rate limit status for the authenticated API key.
-    
+
     This endpoint shows:
     - Current usage across different time windows
     - Remaining requests
     - Reset times
     """
     from stinger.api.security import get_rate_limit_status as get_status
-    
+
     status = get_status(api_key)
-    
+
     # Format response
     return {
         "api_key_id": api_key[:8] + "...",
         "rate_limits": status["details"],
     }
-
-
-# Import datetime for conversation rate limit tracking
-from datetime import datetime, timedelta

@@ -47,15 +47,15 @@ async def check_content(request: CheckRequest):
             user_id = request.context.get("userId", "anonymous")
             bot_id = request.context.get("botId", "unknown-ai")
             session_id = request.context.get("sessionId")
-            
+
             # Extract participant types (with sensible defaults)
             user_type = request.context.get("userType", "human")
             bot_type = request.context.get("botType", "ai_model")
-            
+
             # Build metadata for audit trail
             metadata = request.context.copy()
             metadata["participants"] = f"{user_id} ({user_type}) <-> {bot_id} ({bot_type})"
-            
+
             conversation = Conversation(
                 initiator=user_id,
                 responder=bot_id,

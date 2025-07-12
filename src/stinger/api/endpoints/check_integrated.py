@@ -50,56 +50,58 @@ async def check_content(
         f"API request: {request.method} {request.url.path} "
         f"[{getattr(request.state, 'request_id', 'no-id')}]"
     )
-    
+
     try:
         # Get pipeline for the requested preset
         pipeline = get_pipeline(check_request.preset)
 
         # Create conversation with full context for audit trail
         conversation = None
-        if check_request.context or hasattr(request.state, 'request_id'):
+        if check_request.context or hasattr(request.state, "request_id"):
             # Build metadata for audit trail
             metadata = {
-                "request_id": getattr(request.state, 'request_id', None),
-                "user_ip": getattr(request.state, 'client_ip', None),
-                "user_agent": getattr(request.state, 'user_agent', None),
+                "request_id": getattr(request.state, "request_id", None),
+                "user_ip": getattr(request.state, "client_ip", None),
+                "user_agent": getattr(request.state, "user_agent", None),
             }
-            
+
             # Add any context from the request
             if check_request.context:
-                metadata.update({
-                    "session_id": check_request.context.get("sessionId"),
-                    "api_version": "v1",
-                    "preset": check_request.preset,
-                })
-            
+                metadata.update(
+                    {
+                        "session_id": check_request.context.get("sessionId"),
+                        "api_version": "v1",
+                        "preset": check_request.preset,
+                    }
+                )
+
             # Create conversation with metadata
             user_id = (
-                check_request.context.get("userId", "anonymous") 
-                if check_request.context 
+                check_request.context.get("userId", "anonymous")
+                if check_request.context
                 else "anonymous"
             )
-            
+
             conversation = Conversation(
                 initiator=user_id,
                 responder="stinger-api",
                 initiator_type="human",
                 responder_type="agent",
-                conversation_id=check_request.context.get("sessionId") if check_request.context else None,
+                conversation_id=(
+                    check_request.context.get("sessionId") if check_request.context else None
+                ),
                 metadata=metadata,
-                rate_limit=check_request.context.get("rate_limit") if check_request.context else None,
+                rate_limit=(
+                    check_request.context.get("rate_limit") if check_request.context else None
+                ),
             )
 
         # Check the content - pipeline will handle all audit logging
         if check_request.kind == "prompt":
-            result = await pipeline.check_input_async(
-                check_request.text, 
-                conversation=conversation
-            )
+            result = await pipeline.check_input_async(check_request.text, conversation=conversation)
         else:  # response
             result = await pipeline.check_output_async(
-                check_request.text, 
-                conversation=conversation
+                check_request.text, conversation=conversation
             )
 
         # Convert to response format
@@ -116,13 +118,13 @@ async def check_content(
                 "processing_time_ms": result.get("processing_time_ms", 0),
             },
         )
-        
+
         # Log API response (HTTP layer only)
         logger.info(
             f"API response: 200 action={action} "
             f"[{getattr(request.state, 'request_id', 'no-id')}]"
         )
-        
+
         return response
 
     except HTTPException:
@@ -130,7 +132,6 @@ async def check_content(
     except Exception as e:
         # Log API error
         logger.error(
-            f"API error: {e} [{getattr(request.state, 'request_id', 'no-id')}]",
-            exc_info=True
+            f"API error: {e} [{getattr(request.state, 'request_id', 'no-id')}]", exc_info=True
         )
         raise HTTPException(status_code=500, detail="Internal server error")
